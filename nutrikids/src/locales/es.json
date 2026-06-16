@@ -1,0 +1,203 @@
+{
+  "nav": {
+    "home": "Inicio",
+    "foodAnalyzer": "Analizador de Alimentos",
+    "foodFact": "Datos de Alimentos",
+    "scienceInsights": "Consejos Científicos",
+    "growthProfile": "Perfil de Crecimiento",
+    "feedback": "Comentarios",
+    "admin": "Admin",
+    "devAdmin": "Admin Dev",
+    "getStarted": "Empezar"
+  },
+  "admin": {
+    "title": "Admin",
+    "devTitle": "Admin Dev",
+    "dashboard": {
+      "title": "Admin",
+      "subtitle": "Análisis y Estadísticas de Feedback de Usuarios"
+    },
+    "nav": {
+      "dataSources": "Fuentes de Datos",
+      "rules": "Reglas de Puntuación",
+      "models": "Modelos de Puntuación"
+    },
+    "dataSources": {
+      "title": "Conectividad de Fuentes de Datos Externas",
+      "subtitle": "Las 4 fuentes autoritarias no admiten CORS, por lo que el backend (/admin/datasources) las sondea y devuelve estado, latencia y datos de muestra.",
+      "test": "Probar",
+      "testAll": "Probar Todo",
+      "testing": "Probando…",
+      "connected": "Conectado",
+      "failed": "Falló",
+      "latency": "Latencia",
+      "size": "Tamaño",
+      "sample": "Datos de Muestra",
+      "htmlOnly": "Solo HTML",
+      "loadError": "Error al cargar la lista de fuentes (¿está el backend en :8787 funcionando?)"
+    },
+    "rules": {
+      "title": "Reglas de Puntuación y Etiquetado (Basadas en Guías)",
+      "subtitle": "Estas 6 guías autoritarias son fuentes de reglas, no bases de datos: qué es cada una, qué regla de NutriKids se convierte, y cómo implementarla.",
+      "what": "Lo que es",
+      "rule": "Regla que se convierte",
+      "how": "Cómo implementar"
+    },
+    "models": {
+      "title": "Modelos de Puntuación",
+      "subtitle": "Tres roles complementarios: Grados Nutri-Score, rangos NRF, insignias FDA Healthy — todos junto con la puntuación personalizada de 4 dimensiones.",
+      "what": "Lo que es",
+      "formula": "Fórmula",
+      "how": "Uso en NutriKids",
+      "pros": "Pros y advertencias"
+    }
+  },
+  "search": {
+    "placeholder": "Buscar alimentos...",
+    "history": "Historial de Búsqueda",
+    "clearAll": "Borrar Todo",
+    "noResults": "No se encontraron resultados",
+    "reportMissing": "Reportar Alimento Faltante"
+  },
+  "input": {
+    "scanBarcode": "Escanear Código de Barras",
+    "uploadPhoto": "Subir Foto",
+    "backToHome": "Volver a Inicio"
+  },
+  "product": {
+    "foodInformation": "Información de Alimentos",
+    "verifiedProduct": "Producto Verificado",
+    "updatedToday": "Actualizado Hoy",
+    "details": "Detalles"
+  },
+  "score": {
+    "title": "Puntuación General",
+    "outOf": "/ 100",
+    "details": "Detalles de la Puntuación"
+  },
+  "child": {
+    "profile": "Perfil del Niño",
+    "profileWord": "Perfil",
+    "years": "Años",
+    "stage": "Etapa",
+    "developmentGoals": "Objetivos Clave de Desarrollo",
+    "keyNutrients": "Necesidades Clave de Nutrición",
+    "details": "Detalles",
+    "switchChild": "Cambiar Niño"
+  },
+  "recommendation": {
+    "badge": "RECOMENDADO",
+    "verdictLine": "{{verdict}} para {{name}}",
+    "supportsGoals": "Apoya Estos Objetivos de Desarrollo",
+    "infoSources": "Fuentes de Información",
+    "sourcesText": "USDA FoodData Central, EFSA, PubMed, estudios revisados por pares y datos verificados de fabricantes."
+  },
+  "nutrition": {
+    "nutritionSupport": "Apoyo Nutricional",
+    "exposureConcern": "Preocupaciones de Exposición",
+    "exposureSubtitle": "Ingredientes potenciales a tener en cuenta",
+    "allergenConcerns": "Preocupaciones por Alérgenos",
+    "allergenSubtitle": "Verifica los alérgenos comunes en este producto",
+    "processingLevel": "Nivel de Procesamiento",
+    "processingSubtitle": "Cómo se procesa este alimento",
+    "nova": "NOVA",
+    "keyNutrientsCount": "{{n}} nutrientes clave",
+    "concernsCount": "{{n}} preocupaciones potenciales",
+    "allergensCount": "{{n}} alérgenos identificados",
+    "details": "Detalles",
+    "status": {
+      "Contains": "Contiene",
+      "NotPresent": "No Presente"
+    },
+    "levels": {
+      "High": "Alto",
+      "Good": "Bueno",
+      "Moderate": "Moderado",
+      "Present": "Presente",
+      "Low": "Bajo",
+      "None": "Ninguno",
+      "Trace": "Pista"
+    },
+    "processing": {
+      "minimal": "Minimamente Procesado",
+      "moderate": "Moderadamente Procesado",
+      "high": "Altamente Procesado"
+    }
+  },
+  "home": {
+    "title": "NutriKids",
+    "subtitle": "Orientación nutricional inteligente para niños en crecimiento",
+    "cta": "Analizar Alimentos",
+    "feature1Title": "Analizador de Alimentos",
+    "feature1Desc": "Escanea o busca cualquier alimento para obtener una puntuación nutricional personalizada",
+    "feature2Title": "Consejos Científicos",
+    "feature2Desc": "Conocimiento nutricional basado en evidencia para el desarrollo infantil",
+    "feature3Title": "Perfiles de Niños",
+    "feature3Desc": "Planes de nutrición personalizados para cada niño"
+  },
+  "scienceInsights": {
+    "title": "Consejos Científicos",
+    "subtitle": "Conocimiento nutricional basado en evidencia para niños"
+  },
+  "feedback": {
+    "title": "Comparte Tu Opinión",
+    "subtitle": "Ayúdanos a mejorar NutriKids para ti y tu hijo.",
+    "timer": "Menos de 2 minutos",
+    "q1": {
+      "label": "1. ¿Te ha ayudado NutriKids a tomar mejores decisiones alimentarias para tu hijo?",
+      "1": "Para<br/>nada",
+      "2": "No<br/>mucho",
+      "3": "Un poco",
+      "4": "Sí,<br/>útil",
+      "5": "Muy<br/>útil"
+    },
+    "q2": {
+      "label": "2. ¿Qué tan fácil es entender la información que se muestra en la pantalla?",
+      "1": "🎓 Demasiado profesional — demasiado jerga, difícil de seguir",
+      "2": "🙂 Mayormente comprensible — puedo seguir la mayoría",
+      "3": "✅ Fácil de entender — claro e intuitivo",
+      "4": "📊 Los gráficos y datos no son lo suficientemente claros — demasiado densos o difíciles de leer",
+      "5": "✨ Los visuales son un poco distrayentes — las animaciones o gráficos atraen la atención"
+    },
+    "q3": {
+      "label": "3. ¿Qué función te resultó más útil?",
+      "1": "🍊 Analizador de Alimentos",
+      "2": "📊 Perfil de Crecimiento",
+      "3": "🎯 Objetivos de Desarrollo",
+      "4": "🥗 Guía de Nutrición"
+    },
+    "q4": {
+      "label": "4. ¿Qué función te gustaría que NutriKids agregara a continuación?",
+      "1": "📅 Rastreador de Nutrición Diaria",
+      "2": "🎯 Plan de Nutrición Personalizado",
+      "3": "🛒 Recomendaciones de Alimentos Saludables",
+      "4": "📈 Rastreo del Progreso del Crecimiento",
+      "5": "🤖 Entrenador de Nutrición AI"
+    },
+    "q5": {
+      "label": "5. ¿Qué tan probable es que recomiendes NutriKids a otros padres?",
+      "low": "Nada probable",
+      "high": "Extremadamente probable"
+    },
+    "q6": {
+      "label": "6. ¿Alguna otra idea o sugerencia para nosotros?",
+      "placeholder": "Cuéntanos lo que piensas… leemos cada respuesta 💜"
+    },
+    "submit": "Enviar Comentario",
+    "submitting": "Enviando...",
+    "successTitle": "¡Gracias!",
+    "successMsg": "Tu feedback significa mucho para nosotros.<br/>Lo usaremos para hacer NutriKids aún mejor para ti y tu hijo 💜",
+    "submitAnother": "Enviar Otro"
+  },
+  "lang": {
+    "zh": "中文",
+    "en": "EN",
+    "es": "ES"
+  },
+  "grade": {
+    "Excellent": "Excelente",
+    "Good": "Bueno",
+    "Fair": "Regular",
+    "Poor": "Malo"
+  }
+}

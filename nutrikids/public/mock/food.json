@@ -1,0 +1,18 @@
+{
+  "id": "yogurt-001",
+  "name": "Stonyfield Organic Vanilla Yogurt",
+  "brand": "Stonyfield",
+  "category": "Organic Yogurt · Dairy Product",
+  "imageUrl": "https://images.openfoodfacts.org/images/products/006/325/017/5048/front_en.10.400.jpg",
+  "processingLevel": "Moderately Processed",
+  "novaScore": 3,
+  "verified": true,
+  "updatedToday": true,
+  "searchSuggestions": [
+    { "id": "yogurt-001", "name": "Stonyfield Organic Vanilla Yogurt", "brand": "Stonyfield" },
+    { "id": "cornflakes-001", "name": "Kellogg's Corn Flakes", "brand": "Kellogg's" },
+    { "id": "milk-001", "name": "Organic Whole Milk", "brand": "Horizon" },
+    { "id": "juice-001", "name": "Tropicana Orange Juice", "brand": "Tropicana" },
+    { "id": "granola-001", "name": "Nature Valley Granola Bar", "brand": "Nature Valley" }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "exposureConcern": {
+    "overall": "Moderate",
+    "overallZh": "中度",
+    "concerns": [
+      { "id": "addedSugar",       "icon": "🍬", "name": "Added Sugar",         "nameZh": "添加糖",       "level": "Moderate" },
+      { "id": "artificialFlavor", "icon": "🧴", "name": "Artificial Flavor",   "nameZh": "人工香料",     "level": "Present" },
+      { "id": "artificialColors", "icon": "🎨", "name": "Artificial Colors",   "nameZh": "人工色素",     "level": "None" },
+      { "id": "preservatives",    "icon": "⚗️", "name": "Preservatives",       "nameZh": "防腐剂",       "level": "Low" },
+      { "id": "packaging",        "icon": "⚛️", "name": "Packaging Chemicals", "nameZh": "包装化学物质", "level": "Low" }
+    ]
+  },
+  "allergenConcerns": {
+    "overall": "2 Detected",
+    "overallZh": "检出 2 种",
+    "allergens": [
+      { "id": "milk",     "icon": "🥛", "name": "Milk",      "nameZh": "牛奶", "present": true },
+      { "id": "treeNuts", "icon": "🌰", "name": "Tree Nuts", "nameZh": "坚果", "present": false },
+      { "id": "egg",      "icon": "🥚", "name": "Egg",       "nameZh": "鸡蛋", "present": false },
+      { "id": "soy",      "icon": "🫛", "name": "Soy",       "nameZh": "大豆", "present": false },
+      { "id": "wheat",    "icon": "🌾", "name": "Wheat",     "nameZh": "小麦", "present": true }
+    ]
+  },
+  "processingLevel": {
+    "nova": 3,
+    "label": "Moderately Processed",
+    "labelZh": "中度加工",
+    "position": "moderate",
+    "description": "This food contains real ingredients with some added components for taste and texture.",
+    "descriptionZh": "该食品含有真实成分，并为口感和质地添加了部分成分。"
+  }
+}

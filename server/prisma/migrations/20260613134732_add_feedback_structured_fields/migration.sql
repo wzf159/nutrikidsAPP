@@ -1,0 +1,7 @@
+-- AlterTable
+ALTER TABLE "feedback" ADD COLUMN "comment" TEXT;
+ALTER TABLE "feedback" ADD COLUMN "q1" TEXT;
+ALTER TABLE "feedback" ADD COLUMN "q2" TEXT;
+ALTER TABLE "feedback" ADD COLUMN "q3" TEXT;
+ALTER TABLE "feedback" ADD COLUMN "q4" TEXT;
+ALTER TABLE "feedback" ADD COLUMN "q5" TEXT;

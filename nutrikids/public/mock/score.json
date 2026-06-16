@@ -1,0 +1,20 @@
+{
+  "score": 78,
+  "grade": "Good",
+  "gradeLabel": "Good Choice!",
+  "verdict": "Good Choice",
+  "verdictZh": "好选择",
+  "shortDesc": "A nutritious choice that supports your child's growth and daily needs.",
+  "shortDescZh": "营养丰富的选择，有助于孩子的成长和日常所需。",
+  "color": "#22c55e",
+  "breakdown": {
+    "nutrientDensity": { "score": 32, "weight": 0.4, "label": "Nutrient Density" },
+    "riskIngredients": { "score": 24, "weight": 0.3, "label": "Risk Ingredients" },
+    "processingLevel": { "score": 15, "weight": 0.2, "label": "Processing Level" },
+    "stageMatch":      { "score": 7,  "weight": 0.1, "label": "Stage Match" }
+  },
+  "positiveFactors": ["High Calcium", "Good Protein", "Contains Probiotics"],
+  "negativeFactors": ["Added Sugar", "Moderately Processed"],
+  "whyText": "This yogurt provides excellent calcium and protein for growing bones and muscles. The moderate added sugar content is the main concern — it's fine occasionally but limit daily intake.",
+  "whyTextZh": "这款酸奶富含钙质和蛋白质，有助于骨骼和肌肉发育。主要关注点是添加糖含量偏中等——偶尔食用没问题，但建议控制每日摄入量。"
+}

@@ -1,0 +1,92 @@
+{
+  "product": {
+    "id": "yogurt-001",
+    "name": "Stonyfield Organic Vanilla Yogurt",
+    "nameZh": "Stonyfield有机香草酸奶",
+    "brand": "Stonyfield",
+    "category": "Organic Yogurt · Dairy Product",
+    "categoryZh": "有机酸奶 · 乳制品",
+    "imageUrl": "https://images.openfoodfacts.org/images/products/006/325/017/5048/front_en.10.400.jpg",
+    "quantity": "170g",
+    "servingSize": "100g",
+    "nutritionFacts": {
+      "energy": { "value": 105, "unit": "kcal", "dailyValue": 5 },
+      "protein": { "value": 3.8, "unit": "g", "dailyValue": 8 },
+      "fat": { "value": 2.2, "unit": "g", "dailyValue": 4 },
+      "saturatedFat": { "value": 1.4, "unit": "g", "dailyValue": 7 },
+      "carbohydrates": { "value": 17.5, "unit": "g", "dailyValue": 6 },
+      "sugars": { "value": 12.0, "unit": "g", "dailyValue": 13 },
+      "fiber": { "value": 0, "unit": "g", "dailyValue": 0 },
+      "sodium": { "value": 55, "unit": "mg", "dailyValue": 2 }
+    },
+    "vitamins": [
+      { "name": "Vitamin A", "nameZh": "维生素A", "value": 60, "unit": "μg", "dailyValue": 8 },
+      { "name": "Vitamin C", "nameZh": "维生素C", "value": 1.2, "unit": "mg", "dailyValue": 1 },
+      { "name": "Vitamin D", "nameZh": "维生素D", "value": 2.5, "unit": "μg", "dailyValue": 50 },
+      { "name": "Vitamin B12", "nameZh": "维生素B12", "value": 0.4, "unit": "μg", "dailyValue": 17 },
+      { "name": "Calcium", "nameZh": "钙", "value": 120, "unit": "mg", "dailyValue": 15 },
+      { "name": "Iron", "nameZh": "铁", "value": 0.1, "unit": "mg", "dailyValue": 1 },
+      { "name": "Potassium", "nameZh": "钾", "value": 150, "unit": "mg", "dailyValue": 3 },
+      { "name": "Phosphorus", "nameZh": "磷", "value": 90, "unit": "mg", "dailyValue": 13 }
+    ],
+    "ingredients": [
+      { "name": "Organic Pasteurized Milk", "nameZh": "有机巴氏杀菌牛奶", "percentage": 85 },
+      { "name": "Organic Cane Sugar", "nameZh": "有机蔗糖", "percentage": 8 },
+      { "name": "Organic Cream", "nameZh": "有机奶油", "percentage": 4 },
+      { "name": "Organic Vanilla Extract", "nameZh": "有机香草提取物", "percentage": 2 },
+      { "name": "Live Active Cultures", "nameZh": "活性益生菌", "percentage": 1 }
+    ],
+    "additives": [
+      { "name": "Live Yogurt Cultures", "nameZh": "活性酸奶菌", "type": "beneficial", "status": "approved" }
+    ],
+    "allergens": ["milk"],
+    "labels": ["organic", "non-gmo", "kosher", "halal"],
+    "novaScore": 3,
+    "ecoScore": { "grade": "B", "score": 68 },
+    "nutriScore": { "grade": "B", "score": 65 },
+    "environmentalImpact": {
+      "carbonFootprint": { "value": 0.45, "unit": "kg CO2e", "label": "Low" },
+      "waterFootprint": { "value": 180, "unit": "L", "label": "Moderate" },
+      "landUse": { "value": 0.03, "unit": "m²", "label": "Low" }
+    },
+    "healthRating": {
+      "overall": 78,
+      "factors": {
+        "nutrientQuality": 85,
+        "processingLevel": 65,
+        "ingredientPurity": 88,
+        "sustainability": 72
+      }
+    },
+    "ratings": {
+      "total": 1256,
+      "average": 4.5,
+      "reviews": [
+        { "user": "Emma", "rating": 5, "comment": "Great taste and organic!", "date": "2024-01-15" },
+        { "user": "James", "rating": 4, "comment": "Healthy option for kids", "date": "2024-01-10" },
+        { "user": "Sarah", "rating": 5, "comment": "Love the creamy texture", "date": "2024-01-05" }
+      ]
+    },
+    "manufacturer": {
+      "name": "Stonyfield Farm, Inc.",
+      "location": "Londonderry, NH, USA",
+      "certifications": ["USDA Organic", "QAI Certified Organic"]
+    }
+  },
+  "comparativeData": {
+    "categoryAverage": {
+      "energy": 110,
+      "protein": 3.5,
+      "fat": 2.5,
+      "sugars": 15,
+      "calcium": 100
+    },
+    "topProducts": [
+      { "name": "Stonyfield Organic", "energy": 105, "protein": 3.8, "score": 78 },
+      { "name": "Dannon Oikos", "energy": 120, "protein": 5.0, "score": 72 },
+      { "name": "Chobani", "energy": 115, "protein": 6.0, "score": 75 },
+      { "name": "Yoplait", "energy": 130, "protein": 3.0, "score": 65 },
+      { "name": "Average", "energy": 110, "protein": 3.5, "score": 68 }
+    ]
+  }
+}

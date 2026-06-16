@@ -1,0 +1,57 @@
+{
+  "children": [
+    {
+      "id": "child-001",
+      "name": "Alex",
+      "age": 8,
+      "stage": "School Years (6–11)",
+      "stageKey": "school",
+      "avatarUrl": "",
+      "avatarEmoji": "🧒",
+      "developmentGoals": [
+        { "id": "g1", "icon": "🧠", "label": "Learning & Focus", "labelZh": "学习与专注" },
+        { "id": "g2", "icon": "🦴", "label": "Bone Development",  "labelZh": "骨骼发育" },
+        { "id": "g3", "icon": "⚡", "label": "Daily Energy",      "labelZh": "日常能量" },
+        { "id": "g4", "icon": "🛡️", "label": "Immune Support",   "labelZh": "免疫支持" },
+        { "id": "g5", "icon": "🦠", "label": "Gut Health",        "labelZh": "肠道健康" }
+      ],
+      "keyNutrients": [
+        { "id": "n1",  "icon": "🩸", "name": "Iron",       "nameZh": "铁" },
+        { "id": "n2",  "icon": "⚗️", "name": "Zinc",       "nameZh": "锌" },
+        { "id": "n3",  "icon": "🐟", "name": "Omega-3",    "nameZh": "Omega-3" },
+        { "id": "n4",  "icon": "🅱️", "name": "B Vitamins", "nameZh": "B族维生素" },
+        { "id": "n5",  "icon": "🦷", "name": "Calcium",    "nameZh": "钙" },
+        { "id": "n6",  "icon": "☀️", "name": "Vitamin D",  "nameZh": "维生素D" },
+        { "id": "n7",  "icon": "🔵", "name": "Phosphorus", "nameZh": "磷" },
+        { "id": "n8",  "icon": "🌾", "name": "Complex Carbs","nameZh": "复合碳水" },
+        { "id": "n9",  "icon": "🩸", "name": "Iron",       "nameZh": "铁" },
+        { "id": "n10", "icon": "🅱️", "name": "B Vitamins", "nameZh": "B族维生素" },
+        { "id": "n11", "icon": "🍊", "name": "Vitamin C",  "nameZh": "维生素C" },
+        { "id": "n12", "icon": "☀️", "name": "Vitamin D",  "nameZh": "维生素D" },
+        { "id": "n13", "icon": "⚗️", "name": "Zinc",       "nameZh": "锌" },
+        { "id": "n14", "icon": "🔴", "name": "Selenium",   "nameZh": "硒" }
+      ],
+      "allergens": ["peanuts", "tree-nuts"]
+    },
+    {
+      "id": "child-002",
+      "name": "Lily",
+      "age": 4,
+      "stage": "Preschool (3–5)",
+      "stageKey": "preschool",
+      "avatarEmoji": "👧",
+      "developmentGoals": [
+        { "id": "g1", "icon": "🧠", "label": "Brain Development",   "labelZh": "大脑发育" },
+        { "id": "g2", "icon": "🦴", "label": "Bone Strengthening",  "labelZh": "骨骼强化" },
+        { "id": "g3", "icon": "🛡️", "label": "Immune Support",      "labelZh": "免疫支持" }
+      ],
+      "keyNutrients": [
+        { "id": "n1", "icon": "🦷", "name": "Calcium",   "nameZh": "钙" },
+        { "id": "n2", "icon": "☀️", "name": "Vitamin D", "nameZh": "维生素D" },
+        { "id": "n3", "icon": "🩸", "name": "Iron",      "nameZh": "铁" },
+        { "id": "n4", "icon": "🐟", "name": "Omega-3",   "nameZh": "Omega-3" }
+      ],
+      "allergens": ["milk"]
+    }
+  ]
+}

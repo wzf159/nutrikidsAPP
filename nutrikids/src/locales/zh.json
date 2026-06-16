@@ -1,0 +1,202 @@
+{
+  "nav": {
+    "home": "首页",
+    "foodAnalyzer": "食物分析",
+    "foodFact": "成分数据",
+    "scienceInsights": "科学见解",
+    "growthProfile": "成长档案",
+    "feedback": "反馈",
+    "admin": "管理",
+    "devAdmin": "开发管理",
+    "getStarted": "开始使用"
+  },
+  "admin": {
+    "title": "管理",
+    "devTitle": "开发管理",
+    "dashboard": {
+      "title": "管理",
+      "subtitle": "用户反馈数据分析与统计"
+    },
+    "nav": {
+      "dataSources": "数据源测试",
+      "rules": "评分标注规则",
+      "models": "评分模型"
+    },
+    "dataSources": {
+      "title": "外部数据源连通性测试",
+      "subtitle": "4 个权威数据源均无 CORS，由后端 (/admin/datasources) 代理探测，返回连通状态、延迟与抽样数据。",
+      "test": "测试连接",
+      "testAll": "全部测试",
+      "testing": "测试中…",
+      "connected": "已连通",
+      "failed": "连接失败",
+      "latency": "延迟",
+      "size": "大小",
+      "sample": "抽样数据",
+      "htmlOnly": "仅 HTML 页面",
+      "loadError": "加载数据源列表失败（请确认后端 :8787 已启动）"
+    },
+    "rules": {
+      "title": "评分标注规则（指南类依据）",
+      "subtitle": "6 份权威指南不是数据库，而是规则来源：每份指南说明它是什么、转化为 NutriKids 的什么规则、以及如何实现。",
+      "what": "是什么",
+      "rule": "转化为的规则",
+      "how": "实现方法"
+    },
+    "models": {
+      "title": "评分模型使用说明",
+      "subtitle": "三个模型角色互补：Nutri-Score 给等级、NRF 做排序、FDA Healthy 做徽章，与 4 维个性化评分并行使用。",
+      "what": "是什么",
+      "formula": "计算方式",
+      "how": "在 NutriKids 中的用法",
+      "pros": "优点与注意"
+    }
+  },
+  "search": {
+    "placeholder": "搜索食物...",
+    "history": "搜索历史",
+    "clearAll": "清除全部",
+    "noResults": "未找到相关食物",
+    "reportMissing": "反馈缺失食品"
+  },
+  "input": {
+    "scanBarcode": "扫描条形码",
+    "uploadPhoto": "上传照片",
+    "backToHome": "返回首页"
+  },
+  "product": {
+    "foodInformation": "食品信息",
+    "verifiedProduct": "已验证产品",
+    "updatedToday": "今日更新",
+    "details": "查看详情"
+  },
+  "score": {
+    "title": "综合评分",
+    "outOf": "/ 100",
+    "details": "评分详情"
+  },
+  "child": {
+    "profile": "儿童档案",
+    "profileWord": "的档案",
+    "years": "岁",
+    "stage": "阶段",
+    "developmentGoals": "关键发展目标",
+    "keyNutrients": "关键营养需求",
+    "details": "查看详情",
+    "switchChild": "切换儿童"
+  },
+  "recommendation": {
+    "badge": "推荐",
+    "verdictLine": "{{name}} 的{{verdict}}",
+    "supportsGoals": "支持以下发展目标",
+    "infoSources": "信息来源",
+    "sourcesText": "美国农业部食品数据中心、EFSA、PubMed、同行评审研究及经核实的制造商数据。"
+  },
+  "nutrition": {
+    "nutritionSupport": "营养支持",
+    "exposureConcern": "风险成分",
+    "exposureSubtitle": "需要留意的潜在成分",
+    "allergenConcerns": "过敏原检测",
+    "allergenSubtitle": "检查产品中的常见过敏原",
+    "processingLevel": "加工程度",
+    "processingSubtitle": "该食品的加工程度",
+    "nova": "NOVA",
+    "keyNutrientsCount": "{{n}} 项关键营养",
+    "concernsCount": "{{n}} 项潜在风险",
+    "allergensCount": "已检测 {{n}} 种过敏原",
+    "details": "查看详情",
+    "status": {
+      "Contains": "含有",
+      "NotPresent": "不含"
+    },
+    "levels": {
+      "High": "高",
+      "Good": "良",
+      "Moderate": "中度",
+      "Present": "含有",
+      "Low": "低",
+      "None": "无",
+      "Trace": "微量"
+    },
+    "processing": {
+      "minimal": "低度加工",
+      "moderate": "中度加工",
+      "high": "高度加工"
+    }
+  },
+  "home": {
+    "title": "NutriKids",
+    "subtitle": "让每一口食物都为孩子的成长助力",
+    "cta": "开始分析食物",
+    "feature1Title": "食物分析",
+    "feature1Desc": "扫描或搜索任意食物，获取专属营养评分",
+    "feature2Title": "科学见解",
+    "feature2Desc": "基于儿童发育研究的营养建议",
+    "feature3Title": "儿童档案",
+    "feature3Desc": "为每个孩子定制个性化营养方案"
+  },
+  "scienceInsights": {
+    "title": "科学见解",
+    "subtitle": "基于循证研究的儿童营养知识"
+  },
+  "feedback": {
+    "title": "分享你的反馈",
+    "subtitle": "帮助我们为你和孩子打造更好的 NutriKids。",
+    "timer": "不到 2 分钟",
+    "q1": {
+      "label": "1. NutriKids 有没有帮助你为孩子做出更好的食品选择？",
+      "1": "完全<br/>没帮助",
+      "2": "帮助<br/>不大",
+      "3": "一般般",
+      "4": "有<br/>帮助",
+      "5": "非常<br/>有帮助"
+    },
+    "q2": {
+      "label": "2. 屏幕上显示的信息容易理解吗？",
+      "1": "🎓 太专业了 — 术语太多，难以理解",
+      "2": "🙂 基本能理解 — 大部分内容可以看懂",
+      "3": "✅ 容易理解 — 清晰直观",
+      "4": "📊 图表和数据不够清晰 — 太密集或难以阅读",
+      "5": "✨ 视觉效果有点分散注意力 — 动画或图形太抢眼"
+    },
+    "q3": {
+      "label": "3. 你觉得哪个功能最有用？",
+      "1": "🍊 食物分析器",
+      "2": "📊 成长档案",
+      "3": "🎯 发展目标",
+      "4": "🥗 营养指南"
+    },
+    "q4": {
+      "label": "4. 你最希望 NutriKids 接下来添加哪个功能？",
+      "1": "📅 每日营养追踪",
+      "2": "🎯 个性化营养计划",
+      "3": "🛒 健康食品推荐",
+      "4": "📈 成长进度追踪",
+      "5": "🤖 AI 营养教练"
+    },
+    "q5": {
+      "label": "5. 你有多大可能向其他家长推荐 NutriKids？",
+      "low": "完全不可能",
+      "high": "非常可能"
+    },
+    "q6": {
+      "label": "6. 还有其他想法或建议吗？",
+      "placeholder": "告诉我们你的想法… 我们会阅读每一条回复 💜"
+    },
+    "submit": "提交反馈",
+    "submitting": "提交中...",
+    "successTitle": "谢谢！",
+    "successMsg": "你的反馈对我们非常重要。<br/>我们会用它来为你和孩子打造更好的 NutriKids 💜",
+    "submitAnother": "提交另一条"
+  },
+  "lang": {
+    "zh": "中文",
+    "en": "EN"
+  },
+  "grade": {
+    "Excellent": "优秀",
+    "Good": "良好",
+    "Fair": "一般",
+    "Poor": "较差"
+  }
+}

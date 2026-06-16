@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    -webkit-font-smoothing: antialiased;
+  }
+  #root { min-height: 100vh; display: flex; flex-direction: column; }
+}
+
+@keyframes scoreStroke {
+  from { stroke-dashoffset: 440; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes progressFill {
+  from { width: 0%; }
+}
+@keyframes pulse-once {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.05); }
+}
+
+.animate-score-stroke { animation: scoreStroke 1.2s ease-out both; }
+.animate-fade-in-up   { animation: fadeInUp 0.45s ease both; }
+.animate-slide-in-right { animation: slideInRight 0.4s ease both; }
+.animate-progress-fill { animation: progressFill 0.9s ease both; }
+.animate-pulse-once    { animation: pulse-once 0.6s ease 1.2s both; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }

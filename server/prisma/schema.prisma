@@ -1,0 +1,381 @@
+// NutriKids 数据库 (Prisma + SQLite)
+// 设计同 database/schema.dbml。SQLite 无数组/枚举：
+//   · certifications 等数组 → JSON 字符串
+//   · source/kind/level/grade 等 → String
+// 用户私有数据用 uuid 主键，目录/字典用自增 Int。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== ① 账户 / 孩子 ====================
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  displayName  String?  @map("display_name")
+  locale       String   @default("en")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  children Child[]
+  analyses Analysis[]
+  feedback Feedback[]
+  reviews  ProductReview[]
+
+  @@map("users")
+}
+
+model Child {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  name        String
+  age         Int?
+  ageMonths   Int?     @map("age_months") // 1 岁以下：精确月龄
+  gender      String?  // boy | girl | other
+  heightCm    Float?   @map("height_cm")
+  weightKg    Float?   @map("weight_kg")
+  stageKey    String?  @map("stage_key")
+  avatarEmoji String?  @map("avatar_emoji")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goals     ChildGoal[]
+  nutrients ChildNutrient[]
+  allergens ChildAllergen[]
+  analyses  Analysis[]
+
+  @@index([userId])
+  @@map("children")
+}
+
+model ChildGoal {
+  childId String           @map("child_id")
+  goalId  Int              @map("goal_id")
+  child   Child            @relation(fields: [childId], references: [id], onDelete: Cascade)
+  goal    DevelopmentGoal  @relation(fields: [goalId], references: [id])
+
+  @@id([childId, goalId])
+  @@map("child_goals")
+}
+
+model ChildNutrient {
+  childId    String   @map("child_id")
+  nutrientId Int      @map("nutrient_id")
+  child      Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  nutrient   Nutrient @relation(fields: [nutrientId], references: [id])
+
+  @@id([childId, nutrientId])
+  @@map("child_nutrients")
+}
+
+model ChildAllergen {
+  childId     String   @map("child_id")
+  allergenId  Int      @map("allergen_id")
+  child       Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  allergen    Allergen @relation(fields: [allergenId], references: [id])
+
+  @@id([childId, allergenId])
+  @@map("child_allergens")
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String?  @map("user_id")
+  text      String
+  q1        String?
+  q2        String?
+  q3        String?
+  q4        String?
+  q5        String?
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("feedback")
+}
+
+// ==================== ② 字典 ====================
+model DevelopmentGoal {
+  id      Int    @id @default(autoincrement())
+  icon    String?
+  label   String
+  labelZh String? @map("label_zh")
+  children ChildGoal[]
+
+  @@map("development_goals")
+}
+
+model Nutrient {
+  id      Int     @id @default(autoincrement())
+  name    String
+  nameZh  String? @map("name_zh")
+  icon    String?
+  unit    String?
+  childLinks   ChildNutrient[]
+  productLinks ProductNutrient[]
+
+  @@map("nutrients")
+}
+
+model Allergen {
+  id      Int     @id @default(autoincrement())
+  code    String  @unique
+  name    String
+  nameZh  String? @map("name_zh")
+  icon    String?
+  childLinks    ChildAllergen[]
+  productLinks  ProductAllergen[]
+  analysisFlags AnalysisAllergenFlag[]
+
+  @@map("allergens")
+}
+
+model Ingredient {
+  id      Int     @id @default(autoincrement())
+  name    String
+  nameZh  String? @map("name_zh")
+  products ProductIngredient[]
+
+  @@map("ingredients")
+}
+
+model Additive {
+  id      Int     @id @default(autoincrement())
+  name    String
+  nameZh  String? @map("name_zh")
+  type    String?
+  status  String?
+  products ProductAdditive[]
+
+  @@map("additives")
+}
+
+model Label {
+  id   Int    @id @default(autoincrement())
+  code String @unique
+  products ProductLabel[]
+
+  @@map("labels")
+}
+
+model ExposureConcernType {
+  code    String  @id
+  name    String
+  nameZh  String? @map("name_zh")
+  icon    String?
+  analyses AnalysisExposure[]
+
+  @@map("exposure_concern_types")
+}
+
+// ==================== ③ 产品目录 ====================
+model Brand {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  products Product[]
+
+  @@map("brands")
+}
+
+model Category {
+  id     Int     @id @default(autoincrement())
+  name   String
+  nameZh String? @map("name_zh")
+  products Product[]
+
+  @@map("categories")
+}
+
+model Manufacturer {
+  id             Int     @id @default(autoincrement())
+  name           String
+  location       String?
+  certifications String? // JSON 字符串数组
+  products Product[]
+
+  @@map("manufacturers")
+}
+
+model Product {
+  id             Int      @id @default(autoincrement())
+  barcode        String?  @unique
+  name           String
+  nameZh         String?  @map("name_zh")
+  brandId        Int?     @map("brand_id")
+  manufacturerId Int?     @map("manufacturer_id")
+  categoryId     Int?     @map("category_id")
+  imageUrl       String?  @map("image_url")
+  quantity       String?
+  servingSize    String?  @map("serving_size")
+  novaScore      Int?     @map("nova_score")
+  nutriGrade     String?  @map("nutri_grade")
+  nutriScore     Int?     @map("nutri_score")
+  ecoGrade       String?  @map("eco_grade")
+  ecoScore       Int?     @map("eco_score")
+  carbonKgco2e   Float?   @map("carbon_kgco2e")
+  waterL         Float?   @map("water_l")
+  landM2         Float?   @map("land_m2")
+  verified       Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  brand        Brand?        @relation(fields: [brandId], references: [id])
+  manufacturer Manufacturer? @relation(fields: [manufacturerId], references: [id])
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  nutrients    ProductNutrient[]
+  ingredients  ProductIngredient[]
+  additives    ProductAdditive[]
+  labels       ProductLabel[]
+  allergens    ProductAllergen[]
+  reviews      ProductReview[]
+  analyses     Analysis[]
+
+  @@map("products")
+}
+
+model ProductNutrient {
+  productId  Int    @map("product_id")
+  nutrientId Int    @map("nutrient_id")
+  value      Float?
+  unit       String?
+  dailyValue Float? @map("daily_value")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  nutrient   Nutrient @relation(fields: [nutrientId], references: [id])
+
+  @@id([productId, nutrientId])
+  @@map("product_nutrients")
+}
+
+model ProductIngredient {
+  productId    Int   @map("product_id")
+  ingredientId Int   @map("ingredient_id")
+  percentage   Float?
+  position     Int?
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  ingredient   Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@id([productId, ingredientId])
+  @@map("product_ingredients")
+}
+
+model ProductAdditive {
+  productId  Int @map("product_id")
+  additiveId Int @map("additive_id")
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  additive   Additive @relation(fields: [additiveId], references: [id])
+
+  @@id([productId, additiveId])
+  @@map("product_additives")
+}
+
+model ProductLabel {
+  productId Int @map("product_id")
+  labelId   Int @map("label_id")
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  label     Label   @relation(fields: [labelId], references: [id])
+
+  @@id([productId, labelId])
+  @@map("product_labels")
+}
+
+model ProductAllergen {
+  productId   Int     @map("product_id")
+  allergenId  Int     @map("allergen_id")
+  present     Boolean @default(true)
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  allergen    Allergen @relation(fields: [allergenId], references: [id])
+
+  @@id([productId, allergenId])
+  @@map("product_allergens")
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  productId Int      @map("product_id")
+  userId    String?  @map("user_id")
+  rating    Int?
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId])
+  @@map("product_reviews")
+}
+
+// ==================== ④ 分析 / 评分 ====================
+model Analysis {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  childId      String   @map("child_id")
+  productId    Int      @map("product_id")
+  source       String?
+  imagePath    String?  @map("image_path")
+  overallScore Int?     @map("overall_score")
+  grade        String?
+  whyText      String?  @map("why_text")
+  whyTextZh    String?  @map("why_text_zh")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  child        Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+  product      Product   @relation(fields: [productId], references: [id])
+  breakdown    AnalysisBreakdown[]
+  factors      AnalysisFactor[]
+  exposure     AnalysisExposure[]
+  allergenFlags AnalysisAllergenFlag[]
+
+  @@index([userId, createdAt])
+  @@index([childId])
+  @@map("analyses")
+}
+
+model AnalysisBreakdown {
+  analysisId String  @map("analysis_id")
+  dimension  String
+  score      Float?
+  weight     Float?
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@id([analysisId, dimension])
+  @@map("analysis_breakdown")
+}
+
+model AnalysisFactor {
+  id         Int      @id @default(autoincrement())
+  analysisId String   @map("analysis_id")
+  kind       String
+  label      String?
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@index([analysisId])
+  @@map("analysis_factors")
+}
+
+model AnalysisExposure {
+  analysisId  String @map("analysis_id")
+  concernCode String @map("concern_code")
+  level       String?
+  analysis    Analysis            @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  concern     ExposureConcernType @relation(fields: [concernCode], references: [code])
+
+  @@id([analysisId, concernCode])
+  @@map("analysis_exposure")
+}
+
+model AnalysisAllergenFlag {
+  analysisId   String  @map("analysis_id")
+  allergenId   Int     @map("allergen_id")
+  present      Boolean?
+  matchesChild Boolean? @map("matches_child")
+  analysis     Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  allergen     Allergen @relation(fields: [allergenId], references: [id])
+
+  @@id([analysisId, allergenId])
+  @@map("analysis_allergen_flags")
+}

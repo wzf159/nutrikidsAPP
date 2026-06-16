@@ -1,0 +1,161 @@
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from './LanguageSwitcher';
+import { getChildren, type Child } from '../../services/api';
+import { AGE_GROUPS, bmiOf } from '../../data/growth';
+
+const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
+  { icon: '🍊', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
+  { icon: '🎯', key: 'nav.scienceInsights', path: '/science-insights' },
+  { icon: '📈', key: 'nav.growthProfile', path: '/growth-profile' },
+  { icon: '💬', key: 'nav.feedback', path: '/feedback' },
+];
+
+export default function TopNav() {
+  const { t, i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
+  const navigate = useNavigate();
+
+  const [child, setChild] = useState<Child | null>(null);
+  const [cardOpen, setCardOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const loadChild = () => {
+    getChildren().then(cs => setChild(cs[0] ?? null)).catch(() => setChild(null));
+  };
+
+  useEffect(() => {
+    loadChild();
+    window.addEventListener('nutrikids:child-updated', loadChild);
+    return () => window.removeEventListener('nutrikids:child-updated', loadChild);
+  }, []);
+
+  useEffect(() => {
+    if (!cardOpen) return;
+    const onClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setCardOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [cardOpen]);
+
+  const ageText = child
+    ? child.stageKey?.endsWith('m') && child.ageMonths != null
+      ? `${child.ageMonths} ${isZh ? '个月' : i18n.language === 'es' ? 'meses' : 'mo'}`
+      : child.age != null
+        ? `${child.age} ${isZh ? '岁' : i18n.language === 'es' ? 'años' : 'yrs'}`
+        : ''
+    : '';
+  const stage = child ? AGE_GROUPS.find(g => g.key === child.stageKey) : null;
+  const bmi = child?.heightCm && child?.weightKg ? bmiOf(child.heightCm, child.weightKg) : null;
+  const avatar = child?.avatarEmoji ?? '👶';
+
+  return (
+    <header className="sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-7 flex items-center gap-5">
+      <NavLink to="/" className="flex items-center gap-1.5 shrink-0">
+        <img src="/images/logo2.png" alt="" className="h-9 w-auto" />
+        <img src="/images/logo4.png" alt="NutriKids" className="h-6 w-auto hidden sm:block" />
+      </NavLink>
+
+      <nav className="flex items-center gap-2">
+        {NAV_ITEMS.map(({ icon, key, path }, i) => (
+          <NavLink
+            key={path}
+            to={path}
+            className={({ isActive }) =>
+              i === 0
+                ? `flex items-center gap-1.5 px-[18px] py-[7px] rounded-full text-sm font-bold text-white whitespace-nowrap bg-gradient-to-r from-[#893ce3] to-[#ec4899] shadow-[0_2px_12px_rgba(236,72,153,0.3)] transition-all ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.02]'}`
+                : `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+                    isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+                  }`
+            }
+          >
+            {icon} {t(key)}
+          </NavLink>
+        ))}
+        <NavLink
+          to="/admin"
+          className={({ isActive }) =>
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            }`
+          }
+        >
+          📊 {t('nav.admin')}
+        </NavLink>
+        <NavLink
+          to="/dev-admin"
+          className={({ isActive }) =>
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            }`
+          }
+        >
+          ⚙️ {t('nav.devAdmin')}
+        </NavLink>
+      </nav>
+
+      <div className="ml-auto flex items-center gap-3">
+        <div className="relative" ref={wrapRef}>
+          {child ? (
+            <button
+              onClick={() => setCardOpen(o => !o)}
+              className="flex items-center gap-2 bg-white/70 border-[1.5px] border-[rgba(100,120,160,0.15)] rounded-full py-1 px-[14px] pl-[6px] [backdrop-filter:blur(8px)] [-webkit-backdrop-filter:blur(8px)] cursor-pointer"
+            >
+              <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[17px]">{avatar}</span>
+              <span className="text-sm font-bold text-[#893ce3] whitespace-nowrap">
+                {child.name}{ageText ? `, ${ageText}` : ''} ▾
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/onboarding')}
+              className="px-5 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-sm font-bold shadow-[0_4px_16px_rgba(249,115,22,0.25)] whitespace-nowrap"
+            >
+              ✨ {t('nav.getStarted')}
+            </button>
+          )}
+
+          {cardOpen && child && (
+            <div className="absolute right-0 top-[calc(100%+10px)] w-[272px] bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_48px_rgba(80,40,160,0.16),0_2px_12px_rgba(0,0,0,0.08)] border-[1.5px] border-[rgba(137,60,227,0.12)] overflow-hidden animate-[pop-in_0.18s_cubic-bezier(0.34,1.56,0.64,1)]">
+              <div className="flex items-center gap-3 px-4 pt-4 pb-3.5">
+                <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[22px] flex-shrink-0">{avatar}</span>
+                <div>
+                  <p className="text-[15px] font-bold text-[#1a1040]">{child.name}</p>
+                  <p className="text-xs font-semibold text-gray-400 mt-0.5">
+                    {[stage ? t(`child.stage.${stage.key}`) || (isZh ? stage.badgeZh : i18n.language === 'es' ? stage.badgeEs : stage.badge) : ageText,
+                      child.gender ? { boy: isZh ? '男孩' : i18n.language === 'es' ? 'Niño' : 'Boy', girl: isZh ? '女孩' : i18n.language === 'es' ? 'Niña' : 'Girl', other: '' }[child.gender] : '']
+                      .filter(Boolean).join(' · ')}
+                  </p>
+                </div>
+                <button
+                  onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
+                  className="ml-auto px-2.5 py-1 rounded-lg bg-purple-600/8 border border-purple-600/18 text-xs font-bold text-[#893ce3] hover:bg-purple-600/15 whitespace-nowrap"
+                >
+                  ✏️ {isZh ? '编辑' : i18n.language === 'es' ? 'Editar' : 'Edit'}
+                </button>
+              </div>
+              <div className="h-px bg-purple-600/8" />
+              <div className="grid grid-cols-3 px-3 py-3.5">
+                {[
+                  { icon: '📏', label: isZh ? '身高' : i18n.language === 'es' ? 'Altura' : 'Height', value: child.heightCm ? `${child.heightCm} cm` : '—' },
+                  { icon: '⚖️', label: isZh ? '体重' : i18n.language === 'es' ? 'Peso' : 'Weight', value: child.weightKg ? `${child.weightKg} kg` : '—' },
+                  { icon: '📐', label: 'BMI', value: bmi != null ? String(bmi) : '—' },
+                ].map(s => (
+                  <div key={s.label} className="flex flex-col items-center gap-1 px-1 py-2 rounded-xl hover:bg-purple-600/5 cursor-pointer">
+                    <span className="text-lg">{s.icon}</span>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">{s.label}</span>
+                    <span className="text-[15px] font-bold text-[#1a1040]">{s.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <LanguageSwitcher />
+      </div>
+    </header>
+  );
+}
