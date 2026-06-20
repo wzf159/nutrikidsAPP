@@ -81,6 +81,12 @@ export default async function childrenRoutes(app: FastifyInstance) {
         weightKg: d.weightKg,
         stageKey: d.stageKey,
         avatarEmoji: d.avatarEmoji,
+        ...(d.allergenIds !== undefined && {
+          allergens: {
+            deleteMany: {},
+            create: d.allergenIds.map((allergenId) => ({ allergenId })),
+          },
+        }),
       },
       include: { goals: true, nutrients: true, allergens: true },
     });

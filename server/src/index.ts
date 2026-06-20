@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import allergensRoutes from './routes/allergens.js';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import './types.js';
@@ -37,6 +38,7 @@ app.get('/health', async () => ({ ok: true }));
 
 await app.register(authRoutes);
 await app.register(childrenRoutes);
+await app.register(allergensRoutes);  
 await app.register(productRoutes);
 await app.register(analysisRoutes);
 await app.register(feedbackRoutes);

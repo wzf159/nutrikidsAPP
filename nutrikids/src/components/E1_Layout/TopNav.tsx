@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-import { getChildren, type Child } from '../../services/api';
+//import { getChildren, type Child } from '../../services/api';
 import { AGE_GROUPS, bmiOf } from '../../data/growth';
+import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
 
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
   { icon: '🍊', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
@@ -24,6 +25,11 @@ export default function TopNav() {
   const loadChild = () => {
     getChildren().then(cs => setChild(cs[0] ?? null)).catch(() => setChild(null));
   };
+  const [allergenDict, setAllergenDict] = useState<Allergen[]>([]);
+
+  useEffect(() => {
+    getAllergens().then(setAllergenDict).catch(() => {});
+  }, []);
 
   useEffect(() => {
     loadChild();
@@ -49,6 +55,11 @@ export default function TopNav() {
     : '';
   const stage = child ? AGE_GROUPS.find(g => g.key === child.stageKey) : null;
   const bmi = child?.heightCm && child?.weightKg ? bmiOf(child.heightCm, child.weightKg) : null;
+  const childAllergens = child
+  ? child.allergens
+      .map(ca => allergenDict.find(a => a.id === ca.allergenId))
+      .filter((a): a is Allergen => !!a)
+  : [];
   const avatar = child?.avatarEmoji ?? '👶';
 
   return (
@@ -74,6 +85,16 @@ export default function TopNav() {
             {icon} {t(key)}
           </NavLink>
         ))}
+         <NavLink
+          to="/about"
+          className={({ isActive }) =>
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            }`
+          }
+        >
+          ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
+        </NavLink>
         <NavLink
           to="/admin"
           className={({ isActive }) =>
@@ -94,6 +115,7 @@ export default function TopNav() {
         >
           ⚙️ {t('nav.devAdmin')}
         </NavLink>
+       
       </nav>
 
       <div className="ml-auto flex items-center gap-3">
@@ -123,11 +145,20 @@ export default function TopNav() {
                 <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[22px] flex-shrink-0">{avatar}</span>
                 <div>
                   <p className="text-[15px] font-bold text-[#1a1040]">{child.name}</p>
-                  <p className="text-xs font-semibold text-gray-400 mt-0.5">
-                    {[stage ? t(`child.stage.${stage.key}`) || (isZh ? stage.badgeZh : i18n.language === 'es' ? stage.badgeEs : stage.badge) : ageText,
-                      child.gender ? { boy: isZh ? '男孩' : i18n.language === 'es' ? 'Niño' : 'Boy', girl: isZh ? '女孩' : i18n.language === 'es' ? 'Niña' : 'Girl', other: '' }[child.gender] : '']
-                      .filter(Boolean).join(' · ')}
-                  </p>
+                  <div className="mt-0.5 flex flex-col gap-0.5">
+                    <p className="text-xs font-semibold text-gray-400">
+                      {stage
+                        ? (i18n.exists(`child.stage.${stage.key}`)
+                            ? t(`child.stage.${stage.key}`)
+                            : (isZh ? stage.badgeZh : i18n.language === 'es' ? stage.badgeEs : stage.badge))
+                        : ageText}
+                    </p>
+                    {child.gender && child.gender !== 'other' && (
+                      <p className="text-xs font-semibold text-gray-400">
+                        {{ boy: isZh ? '男孩' : i18n.language === 'es' ? 'Niño' : 'Boy', girl: isZh ? '女孩' : i18n.language === 'es' ? 'Niña' : 'Girl' }[child.gender]}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
@@ -150,7 +181,27 @@ export default function TopNav() {
                   </div>
                 ))}
               </div>
-            </div>
+              {childAllergens.length > 0 && (
+                <>
+                  <div className="h-px bg-purple-600/8" />
+                  <div className="px-4 py-3">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2">
+                      {isZh ? '过敏原' : i18n.language === 'es' ? 'Alérgenos' : 'Allergens'}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {childAllergens.map(a => (
+                        <span
+                          key={a.id}
+                          className="flex items-center gap-1 px-2 py-1 rounded-full bg-[rgba(236,72,153,0.08)] border border-[rgba(236,72,153,0.2)] text-[11px] font-bold text-[#be185d]"
+                        >
+                          {a.icon} {isZh ? (a.nameZh ?? a.name) : a.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+                          </div>
           )}
         </div>
 

@@ -14,6 +14,8 @@ import GuidelineDetail from './pages/admin/GuidelineDetail';
 import ModelDetail from './pages/admin/ModelDetail';
 import ScienceInsightsDesign from './pages/admin/ScienceInsightsDesign';
 import FeedbackStats from './pages/admin/FeedbackStats';
+import Footer from './components/Footer';  // 加这行 import
+import About from './pages/About';
 
 export default function App() {
   return (
@@ -29,6 +31,7 @@ export default function App() {
             <Route path="/growth-profile" element={<GrowthProfile />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/food-fact" element={<FoodFactVisualization />} />
+            <Route path="/about" element={<About />} />
             <Route path="/admin" element={<ManagementLayout />}>
               <Route index element={<Navigate to="feedback-stats" replace />} />
               <Route path="feedback-stats" element={<FeedbackStats />} />
@@ -43,6 +46,7 @@ export default function App() {
             </Route>
           </Routes>
         </main>
+        <Footer />   {/* 加这行 */}
       </div>
     </BrowserRouter>
   );

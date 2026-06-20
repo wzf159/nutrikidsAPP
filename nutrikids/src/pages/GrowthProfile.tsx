@@ -135,7 +135,7 @@ export default function GrowthProfile() {
                 <p className="text-4xl mb-3">📏⚖️📐</p>
                 <p className="font-bold text-gray-700 mb-1">{isZh ? '还没有身体数据' : isEs ? 'No hay mediciones corporales aún' : 'No body measurements yet'}</p>
                 <p className="text-sm text-gray-500 mb-5">{isZh ? '填写孩子的身高体重后，即可对比同龄人百分位。' : isEs ? 'Agrega la altura y peso de tu hijo para comparar con otros niños.' : "Add your child's height & weight to compare against peers."}</p>
-                <button onClick={() => navigate('/onboarding')} className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-sm font-bold shadow-[0_4px_16px_rgba(137,60,227,0.3)] hover:scale-[1.04] transition" style={{ fontFamily: 'Fredoka One, cursive' }}>
+                <button onClick={() => navigate('/onboarding')} className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-sm font-bold shadow-[0_4px_16px_rgba(137,60,227,0.3)] hover:scale-[1.04] transition" style={{ fontFamily: 'Poppins, sans-serif'  }}>
                   ✨ {isZh ? '去填写档案' : isEs ? 'Configurar perfil' : 'Set up profile'}
                 </button>
               </div>

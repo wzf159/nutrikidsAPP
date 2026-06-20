@@ -103,7 +103,6 @@ export interface AnalysisResult {
   grade: string;
   view: AnalysisView;
 }
-
 export interface Child {
   id: string;
   name: string;
@@ -114,6 +113,7 @@ export interface Child {
   weightKg: number | null;
   stageKey: string | null;
   avatarEmoji: string | null;
+  allergens: { allergenId: number }[];
 }
 
 export interface ChildInput {
@@ -125,6 +125,19 @@ export interface ChildInput {
   weightKg?: number;
   stageKey?: string;
   avatarEmoji?: string;
+  allergenIds?: number[];
+}
+
+export interface Allergen {
+  id: number;
+  code: string;
+  name: string;
+  nameZh: string | null;
+  icon: string | null;
+}
+
+export async function getAllergens() {
+  return asJson<Allergen[]>(await authedFetch('/allergens'));
 }
 
 export async function getChildren() {

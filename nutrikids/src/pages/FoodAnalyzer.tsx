@@ -452,7 +452,7 @@ export default function FoodAnalyzer() {
             } else {
               uploadInputRef.current?.click();
             }
-          }} className="px-5 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-sm font-bold shadow-[0_2px_12px_rgba(236,72,153,0.3)] whitespace-nowrap hover:scale-[1.04] transition" style={{ fontFamily: 'Fredoka One, cursive' }}>
+          }} className="px-5 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-sm font-bold shadow-[0_2px_12px_rgba(236,72,153,0.3)] whitespace-nowrap hover:scale-[1.04] transition" style={{ fontFamily: 'Poppins, sans-serif'  }}>
             🔮 {isZh ? '分析' : isEs ? 'Analizar' : 'Analyze'}
           </button>
 
@@ -513,7 +513,7 @@ export default function FoodAnalyzer() {
               }`}>
                 {phase.source === 'local' && (isZh ? '🗄️ 本地数据库' : isEs ? '🗄️ Base de datos local' : '🗄️ Local Database')}
                 {phase.source === 'openfoodfacts' && (isZh ? '🌐 Open Food Facts' : isEs ? '🌐 Open Food Facts' : '🌐 Open Food Facts')}
-                {phase.source === 'ai' && (isZh ? '🤖 AI 生成数据' : isEs ? '🤖 Datos generados por AI' : '🤖 AI Generated')}
+                {phase.source === 'ai' && (isZh ? '🤖 图片识别中' : isEs ? '🤖 Reconocimiento de imágenes en curso' : '🤖 Image recognition in progress')}
                 {!phase.source && (isZh ? '📊 数据来源' : isEs ? '📊 Fuente de datos' : '📊 Data Source')}
               </div>
             </div>
@@ -593,7 +593,7 @@ export default function FoodAnalyzer() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-[14px]">
                           <div className="w-[64px] h-[64px] rounded-full flex flex-col items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(90,168,96,0.35)]" style={{ background: `linear-gradient(135deg,${grade.color},${grade.color})` }}>
-                            <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Fredoka One, cursive' }}>{grade.letter}</span>
+                            <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif'  }}>{grade.letter}</span>
                             <span className="text-[9px] font-bold text-white/85 tracking-wider">{isZh ? grade.zh : isEs ? grade.es : grade.en}</span>
                           </div>
                           <div className="flex-1">
@@ -868,7 +868,7 @@ export default function FoodAnalyzer() {
                     <div className="border-t border-[rgba(200,160,100,0.25)] pt-4 mt-3">
                       <h4 className="font-extrabold text-[#a07040] tracking-wide mb-2">{isZh ? '加工程度' : 'PROCESSING'}</h4>
                       <div className="flex items-baseline gap-2.5 mb-3">
-                        <span className="text-[26px] font-extrabold text-[#ea6c00] italic" style={{ fontFamily: 'Fredoka One, cursive' }}>NOVA {view.product.novaScore}</span>
+                        <span className="text-[26px] font-extrabold text-[#ea6c00] italic" style={{ fontFamily: 'Poppins, sans-serif'  }}>NOVA {view.product.novaScore}</span>
                         <span className="text-sm font-semibold text-[#f97316]" style={{ fontFamily: 'Nunito, sans-serif' }}>{isZh ? nova.zh : nova.en}</span>
                       </div>
 

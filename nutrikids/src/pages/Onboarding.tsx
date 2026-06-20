@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { createChild, getChildren, updateChild, type Child } from '../services/api';
+import { createChild, getChildren, updateChild, getAllergens, type Child, type Allergen } from '../services/api';
 import {
   AGE_GROUPS, bmiCategory, bmiOf, bmiPercentile, ordinal, type AgeGroup,
 } from '../data/growth';
@@ -60,6 +60,17 @@ export default function Onboarding() {
   const [wKg, setWKg] = useState('');
   const [wLb, setWLb] = useState('');
 
+  // 过敏原
+  const [allergenOptions, setAllergenOptions] = useState<Allergen[]>([]);
+  const [allergenIds, setAllergenIds] = useState<number[]>([]);
+
+  // 关闭确认
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+
+  useEffect(() => {
+    getAllergens().then(setAllergenOptions).catch(() => {});
+  }, []);
+
   useEffect(() => {
     getChildren().then(cs => {
       const c = cs[0];
@@ -74,6 +85,7 @@ export default function Onboarding() {
       }
       if (c.heightCm) setHCm(String(c.heightCm));
       if (c.weightKg) setWKg(String(c.weightKg));
+      if (c.allergens) setAllergenIds(c.allergens.map(a => a.allergenId));
     }).catch(() => {});
   }, []);
 
@@ -122,6 +134,25 @@ export default function Onboarding() {
     setWUnit(u as 'kg' | 'lb');
   };
 
+  function toggleAllergen(id: number) {
+    setAllergenIds(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  }
+
+  function handleCloseClick() {
+    const hasData = name.trim() || gender || group || hCm || hFt || wKg || wLb || allergenIds.length > 0;
+    if (!hasData) {
+      navigate(-1);
+    } else {
+      setShowCloseConfirm(true);
+    }
+  }
+
+  function confirmClose() {
+    navigate(-1);
+  }
+
   async function finish() {
     if (!group || heightCm <= 0 || weightKg <= 0) return;
     setSaving(true);
@@ -134,6 +165,7 @@ export default function Onboarding() {
       ageMonths: group.unit === 'm' ? exactAgeNum : undefined,
       heightCm: Math.round(heightCm * 10) / 10,
       weightKg: Math.round(weightKg * 10) / 10,
+      allergenIds,
       avatarEmoji: gender === 'girl' ? '👧' : gender === 'boy' ? '👦' : '🧒',
     };
     try {
@@ -152,6 +184,7 @@ export default function Onboarding() {
     { emoji: '👶', title: isZh ? '我们在为谁记录？' : isEs ? '¿A quién seguimos?' : 'Who are we tracking?', desc: isZh ? '给孩子起一个档案昵称。' : isEs ? 'Dale un apodo a tu hijo para su perfil.' : 'Give your child a nickname for their profile.' },
     { emoji: '🎂', title: isZh ? '孩子多大了？' : isEs ? '¿Cuántos años tiene?' : 'How old are they?', desc: isZh ? '先选年龄段，再填写精确年龄。' : isEs ? 'Selecciona un grupo de edad, luego ingresa la edad exacta.' : 'Select an age group, then enter the exact age.' },
     { emoji: '📏', title: isZh ? '身体数据' : isEs ? 'Medidas corporales' : 'Body measurements', desc: isZh ? '用于个性化的成长百分位追踪。' : isEs ? 'Utilizado para el seguimiento personalizado de percentiles de crecimiento.' : 'Used to personalise growth percentile tracking.' },
+    { emoji: '🚫', title: isZh ? '有过敏需要注意吗？' : isEs ? '¿Alguna alergia?' : 'Any allergies to watch?', desc: isZh ? '选择孩子已知的过敏原（可跳过）。' : isEs ? 'Selecciona alérgenos conocidos (opcional).' : 'Select known allergens (optional).' },
   ][step - 1];
 
   const genderLabel = isZh ? '性别' : isEs ? 'Género' : 'Gender';
@@ -170,17 +203,64 @@ export default function Onboarding() {
   const goLabel = isZh ? '🎉 出发！' : isEs ? '🎉 ¡Vamos!' : "🎉 Let's go!";
   const goodLabel = isZh ? '✓ 好的！' : isEs ? '✓ ¡Genial!' : '✓ Got it!';
   const enterValueLabel = isZh ? `⚠️ 请输入` : isEs ? `⚠️ Ingresa` : `⚠️ Please enter`;
-  const stepLabel = isZh ? `第 ${step} / 3 步` : isEs ? `Paso ${step} / 3` : `Step ${step} / 3`;
+  const stepLabel = isZh ? `第 ${step} / 4 步` : isEs ? `Paso ${step} / 4` : `Step ${step} / 4`;
+
+  const closeConfirmTitle = isZh ? '确定要退出吗？' : isEs ? '¿Salir sin guardar?' : 'Exit without saving?';
+  const closeConfirmDesc = isZh ? '已填写的信息将不会被保存。' : isEs ? 'La información ingresada no se guardará.' : 'Your entered information will not be saved.';
+  const closeConfirmYes = isZh ? '确定退出' : isEs ? 'Sí, salir' : 'Yes, exit';
+  const closeConfirmNo = isZh ? '继续填写' : isEs ? 'Seguir' : 'Keep editing';
 
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-10 bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#ccd8f5]">
-      <div className="w-full max-w-md bg-white/96 rounded-[24px] shadow-[0_24px_64px_rgba(80,40,160,0.18),0_4px_16px_rgba(0,0,0,0.08)] p-9 animate-[ob-pop_0.22s_cubic-bezier(0.34,1.56,0.64,1)]">
+      <div className="relative w-full max-w-md bg-white/96 rounded-[24px] shadow-[0_24px_64px_rgba(80,40,160,0.18),0_4px_16px_rgba(0,0,0,0.08)] p-9 animate-[ob-pop_0.22s_cubic-bezier(0.34,1.56,0.64,1)]">
+
+        {/* 关闭按钮 */}
+        <button
+          type="button"
+          onClick={handleCloseClick}
+          aria-label="Close"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-black/5 transition text-lg font-bold"
+        >
+          ✕
+        </button>
+
+        {/* 关闭确认弹层 */}
+        {showCloseConfirm && (
+          <div className="absolute inset-0 z-10 rounded-[24px] bg-white/98 flex flex-col items-center justify-center px-8 text-center">
+            <div className="text-4xl mb-3">⚠️</div>
+            <h3 className="text-lg font-bold text-[#1a1040] mb-1.5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              {closeConfirmTitle}
+            </h3>
+            <p className="text-sm text-gray-500 font-semibold mb-6" style={{ fontFamily: 'Nunito, sans-serif' }}>
+              {closeConfirmDesc}
+            </p>
+            <div className="flex gap-2.5 w-full">
+              <button
+                type="button"
+                onClick={() => setShowCloseConfirm(false)}
+                className="flex-1 py-3 rounded-xl bg-black/5 text-gray-600 text-sm font-bold hover:bg-black/9 transition"
+                style={{ fontFamily: 'Nunito, sans-serif' }}
+              >
+                {closeConfirmNo}
+              </button>
+              <button
+                type="button"
+                onClick={confirmClose}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-bold hover:opacity-90 transition"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                {closeConfirmYes}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="relative flex items-center justify-center gap-3 mb-7">
           <span className="absolute left-0 text-xs font-extrabold text-[#a78bfa] whitespace-nowrap font-[Nunito,sans-serif]">
             {stepLabel}
           </span>
           <div className="flex gap-1.5">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <span
                 key={i}
                 className={`h-1 rounded-full transition-all ${
@@ -362,7 +442,7 @@ export default function Onboarding() {
             {bmi != null && (
               <div className="flex items-center gap-2.5 rounded-xl border-[1.5px] border-[rgba(137,60,227,0.2)] bg-gradient-to-r from-[rgba(137,60,227,0.08)] to-[rgba(236,72,153,0.06)] px-4 py-3 mb-5 min-h-[52px]">
                 <span className="text-[13px] font-bold text-[#5b21b6]" style={{ fontFamily: 'Poppins, sans-serif' }}>BMI</span>
-                <span className="text-2xl font-extrabold text-[#893ce3]" style={{ fontFamily: 'Fredoka One, cursive' }}>{bmi}</span>
+                <span className="text-2xl font-extrabold text-[#893ce3]" style={{ fontFamily: 'Poppins, sans-serif'  }}>{bmi}</span>
                 {bmiPct != null && bmiCat ? (
                   <span className="ml-auto text-right">
                     <span className="block text-sm font-extrabold text-[#893ce3]">
@@ -376,15 +456,57 @@ export default function Onboarding() {
               </div>
             )}
 
-            {error && <p className="text-sm text-red-600 font-semibold mb-3">⚠️ {error}</p>}
-
             <div className="flex gap-2.5">
               <button type="button" onClick={() => setStep(2)} className="px-5 py-3.5 rounded-xl bg-black/5 text-gray-500 text-sm font-bold hover:bg-black/9 transition" style={{ fontFamily: 'Nunito, sans-serif' }}>
                 ← {backLabel}
               </button>
               <button
                 type="button"
-                disabled={heightCm <= 0 || weightKg <= 0 || saving}
+                disabled={heightCm <= 0 || weightKg <= 0}
+                onClick={() => setStep(4)}
+                className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white font-bold disabled:opacity-40 hover:opacity-90 transition hover:-translate-y-0.5"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                {continueLabel}
+              </button>
+            </div>
+          </>
+        )}
+
+        {step === 4 && (
+          <>
+            <div className="grid grid-cols-3 gap-2.5 mb-6">
+              {allergenOptions.map(a => {
+                const active = allergenIds.includes(a.id);
+                return (
+                  <button
+                    key={a.id}
+                    type="button"
+                    onClick={() => toggleAllergen(a.id)}
+                    className={`flex flex-col items-center gap-1 px-2 py-3 rounded-2xl border-[1.5px] text-2xl transition ${
+                      active
+                        ? 'border-[#ec4899] bg-[rgba(236,72,153,0.08)] -translate-y-0.5 shadow-[0_4px_12px_rgba(236,72,153,0.15)]'
+                        : 'border-[rgba(124,58,237,0.15)] bg-white/80 hover:border-[#893ce3] hover:-translate-y-0.5'
+                    }`}
+                  >
+                    {a.icon}
+                    <span className={`text-[11px] font-bold ${active ? 'text-[#be185d]' : 'text-gray-500'}`} style={{ fontFamily: 'Nunito, sans-serif' }}>
+                      {isZh ? (a.nameZh ?? a.name) : a.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {error && <p className="text-sm text-red-600 font-semibold mb-3">⚠️ {error}</p>}
+
+            <div className="flex gap-2.5">
+              <button type="button" onClick={() => setStep(3)} className="px-5 py-3.5 rounded-xl bg-black/5 text-gray-500 text-sm font-bold hover:bg-black/9 transition" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                ← {backLabel}
+              </button>
+              <button
+                type="button"
+                disabled={saving}
                 onClick={finish}
                 className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white font-bold disabled:opacity-40 hover:opacity-90 transition hover:-translate-y-0.5"
                 style={{ fontFamily: 'Poppins, sans-serif' }}
