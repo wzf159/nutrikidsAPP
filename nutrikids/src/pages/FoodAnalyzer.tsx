@@ -792,7 +792,7 @@ export default function FoodAnalyzer() {
                             </p>
                             <p>
                               {isZh
-                                ? `每份约占每日需求的 ${selectedNutrientData.dailyValue}%${selectedNutrientData.value != null ? `（${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}/份）` : ''}。`
+                                ? `每份约占每日需求(Daily Value, DV)的 ${selectedNutrientData.dailyValue}%${selectedNutrientData.value != null ? `（${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}/份）` : ''}。`
                                 : `~${selectedNutrientData.dailyValue}% DV per serving${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`}
                             </p>
                           </>

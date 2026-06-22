@@ -35,17 +35,22 @@ async function main() {
     { id: 4, code: 'soy', name: 'Soy', nameZh: '大豆', icon: '🫛' },
     { id: 5, code: 'wheat', name: 'Wheat', nameZh: '小麦', icon: '🌾' },
     { id: 6, code: 'peanuts', name: 'Peanuts', nameZh: '花生', icon: '🥜' },
+    { id: 7, code: 'fish', name: 'Fish', nameZh: '鱼类', icon: '🐟' },
+    { id: 8, code: 'shellfish', name: 'Shellfish', nameZh: '贝类/甲壳类', icon: '🦐' },
+    { id: 9, code: 'sesame', name: 'Sesame', nameZh: '芝麻', icon: '🫙' },
   ];
   for (const a of allergens) await prisma.allergen.upsert({ where: { id: a.id }, create: a, update: a });
+  //for (const a of allergens) await prisma.allergen.upsert({ where: { id: a.id }, create: a, update: a });
 
   // ---------- 字典：发育目标 ----------
   const goals = [
-    { id: 1, icon: '🧠', label: 'Learning & Focus', labelZh: '学习与专注' },
-    { id: 2, icon: '🦴', label: 'Bone Development', labelZh: '骨骼发育' },
-    { id: 3, icon: '⚡', label: 'Daily Energy', labelZh: '日常能量' },
-    { id: 4, icon: '🛡️', label: 'Immune Support', labelZh: '免疫支持' },
-    { id: 5, icon: '🦠', label: 'Gut Health', labelZh: '肠道健康' },
-    { id: 6, icon: '🧠', label: 'Brain Development', labelZh: '大脑发育' },
+    { id: 1, icon: '🧠', label: 'Brain Development',  labelZh: '大脑发育'  },
+    { id: 2, icon: '🦴', label: 'Bone Development',   labelZh: '骨骼发育'  },
+    { id: 3, icon: '📏', label: 'Healthy Growth',     labelZh: '健康成长'  },
+    { id: 4, icon: '💪', label: 'Muscle Development', labelZh: '肌肉发育'  },
+    { id: 5, icon: '🛡️', label: 'Immune Development', labelZh: '免疫发育'  },
+    { id: 6, icon: '🦠', label: 'Gut Development',    labelZh: '肠道发育'  },
+    { id: 7, icon: '😌', label: 'Emotional & Mood',   labelZh: '情绪与心理' },
   ];
   for (const g of goals) await prisma.developmentGoal.upsert({ where: { id: g.id }, create: g, update: g });
 
@@ -198,7 +203,7 @@ async function main() {
         age: 8,
         stageKey: 'school_age',
         avatarEmoji: '👦',
-        goals: { create: [2, 3, 4, 6].map((goalId) => ({ goalId })) }, // 骨骼/能量/免疫/大脑
+        goals: { create: [1, 2, 3, 5].map((goalId) => ({ goalId })) }, // 骨骼/能量/免疫/大脑
         nutrients: { create: [1, 2, 5, 6, 12, 13].map((nutrientId) => ({ nutrientId })) },
         allergens: { create: [{ allergenId: 6 }] }, // 花生过敏
       },

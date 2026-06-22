@@ -4,6 +4,24 @@ import { prisma } from './prisma.js';
 const SUGAR_NUTRIENT_ID = 15;
 const ENERGY_NUTRIENT_ID = 16;
 
+type DevTier = 'core' | 'important' | 'supporting';
+const DEV_TIERS: Record<number, { male: DevTier; female: DevTier }[]> = {
+  1: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'important'},{male:'supporting',female:'supporting'}],
+  2: [{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'}],
+  3: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'important',female:'supporting'}],
+  4: [{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'important'},{male:'core',female:'important'}],
+  5: [{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'}],
+  6: [{male:'core',female:'core'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'core'}],
+  7: [{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'core'}],
+};
+
+function stageIdx(stageKey: string | null): number {
+  const map: Record<string, number> = {
+    '0-6m':0,'7-12m':1,'1-3y':2,'4-8y':3,'9-13y':4,'14-18y':5,
+  };
+  return map[stageKey ?? ''] ?? 3;
+}
+
 const WEIGHTS = {
   nutrientDensity: 0.4,
   riskIngredients: 0.3,
@@ -12,16 +30,19 @@ const WEIGHTS = {
 } as const;
 
 // 发育目标 ↔ 营养素 静态映射（营养学常识，后续可由营养师校准/入库）
-// goalId 见 seed: 1学习专注 2骨骼 3日常能量 4免疫 5肠道 6大脑
+// nutrientId 参照 seed.ts:
+// 1=Iron 2=Zinc 3=Omega-3 4=B Vitamins 5=Calcium 6=Vit D
+// 7=Phosphorus 8=Complex Carbs 9=Vit C 10=Selenium
+// 11=Vit A 12=Vit B12 13=Protein 14=Potassium
 const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
-  1: [1, 3, 4, 2],          // Learning & Focus: 铁/Omega-3/B族/锌
-  2: [5, 6, 7, 13],         // Bone: 钙/维D/磷/蛋白质
-  3: [8, 4, 1, 14],         // Daily Energy: 复合碳水/B族/铁/钾
-  4: [9, 6, 2, 11, 10, 12], // Immune: 维C/维D/锌/维A/硒/B12
-  5: [2, 12],               // Gut: 锌/B12
-  6: [3, 1, 2, 12, 4],      // Brain: Omega-3/铁/锌/B12/B族
+  1: [3, 1, 2, 12, 4],         // 🧠 Brain: Omega-3/Iron/Zinc/B12/B族
+  2: [5, 6, 7, 13],            // 🦴 Bone: 钙/维D/磷/蛋白质
+  3: [13, 1, 2, 11, 4, 8],     // 📏 Healthy Growth: 蛋白质/Iron/Zinc/维A/B族/复合碳水
+  4: [13, 1, 2, 6, 14, 8],     // 💪 Muscle: 蛋白质/Iron/Zinc/维D/钾/复合碳水
+  5: [11, 9, 6, 2, 1, 13, 10], // 🛡️ Immune: 维A/维C/维D/Zinc/Iron/蛋白质/硒
+  6: [1, 3, 2, 12],            // 🦠 Gut: Iron/Omega-3/Zinc/B12
+  7: [3, 1, 2, 6, 4],          // 😌 Mood: Omega-3/Iron/Zinc/维D/B族
 };
-
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
 export interface ScoreInput {
@@ -139,12 +160,12 @@ export async function scoreFood(input: ScoreInput) {
     }
   }
 
-  const tierOf = (goalId: number): 'core' | 'important' | 'supporting' | null => {
-    const s = goalSupport[goalId] ?? 0;
-    if (s >= 35) return 'core';
-    if (s >= 18) return 'important';
-    if (s > 0) return 'supporting';
-    return null;
+  const ageIdx = stageIdx(child.stageKey);
+  const genderKey = child.gender === 'girl' ? 'female' : 'male';
+  
+  const devTierOf = (goalId: number): DevTier | null => {
+    if (!childGoalIds.has(goalId)) return null;
+    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? 'supporting';
   };
 
   const viewGoals = allGoals.map((g) => ({
@@ -153,7 +174,8 @@ export async function scoreFood(input: ScoreInput) {
     label: g.label,
     labelZh: g.labelZh,
     selected: childGoalIds.has(g.id),
-    tier: childGoalIds.has(g.id) ? tierOf(g.id) : null,
+    tier: devTierOf(g.id),
+    //tier: childGoalIds.has(g.id) ? tierOf(g.id) : null,
     supportDV: Math.round(goalSupport[g.id] ?? 0),
   }));
 

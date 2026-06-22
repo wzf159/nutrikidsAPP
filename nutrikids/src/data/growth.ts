@@ -5,6 +5,7 @@
  *  - CDC BMI-for-age charts 2000（BMI 按年龄段/性别百分位）
  *  - CDC Growth Charts 2000（8 岁身高/体重百分位样例）
  *  - IOM Dietary Reference Intakes（每日营养推荐量）
+ *  - Children's Nutrition Development Matrix（发育目标，NIH ODS / IOM DRI）
  *
  * ⚠️ 后续应迁移到后端参考数据库（见 docs/reference-db-plan.md），
  *    由 CDC LMS 全表与 DRI 全表驱动，而非此处的离散样本。
@@ -15,43 +16,54 @@ export type StageKey = '0-6m' | '7-12m' | '1-3y' | '4-8y' | '9-13y' | '14-18y';
 export interface AgeGroup {
   idx: number;
   key: StageKey;
-  label: string;          // 4–8y
-  name: string;           // Preschool
-  nameZh: string;         // 学龄前
-  nameEs: string;         // Preescolar
-  badge: string;          // Age 4–8
-  badgeZh: string;        // 4–8 岁
-  badgeEs: string;        // Edad 4–8
+  label: string;
+  name: string;
+  nameZh: string;
+  nameEs: string;
+  badge: string;
+  badgeZh: string;
+  badgeEs: string;
   icon: string;
-  unit: 'm' | 'y';        // 精确年龄的输入单位
+  unit: 'm' | 'y';
   min: number;
   max: number;
 }
 
-
 export const AGE_GROUPS: AgeGroup[] = [
-  { idx: 0, key: '0-6m',   label: '0–6m',   name: 'Baby',      nameZh: '婴儿',   nameEs: 'Bebé',     badge: 'Age 0–6m',  badgeZh: '0–6 月',   badgeEs: 'Edad 0–6m',  icon: '🍼', unit: 'm', min: 0,  max: 6 },
-  { idx: 1, key: '7-12m',  label: '7–12m',  name: 'Baby',      nameZh: '婴儿',   nameEs: 'Bebé',     badge: 'Age 7–12m', badgeZh: '7–12 月',  badgeEs: 'Edad 7–12m', icon: '🧸', unit: 'm', min: 7,  max: 12 },
-  { idx: 2, key: '1-3y',   label: '1–3y',   name: 'Toddler',   nameZh: '幼儿',   nameEs: 'Niño',     badge: 'Age 1–3',   badgeZh: '1–3 岁',   badgeEs: 'Edad 1–3',   icon: '🧩', unit: 'y', min: 1,  max: 3 },
-  { idx: 3, key: '4-8y',   label: '4–8y',   name: 'Preschool', nameZh: '学龄前', nameEs: 'Preescolar', badge: 'Age 4–8',   badgeZh: '4–8 岁',   badgeEs: 'Edad 4–8',   icon: '🎨', unit: 'y', min: 4,  max: 8 },
-  { idx: 4, key: '9-13y',  label: '9–13y',  name: 'Grader',    nameZh: '学龄期', nameEs: 'Escolar',  badge: 'Age 9–13',  badgeZh: '9–13 岁',  badgeEs: 'Edad 9–13',  icon: '📚', unit: 'y', min: 9,  max: 13 },
+  { idx: 0, key: '0-6m',   label: '0–6m',   name: 'Baby',      nameZh: '婴儿',   nameEs: 'Bebé',        badge: 'Age 0–6m',  badgeZh: '0–6 月',   badgeEs: 'Edad 0–6m',  icon: '🍼', unit: 'm', min: 0,  max: 6 },
+  { idx: 1, key: '7-12m',  label: '7–12m',  name: 'Baby',      nameZh: '婴儿',   nameEs: 'Bebé',        badge: 'Age 7–12m', badgeZh: '7–12 月',  badgeEs: 'Edad 7–12m', icon: '🧸', unit: 'm', min: 7,  max: 12 },
+  { idx: 2, key: '1-3y',   label: '1–3y',   name: 'Toddler',   nameZh: '幼儿',   nameEs: 'Niño',        badge: 'Age 1–3',   badgeZh: '1–3 岁',   badgeEs: 'Edad 1–3',   icon: '🧩', unit: 'y', min: 1,  max: 3 },
+  { idx: 3, key: '4-8y',   label: '4–8y',   name: 'Preschool', nameZh: '学龄前', nameEs: 'Preescolar',  badge: 'Age 4–8',   badgeZh: '4–8 岁',   badgeEs: 'Edad 4–8',   icon: '🎨', unit: 'y', min: 4,  max: 8 },
+  { idx: 4, key: '9-13y',  label: '9–13y',  name: 'Grader',    nameZh: '学龄期', nameEs: 'Escolar',     badge: 'Age 9–13',  badgeZh: '9–13 岁',  badgeEs: 'Edad 9–13',  icon: '📚', unit: 'y', min: 9,  max: 13 },
   { idx: 5, key: '14-18y', label: '14–18y', name: 'Teen',      nameZh: '青少年', nameEs: 'Adolescente', badge: 'Age 14–18', badgeZh: '14–18 岁', badgeEs: 'Edad 14–18', icon: '🧑', unit: 'y', min: 14, max: 18 },
 ];
 
-export function stageIdxForChild(stageKey: string | null, age: number | null): number {
+export function stageIdxForChild(
+  stageKey: string | null | undefined,
+  age: number | null | undefined,
+  ageMonths?: number | null,
+): number {
   const byKey = AGE_GROUPS.findIndex(g => g.key === stageKey);
   if (byKey >= 0) return byKey;
-  if (age == null) return 3;
-  if (age <= 0) return 1;
-  if (age <= 3) return 2;
-  if (age <= 8) return 3;
-  if (age <= 13) return 4;
+  const months = ageMonths ?? (age != null ? age * 12 : null);
+  if (months == null) return 3;
+  if (months <= 6)   return 0;
+  if (months <= 12)  return 1;
+  if (months <= 36)  return 2;
+  if (months <= 96)  return 3;
+  if (months <= 156) return 4;
   return 5;
 }
 
-/* ---------------- 发育目标（按年龄段分层） ---------------- */
+/* ================================================================
+ * 发育目标（按年龄段 × 性别分层）
+ * 数据来源: Children's Nutrition Development Matrix (NIH ODS / IOM DRI)
+ * ageIdx: 0=0-6m  1=7-12m  2=1-3y  3=4-8y  4=9-13y  5=14-18y
+ * ================================================================ */
 
 export type Tier = 'core' | 'important' | 'supporting';
+export interface TierByGender      { male: Tier;     female: Tier }
+export interface NutrientsByGender { male: string[];  female: string[] }
 
 export interface DevGoal {
   id: string;
@@ -59,55 +71,217 @@ export interface DevGoal {
   name: string;
   nameZh: string;
   nameEs: string;
-  nutrients: string[];      // 关键营养素
-  nutrientsZh: string[];
-  nutrientsEs: string[];
-  tiers: Tier[];            // 长度 6，对应 AGE_GROUPS
+  tiersByAge: TierByGender[];          // length 6
+  nutrientsByAge: NutrientsByGender[]; // length 6
+  nutrientsZhByAge: NutrientsByGender[]; // auto-filled
 }
 
+// 营养素英→中映射
+const N: Record<string, string> = {
+  'DHA': 'DHA', 'Choline': '胆碱', 'Iron': '铁', 'Vitamin B12': '维生素B12',
+  'Folate': '叶酸', 'Calcium': '钙', 'Calcium 1000mg/d': '钙(1000mg/天)',
+  'Calcium 1300mg/d': '钙(1300mg/天)', 'Vitamin D': '维生素D', 'Phosphorus': '磷',
+  'Protein': '蛋白质', 'Total Lipid': '总脂质', 'Zinc': '锌', 'Vitamin A': '维生素A',
+  'Vitamin C': '维生素C', 'Vitamin K': '维生素K', 'Magnesium': '镁', 'Potassium': '钾',
+  'Omega-3': 'Omega-3', 'Iodine': '碘', 'Selenium': '硒', 'Linoleic Acid': '亚油酸',
+  'Linolenic Acid': '亚麻酸', 'Lutein': '叶黄素', 'Zeaxanthin': '玉米黄质',
+  'Probiotics': '益生菌', 'Carbohydrate': '碳水化合物', 'Creatine': '肌酸',
+  'Tryptophan': '色氨酸', 'B-vitamins': 'B族维生素', 'Vitamin B6': '维生素B6',
+  'B12': '维生素B12', 'Fat': '脂肪', 'Fiber': '膳食纤维',
+};
+const zh = (list: string[]) => list.map(n => N[n] ?? n);
+
 export const DEV_GOALS: DevGoal[] = [
-  { id: 'brain',  emoji: '🧠', name: 'Brain Dev.',     nameZh: '大脑发育', nameEs: 'Desarrollo Cerebral', nutrients: ['Omega-3', 'Iron', 'Iodine'],                 nutrientsZh: ['Omega-3', '铁', '碘'],                 nutrientsEs: ['Omega-3', 'Hierro', 'Yodo'],                 tiers: ['core', 'core', 'core', 'important', 'important', 'supporting'] },
-  { id: 'bone',   emoji: '🦴', name: 'Bone Dev.',      nameZh: '骨骼发育', nameEs: 'Desarrollo Óseo',      nutrients: ['Calcium', 'Vit D', 'Protein'],               nutrientsZh: ['钙', '维生素D', '蛋白质'],               nutrientsEs: ['Calcio', 'Vit D', 'Proteína'],               tiers: ['core', 'core', 'core', 'core', 'core', 'important'] },
-  { id: 'growth', emoji: '🌱', name: 'Healthy Growth', nameZh: '健康成长', nameEs: 'Crecimiento Saludable', nutrients: ['Protein', 'Vit A', 'Zinc'],                  nutrientsZh: ['蛋白质', '维生素A', '锌'],                  nutrientsEs: ['Proteína', 'Vit A', 'Zinc'],                  tiers: ['core', 'core', 'core', 'core', 'important', 'supporting'] },
-  { id: 'muscle', emoji: '💪', name: 'Muscle Dev.',    nameZh: '肌肉发育', nameEs: 'Desarrollo Muscular',  nutrients: ['Protein', 'Vit D'],                          nutrientsZh: ['蛋白质', '维生素D'],                      nutrientsEs: ['Proteína', 'Vit D'],                      tiers: ['supporting', 'supporting', 'important', 'important', 'core', 'core'] },
-  { id: 'immune', emoji: '🛡️', name: 'Immune Dev.',    nameZh: '免疫发育', nameEs: 'Desarrollo Inmune',    nutrients: ['Vit A', 'Zinc', 'Vit D', 'Protein'],         nutrientsZh: ['维生素A', '锌', '维生素D', '蛋白质'],         nutrientsEs: ['Vit A', 'Zinc', 'Vit D', 'Proteína'],         tiers: ['core', 'core', 'important', 'important', 'supporting', 'supporting'] },
-  { id: 'gut',    emoji: '🦠', name: 'Gut Dev.',       nameZh: '肠道发育', nameEs: 'Desarrollo Intestinal', nutrients: ['Probiotics', 'Fiber'],                       nutrientsZh: ['益生菌', '膳食纤维'],                       nutrientsEs: ['Probióticos', 'Fibra'],                       tiers: ['important', 'important', 'important', 'supporting', 'supporting', 'supporting'] },
-  { id: 'vision', emoji: '👁️', name: 'Vision Dev.',    nameZh: '视力发育', nameEs: 'Desarrollo Visual',    nutrients: ['Vit A', 'Omega-3'],                          nutrientsZh: ['维生素A', 'Omega-3'],                      nutrientsEs: ['Vit A', 'Omega-3'],                      tiers: ['important', 'important', 'supporting', 'supporting', 'supporting', 'supporting'] },
-  { id: 'dental', emoji: '🦷', name: 'Dental Dev.',    nameZh: '牙齿发育', nameEs: 'Desarrollo Dental',    nutrients: ['Calcium', 'Fluoride'],                       nutrientsZh: ['钙', '氟'],                               nutrientsEs: ['Calcio', 'Fluoruro'],                       tiers: ['supporting', 'supporting', 'important', 'important', 'important', 'supporting'] },
+  {
+    id: 'brain', emoji: '🧠', name: 'Brain Development', nameZh: '大脑发育', nameEs: 'Desarrollo Cerebral',
+    tiersByAge: [
+      { male: 'core',       female: 'core'       },
+      { male: 'core',       female: 'core'       },
+      { male: 'core',       female: 'core'       },
+      { male: 'important',  female: 'important'  },
+      { male: 'supporting', female: 'important'  }, // ← 性别差异
+      { male: 'supporting', female: 'supporting' },
+    ],
+    nutrientsByAge: [
+      { male: ['DHA','Choline','Iron','Vitamin B12','Folate'],                female: ['DHA','Choline','Iron','Vitamin B12','Folate'] },
+      { male: ['DHA','Choline','Iron','Vitamin B6','Vitamin B12','Folate'],   female: ['DHA','Choline','Iron','Vitamin B6','Vitamin B12','Folate'] },
+      { male: ['Iron','Choline','DHA','Vitamin B12','Folate','Zinc'],         female: ['Iron','Choline','DHA','Vitamin B12','Folate','Zinc'] },
+      { male: ['Iron','Choline','Zinc','Iodine'],                             female: ['Iron','Choline','Zinc','Iodine'] },
+      { male: ['Iron','Omega-3','Choline','B12','Zinc'],                      female: ['Omega-3','Choline','B12','Zinc'] },
+      { male: ['Omega-3','Choline','Iron','Zinc'],                            female: ['Iron','Omega-3','Choline','B12','Zinc'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'bone', emoji: '🦴', name: 'Bone Development', nameZh: '骨骼发育', nameEs: 'Desarrollo Óseo',
+    tiersByAge: [
+      { male: 'supporting', female: 'supporting' },
+      { male: 'important',  female: 'important'  },
+      { male: 'important',  female: 'important'  },
+      { male: 'core',       female: 'core'       },
+      { male: 'core',       female: 'core'       },
+      { male: 'core',       female: 'core'       },
+    ],
+    nutrientsByAge: [
+      { male: ['Calcium','Vitamin D','Phosphorus'],                                female: ['Calcium','Vitamin D','Phosphorus'] },
+      { male: ['Calcium','Vitamin D','Phosphorus','Magnesium'],                    female: ['Calcium','Vitamin D','Phosphorus','Magnesium'] },
+      { male: ['Calcium','Vitamin D','Magnesium','Protein','Vitamin K'],           female: ['Calcium','Vitamin D','Magnesium','Protein','Vitamin K'] },
+      { male: ['Calcium 1000mg/d','Vitamin D','Phosphorus','Magnesium','Protein'], female: ['Calcium 1000mg/d','Vitamin D','Phosphorus','Magnesium','Protein'] },
+      { male: ['Calcium 1300mg/d','Vitamin D','Magnesium','Protein','Vitamin K'],  female: ['Calcium 1300mg/d','Magnesium','Protein','Vitamin K'] },
+      { male: ['Calcium 1300mg/d','Vitamin D','Magnesium','Protein','Zinc'],       female: ['Vitamin D','Magnesium','Protein','Zinc','Vitamin K'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'growth', emoji: '📏', name: 'Healthy Growth', nameZh: '健康成长', nameEs: 'Crecimiento Saludable',
+    tiersByAge: [
+      { male: 'core',      female: 'core'       },
+      { male: 'core',      female: 'core'       },
+      { male: 'important', female: 'important'  },
+      { male: 'core',      female: 'core'       },
+      { male: 'important', female: 'important'  },
+      { male: 'important', female: 'supporting' }, // ← 性别差异
+    ],
+    nutrientsByAge: [
+      { male: ['Protein','Total Lipid','DHA','Iron','Folate'],              female: ['Protein','Total Lipid','DHA','Iron','Folate'] },
+      { male: ['Protein','Iron','Zinc','Vitamin A','Linoleic Acid'],        female: ['Protein','Iron','Zinc','Vitamin A','Linoleic Acid'] },
+      { male: ['Protein','Iron','Zinc','Vitamin A','Folate','Carbohydrate'],female: ['Protein','Iron','Zinc','Vitamin A','Folate','Carbohydrate'] },
+      { male: ['Protein','Iron','Zinc','Vitamin A','Linolenic Acid'],       female: ['Protein','Iron','Zinc','Vitamin A','Linolenic Acid'] },
+      { male: ['Zinc','Iron','Vitamin A','Carbohydrate','Creatine'],        female: ['Protein','Zinc','Folate','Vitamin A'] },
+      { male: ['Zinc','Iron','Carbohydrate'],                               female: ['Protein','Folate','Zinc','Iodine'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'muscle', emoji: '💪', name: 'Muscle Development', nameZh: '肌肉发育', nameEs: 'Desarrollo Muscular',
+    tiersByAge: [
+      { male: 'supporting', female: 'supporting' },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'important',  female: 'important'  },
+      { male: 'core',       female: 'important'  }, // ← 性别差异
+      { male: 'core',       female: 'important'  }, // ← 性别差异
+    ],
+    nutrientsByAge: [
+      { male: ['Protein','Iron','Zinc'],                                         female: ['Protein','Iron','Zinc'] },
+      { male: ['Protein','Iron','Zinc','Vitamin D'],                             female: ['Protein','Iron','Zinc','Vitamin D'] },
+      { male: ['Protein','Iron','Zinc','Magnesium','Carbohydrate'],              female: ['Protein','Iron','Zinc','Magnesium','Carbohydrate'] },
+      { male: ['Protein','Iron','Zinc','Vitamin D','Potassium','Carbohydrate'],  female: ['Protein','Iron','Zinc','Vitamin D','Potassium','Carbohydrate'] },
+      { male: ['Zinc','Iron','Magnesium','Vitamin D','Creatine','Carbohydrate'], female: ['Iron','Zinc','Magnesium','Vitamin D','Carbohydrate'] },
+      { male: ['Zinc','Iron','Magnesium','Vitamin D','Creatine','Potassium'],    female: ['Iron','Zinc','Magnesium','Calcium','Vitamin D'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'immune', emoji: '🛡️', name: 'Immune Development', nameZh: '免疫发育', nameEs: 'Desarrollo Inmune',
+    tiersByAge: [
+      { male: 'important', female: 'important' },
+      { male: 'important', female: 'important' },
+      { male: 'core',      female: 'core'      },
+      { male: 'important', female: 'important' },
+      { male: 'important', female: 'important' },
+      { male: 'important', female: 'important' },
+    ],
+    nutrientsByAge: [
+      { male: ['Vitamin A','Vitamin D','Zinc','Iron'],                                    female: ['Vitamin A','Vitamin D','Zinc','Iron'] },
+      { male: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein'],               female: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein'] },
+      { male: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Probiotics'], female: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Probiotics'] },
+      { male: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'],   female: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'] },
+      { male: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'],   female: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Protein','Selenium'] },
+      { male: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'],   female: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Protein','Selenium','Omega-3'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'gut', emoji: '🦠', name: 'Gut Development', nameZh: '肠道发育', nameEs: 'Desarrollo Intestinal',
+    tiersByAge: [
+      { male: 'core',       female: 'core'       },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'important',  female: 'important'  },
+      { male: 'core',       female: 'core'       },
+      { male: 'core',       female: 'core'       },
+      { male: 'important',  female: 'core'       }, // ← 性别差异
+    ],
+    nutrientsByAge: [
+      { male: ['DHA','Vitamin A','Lutein','Zeaxanthin'],                          female: ['DHA','Vitamin A','Lutein','Zeaxanthin'] },
+      { male: ['Iron','DHA','Zinc','Iodine'],                                     female: ['Iron','DHA','Zinc','Iodine'] },
+      { male: ['Iron','DHA','Zinc','Iodine','Choline'],                           female: ['Iron','DHA','Zinc','Iodine','Choline'] },
+      { male: ['Iron','Zinc','Iodine','Magnesium','Vitamin B6'],                  female: ['Iron','Zinc','Iodine','Magnesium','Vitamin B6'] },
+      { male: ['Iron','Omega-3','Zinc','Magnesium','Vitamin B12','Vitamin D'],    female: ['Omega-3','Zinc','Magnesium','Vitamin B12','Vitamin D','Folate'] },
+      { male: ['Omega-3','Iron','Zinc','Magnesium','Vitamin B12','Vitamin D'],    female: ['Omega-3','Folate','Zinc','Magnesium','Vitamin B12'] },
+    ],
+    nutrientsZhByAge: [],
+  },
+  {
+    id: 'mood', emoji: '😌', name: 'Emotional & Mood', nameZh: '情绪与心理', nameEs: 'Emocional y Ánimo',
+    tiersByAge: [
+      { male: 'supporting', female: 'supporting' },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'supporting', female: 'supporting' },
+      { male: 'important',  female: 'important'  },
+      { male: 'important',  female: 'core'       }, // ← 性别差异
+    ],
+    nutrientsByAge: [
+      { male: [],                                                                           female: [] },
+      { male: [],                                                                           female: [] },
+      { male: ['Iron','Zinc','Vitamin D'],                                                  female: ['Iron','Zinc','Vitamin D'] },
+      { male: ['Omega-3','Iron','Zinc','Vitamin D','Magnesium'],                           female: ['Omega-3','Iron','Zinc','Vitamin D','Magnesium'] },
+      { male: ['Omega-3','Zinc','Magnesium','Vitamin D','B-vitamins'],                     female: ['Omega-3','Iron','Vitamin D','Vitamin B6','Folate','Zinc'] },
+      { male: ['Omega-3','Zinc','Magnesium','Vitamin D','Vitamin B12','Tryptophan'],       female: ['Omega-3','Iron','Vitamin D','Vitamin B6','Folate','Tryptophan','Calcium'] },
+    ],
+    nutrientsZhByAge: [],
+  },
 ];
 
+// 自动填充中文营养素
+DEV_GOALS.forEach(g => {
+  g.nutrientsZhByAge = g.nutrientsByAge.map(a => ({
+    male: zh(a.male),
+    female: zh(a.female),
+  }));
+});
+
+// 工具函数：性别未知时取较高优先级
+const TIER_ORDER: Tier[] = ['core', 'important', 'supporting'];
+export function higherTier(a: Tier, b: Tier): Tier {
+  return TIER_ORDER.indexOf(a) <= TIER_ORDER.indexOf(b) ? a : b;
+}
+export function mergeNeutral(a: string[], b: string[]): string[] {
+  return Array.from(new Set([...a, ...b])).slice(0, 7);
+}
+
 export const TIER_CONFIG: Record<Tier, { color: string; bg: string; label: string; labelZh: string; labelEs: string; textColor: string }> = {
-  core:       { color: '#893ce3', bg: 'rgba(137,60,227,0.05)', label: 'Core',       labelZh: '核心',  labelEs: 'Núcleo',       textColor: '#3b1f6e' },
-  important:  { color: '#b441c3', bg: 'rgba(180,65,195,0.05)', label: 'Important',  labelZh: '重要',  labelEs: 'Importante',   textColor: '#6b1a7a' },
-  supporting: { color: '#db46a6', bg: 'rgba(219,70,166,0.07)', label: 'Supporting', labelZh: '辅助',  labelEs: 'Apoyo',        textColor: '#7a1850' },
+  core:       { color: '#893ce3', bg: 'rgba(137,60,227,0.05)', label: 'Core',       labelZh: '核心', labelEs: 'Esencial',       textColor: '#3b1f6e' },
+  important:  { color: '#0891b2', bg: 'rgba(8,145,178,0.06)',  label: 'Important',  labelZh: '重要', labelEs: 'Importante',     textColor: '#0e7490' },
+  supporting: { color: '#16a34a', bg: 'rgba(22,163,74,0.05)',  label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario', textColor: '#15803d' },
 };
 
-/* ---------------- 每日营养指南（IOM DRI，按年龄段） ---------------- */
+/* ================================================================
+ * 每日营养指南（IOM DRI，按年龄段）—— 不改动
+ * ================================================================ */
 
 export interface DriNutrient {
-  name: string;
-  nameZh: string;
-  nameEs: string;
-  unit: string;
-  category: 0 | 1 | 2;          // 0=宏量营养素 1=矿物质 2=维生素
-  values: number[];             // 长度 6，对应 AGE_GROUPS
-  max: number;                  // 图表全局刻度上限
-  goals: string[];              // 关联的发育目标 emoji
+  name: string; nameZh: string; nameEs: string; unit: string;
+  category: 0 | 1 | 2;
+  values: number[];
+  max: number;
+  goals: string[];
 }
 
 export const DRI_NUTRIENTS: DriNutrient[] = [
-  { name: 'Protein',   nameZh: '蛋白质',    nameEs: 'Proteína',    unit: 'g',   category: 0, values: [11, 11, 13, 19, 34, 49],                         max: 55, goals: ['🦠','🛡️','🌱','🦷','💪'] },
-  { name: 'Carbs',     nameZh: '碳水',      nameEs: 'Carbohidratos', unit: 'g',   category: 0, values: [95, 95, 130, 130, 130, 130],                     max: 140, goals: ['💪','🌱'] },
-  { name: 'Fiber',     nameZh: '膳食纤维',  nameEs: 'Fibra',      unit: 'g',   category: 0, values: [0, 0, 14, 25, 22, 26],                           max: 30, goals: ['🦠'] },
-  { name: 'Calcium',   nameZh: '钙',        nameEs: 'Calcio',     unit: 'mg',  category: 1, values: [260, 260, 700, 1000, 1300, 1300],                max: 1400, goals: ['🦷'] },
-  { name: 'Iron',      nameZh: '铁',        nameEs: 'Hierro',     unit: 'mg',  category: 1, values: [11, 11, 7, 10, 8, 11],                           max: 12, goals: ['💪','🧠'] },
-  { name: 'Zinc',      nameZh: '锌',        nameEs: 'Zinc',      unit: 'mg',  category: 1, values: [3, 3, 3, 5, 8, 9],                               max: 10, goals: ['🛡️','🧠','🌱'] },
-  { name: 'Magnesium', nameZh: '镁',        nameEs: 'Magnesio',  unit: 'mg',  category: 1, values: [75, 75, 80, 130, 240, 360],                      max: 400, goals: ['💪','🦷'] },
-  { name: 'Vit A',     nameZh: '维生素A',   nameEs: 'Vit A',     unit: 'mcg', category: 2, values: [500, 500, 300, 400, 600, 800],                   max: 900, goals: ['🌱','🛡️','👁️'] },
-  { name: 'Vit D',     nameZh: '维生素D',   nameEs: 'Vit D',     unit: 'IU',  category: 2, values: [400, 400, 600, 600, 600, 600],                   max: 650, goals: ['🛡️','💪','🦷'] },
-  { name: 'Vit C',     nameZh: '维生素C',   nameEs: 'Vit C',     unit: 'mg',  category: 2, values: [50, 50, 15, 25, 45, 65],                         max: 75, goals: ['🦷','🛡️'] },
-  { name: 'Vit B12',   nameZh: '维生素B12', nameEs: 'Vit B12',   unit: 'mcg', category: 2, values: [0.5, 0.5, 0.9, 1.2, 1.8, 2.4],                   max: 2.8, goals: ['🧠'] },
-  { name: 'Folate',    nameZh: '叶酸',      nameEs: 'Folato',    unit: 'mcg', category: 2, values: [80, 80, 150, 200, 300, 400],                     max: 440, goals: ['🌱','🧠'] },
+  { name: 'Protein',   nameZh: '蛋白质',    nameEs: 'Proteína',      unit: 'g',   category: 0, values: [9, 11, 13, 19, 34, 49],         max: 55,   goals: ['🦠','🛡️','📏','🦷','💪'] },
+  { name: 'Carbs',     nameZh: '碳水',      nameEs: 'Carbohidratos', unit: 'g',   category: 0, values: [60, 95, 130, 130, 130, 130],      max: 140,  goals: ['💪','📏'] },
+  { name: 'Fiber',     nameZh: '膳食纤维',  nameEs: 'Fibra',         unit: 'g',   category: 0, values: [0, 0, 14, 25, 22, 26],            max: 30,   goals: ['🦠'] },
+  { name: 'Calcium',   nameZh: '钙',        nameEs: 'Calcio',        unit: 'mg',  category: 1, values: [200, 260, 700, 1000, 1300, 1300], max: 1400, goals: ['🦷'] },
+  { name: 'Iron',      nameZh: '铁',        nameEs: 'Hierro',        unit: 'mg',  category: 1, values: [0.27, 11, 7, 10, 8, 11],            max: 12,   goals: ['💪','🧠'] },
+  { name: 'Zinc',      nameZh: '锌',        nameEs: 'Zinc',          unit: 'mg',  category: 1, values: [2, 3, 3, 5, 8, 9],               max: 10,   goals: ['🛡️','🧠','📏'] },
+  { name: 'Magnesium', nameZh: '镁',        nameEs: 'Magnesio',      unit: 'mg',  category: 1, values: [30, 75, 80, 130, 240, 360],       max: 400,  goals: ['💪','🦷'] },
+  { name: 'Vit A',     nameZh: '维生素A',   nameEs: 'Vit A',         unit: 'mcg', category: 2, values: [400, 500, 300, 400, 600, 800],    max: 900,  goals: ['📏','🛡️','👁️'] },
+  { name: 'Vit D',     nameZh: '维生素D',   nameEs: 'Vit D',         unit: 'IU',  category: 2, values: [400, 400, 600, 600, 600, 600],    max: 650,  goals: ['🛡️','💪','🦷'] },
+  { name: 'Vit C',     nameZh: '维生素C',   nameEs: 'Vit C',         unit: 'mg',  category: 2, values: [40, 50, 15, 25, 45, 65],          max: 75,   goals: ['🦷','🛡️'] },
+  { name: 'Vit B12',   nameZh: '维生素B12', nameEs: 'Vit B12',       unit: 'mcg', category: 2, values: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4],   max: 2.8,  goals: ['🧠'] },
+  { name: 'Folate',    nameZh: '叶酸',      nameEs: 'Folato',        unit: 'mcg', category: 2, values: [65, 80, 150, 200, 300, 400],      max: 440,  goals: ['📏','🧠'] },
 ];
 
 export const DRI_CATEGORIES = [
@@ -116,9 +290,10 @@ export const DRI_CATEGORIES = [
   { color: '#5eead4', colorDark: '#0d9488', bg: 'rgba(94,234,212,0.08)', label: 'Vitamins',       labelZh: '维生素',     labelEs: 'Vitaminas',       range: [7, 11] },
 ];
 
-/* ---------------- CDC BMI 按年龄段/性别百分位表 ---------------- */
+/* ================================================================
+ * CDC BMI 百分位表 —— 不改动
+ * ================================================================ */
 
-// 每行 9 个值对应百分位 [5, 10, 15, 25, 50, 75, 85, 90, 95]
 export const CDC_PCTS = [5, 10, 15, 25, 50, 75, 85, 90, 95];
 export const CDC_PCT_LABELS = ['5th', '10th', '15th', '25th', '50th', '75th', '85th', '90th', '95th'];
 
@@ -141,17 +316,17 @@ export const CDC_BMI: Record<'boys' | 'girls', Record<StageKey, number[]>> = {
   },
 };
 
-// CDC Growth Charts 2000 · 8 岁男孩身高/体重百分位（原型样例数据）
 export const CDC_AGE8_HEIGHT = [119.0, 121.2, 122.7, 125.2, 128.1, 131.1, 132.8, 133.9, 135.6];
 export const CDC_AGE8_WEIGHT = [20.3, 21.4, 22.1, 23.6, 26.0, 29.2, 31.3, 32.8, 35.5];
 
-/* ---------------- 计算工具 ---------------- */
+/* ================================================================
+ * 计算工具 —— 不改动
+ * ================================================================ */
 
 export function bmiOf(heightCm: number, weightKg: number): number {
   return Math.round((weightKg / ((heightCm / 100) ** 2)) * 10) / 10;
 }
 
-/** 在 9 点百分位表上线性插值，返回 5–95 的百分位估计 */
 export function interpolatePercentile(value: number, pcts: number[]): number {
   if (value <= pcts[0]) return CDC_PCTS[0];
   if (value >= pcts[pcts.length - 1]) return CDC_PCTS[CDC_PCTS.length - 1];
@@ -169,12 +344,11 @@ export function bmiPercentile(bmi: number, stageKey: StageKey, gender: string | 
   return interpolatePercentile(bmi, table[stageKey]);
 }
 
-/** CDC 儿科分类：<5 偏瘦 · 5–84 健康 · 85–94 超重 · ≥95 肥胖 */
 export function bmiCategory(pct: number): { label: string; labelZh: string; labelEs: string; color: string } {
-  if (pct < 5)  return { label: 'Underweight',    labelZh: '偏瘦', labelEs: 'Bajo peso',    color: '#0ea5e9' };
+  if (pct < 5)  return { label: 'Underweight',    labelZh: '偏瘦', labelEs: 'Bajo peso',      color: '#0ea5e9' };
   if (pct < 85) return { label: 'Healthy weight', labelZh: '健康', labelEs: 'Peso saludable', color: '#22c55e' };
-  if (pct < 95) return { label: 'Overweight',     labelZh: '超重', labelEs: 'Sobrepeso',     color: '#f97316' };
-  return          { label: 'Obese',               labelZh: '肥胖', labelEs: 'Obeso',         color: '#ef4444' };
+  if (pct < 95) return { label: 'Overweight',     labelZh: '超重', labelEs: 'Sobrepeso',      color: '#f97316' };
+  return          { label: 'Obese',               labelZh: '肥胖', labelEs: 'Obeso',          color: '#ef4444' };
 }
 
 export function ordinal(pct: number): string {
