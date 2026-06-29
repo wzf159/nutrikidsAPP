@@ -10,7 +10,7 @@ import {
 
 /* ---------------- 每日营养指南柱状图（SVG） ---------------- */
 
-function DriChart({ ageIdx, isZh, isEs }: { ageIdx: number; isZh: boolean; isEs: boolean }) {
+function DriChart({ ageIdx, isZh, isEs,gender }: { ageIdx: number; isZh: boolean; isEs: boolean; gender: string | null; }) {
   const W = 920, H = 340;
   const PAD_L = 4, PAD_R = 4, PAD_T = 32, PAD_B = 36;
   const chartH = H - PAD_T - PAD_B;
@@ -49,7 +49,7 @@ function DriChart({ ageIdx, isZh, isEs }: { ageIdx: number; isZh: boolean; isEs:
 
       {/* 柱状图 */}
       {DRI_NUTRIENTS.map((n, i) => {
-        const v = n.values[ageIdx];
+        const v = (gender === 'girl' && n.valuesFemale ? n.valuesFemale : n.values)[ageIdx] ?? 0;
         const cx = PAD_L + i * gap + gap / 2;
         const x = PAD_L + i * gap + (gap - barW) / 2;
         const h = Math.max((v / n.max) * chartH, v > 0 ? 3 : 0);
@@ -119,15 +119,24 @@ export default function ScienceInsights() {
     child?.gender === 'boy'  ? 'male'   :
     child?.gender === 'girl' ? 'female' : 'neutral';
 
-  useEffect(() => {
-    getChildren()
-      .then(cs => {
-        const c = cs[0] ?? null;
-        setChild(c);
-        if (c) setAgeIdx(stageIdxForChild(c.stageKey, c.age, c.ageMonths));
-      })
-      .catch(() => setChild(null));
-  }, []);
+    const ACTIVE_KEY = 'nutrikids_active_child_id';
+
+    const loadChild = () => {
+      getChildren()
+        .then(cs => {
+          const activeId = localStorage.getItem(ACTIVE_KEY);
+          const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
+          setChild(c);
+          if (c) setAgeIdx(stageIdxForChild(c.stageKey, c.age, c.ageMonths));
+        })
+        .catch(() => setChild(null));
+    };
+    
+    useEffect(() => {
+      loadChild();
+      window.addEventListener('nutrikids:child-updated', loadChild);
+      return () => window.removeEventListener('nutrikids:child-updated', loadChild);
+    }, []);
 
   const childIdx = child ? stageIdxForChild(child.stageKey, child.age, child.ageMonths) : null;
 

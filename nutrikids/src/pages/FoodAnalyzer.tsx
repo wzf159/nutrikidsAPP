@@ -187,10 +187,26 @@ export default function FoodAnalyzer() {
   const [selectedWatch, setSelectedWatch] = useState<string | null>(null);
 
   // 启动时取孩子档案（演示账号自动登录）
-  useEffect(() => {
+  const ACTIVE_KEY = 'nutrikids_active_child_id';
+
+  const loadChild = () => {
     getChildren()
-      .then(cs => { if (cs.length) setChildId(cs[0].id); })
+      .then(cs => {
+        const activeId = localStorage.getItem(ACTIVE_KEY);
+        const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
+        if (c) {
+          setChildId(c.id);
+          setResult(null);  // 切换孩子时清空上一个孩子的分析结果
+          setPhase({ name: 'idle' });
+        }
+      })
       .catch(() => setPhase({ name: 'error', msg: isZh ? '无法连接后端服务（请确认 server 已启动）' : isEs ? 'No se puede conectar al servidor (verifica que el server esté iniciado)' : 'Cannot reach the API server' }));
+  };
+  
+  useEffect(() => {
+    loadChild();
+    window.addEventListener('nutrikids:child-updated', loadChild);
+    return () => window.removeEventListener('nutrikids:child-updated', loadChild);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -768,7 +784,60 @@ export default function FoodAnalyzer() {
                         );
                       })}
                     </svg>
+                    {selectedNutrientData && (
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setSelectedNutrient(null)}
+                    >
+                      <div
+                        className="absolute left-1/2 -translate-x-1/2 bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[300px]"
+                        style={{ top: '40%' }}
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="flex items-start justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <span className="text-3xl">🔬</span>
+                            <div>
+                              <h3 className="text-[17px] font-extrabold text-[#1a1040]">
+                                {isZh ? selectedNutrientData.nameZh ?? selectedNutrientData.name : selectedNutrientData.name}
+                              </h3>
+                              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full mt-1 inline-block ${
+                                selectedNutrientData.level === 'High' ? 'bg-green-100 text-green-700' :
+                                selectedNutrientData.level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-600'
+                              }`}>
+                                {levelLabel(selectedNutrientData.level)} {isZh ? '来源' : 'Source'}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setSelectedNutrient(null)}
+                            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-black/5 transition"
+                          >
+                            ✕
+                          </button>
+                        </div>
 
+                        {[
+                          { label: isZh ? '每份含量' : 'Per Serving', value: selectedNutrientData.value != null ? `${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}` : '—' },
+                          { label: '% DV', value: `${selectedNutrientData.dailyValue}%` },
+                          { label: isZh ? '单位' : 'Unit', value: selectedNutrientData.unit ?? '—' },
+                        ].map(row => (
+                          <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-[#0ea5e9] flex-shrink-0" />
+                              <span className="text-[14px] font-semibold text-[#1a1040]">{row.label}</span>
+                            </div>
+                            <span className="text-[14px] font-bold text-[#0ea5e9]">{row.value}</span>
+                          </div>
+                        ))}
+
+                        <p className="mt-3 text-[11px] text-gray-400">
+                          {isZh ? '来源：' : 'Source: '}{productTitle}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                     {(selectedGoalData || selectedNutrientData) && (
                       <div className="mt-3 rounded-2xl bg-purple-50/70 border border-purple-100 px-4 py-3 text-sm text-gray-700 animate-fade-in-up">
                         {selectedGoalData && (
@@ -911,7 +980,7 @@ export default function FoodAnalyzer() {
           </>
         )}
       </div>
-
+      
       {showScan && <BarcodeScanModal isZh={isZh} onClose={() => setShowScan(false)} onCode={handleBarcode} />}
     </div>
   );

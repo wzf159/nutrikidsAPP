@@ -5,8 +5,8 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    allowedHosts: ['qualify-yogurt-imaging.ngrok-free.dev'],
     proxy: {
-      // 后端 NutriKids API（server/，端口见 server/.env 的 PORT）
       '/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,

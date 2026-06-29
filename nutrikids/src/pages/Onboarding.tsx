@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
 import { createChild, getChildren, updateChild, getAllergens, type Child, type Allergen } from '../services/api';
 import {
   AGE_GROUPS, bmiCategory, bmiOf, bmiPercentile, ordinal, type AgeGroup,
 } from '../data/growth';
-
+import { useNavigate, useSearchParams } from 'react-router-dom';
 type Gender = 'boy' | 'girl' | 'other';
 
 const GENDER_OPTIONS: { key: Gender; icon: string; en: string; zh: string; es: string }[] = [
@@ -59,7 +58,7 @@ export default function Onboarding() {
   const [hIn, setHIn] = useState('');
   const [wKg, setWKg] = useState('');
   const [wLb, setWLb] = useState('');
-
+  const [searchParams] = useSearchParams();
   // 过敏原
   const [allergenOptions, setAllergenOptions] = useState<Allergen[]>([]);
   const [allergenIds, setAllergenIds] = useState<number[]>([]);
@@ -72,8 +71,10 @@ export default function Onboarding() {
   }, []);
 
   useEffect(() => {
+    const childId = searchParams.get('childId');
+    if (!childId) return; // 没有 childId 就是新建，不加载
     getChildren().then(cs => {
-      const c = cs[0];
+      const c = cs.find(c => c.id === childId) ?? null;
       if (!c) return;
       setExisting(c);
       setName(c.name);
@@ -87,7 +88,7 @@ export default function Onboarding() {
       if (c.weightKg) setWKg(String(c.weightKg));
       if (c.allergens) setAllergenIds(c.allergens.map(a => a.allergenId));
     }).catch(() => {});
-  }, []);
+  }, [searchParams]);
 
   const heightCm = useMemo(() => {
     if (hUnit === 'cm') return parseFloat(hCm) || 0;

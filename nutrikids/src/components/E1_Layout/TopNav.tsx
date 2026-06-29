@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-//import { getChildren, type Child } from '../../services/api';
 import { AGE_GROUPS, bmiOf } from '../../data/growth';
 import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
+
+const ACTIVE_KEY = 'nutrikids_active_child_id';
 
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
   { icon: '🍊', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
@@ -18,23 +19,43 @@ export default function TopNav() {
   const isZh = i18n.language === 'zh';
   const navigate = useNavigate();
 
-  const [child, setChild] = useState<Child | null>(null);
+  const [children, setChildren] = useState<Child[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(
+    () => localStorage.getItem(ACTIVE_KEY)
+  );
   const [cardOpen, setCardOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
-
-  const loadChild = () => {
-    getChildren().then(cs => setChild(cs[0] ?? null)).catch(() => setChild(null));
-  };
   const [allergenDict, setAllergenDict] = useState<Allergen[]>([]);
+
+  const loadChildren = () => {
+    getChildren().then(cs => {
+      setChildren(cs);
+      // 如果没有存过 activeId 或存的 id 已不存在，默认选第一个
+      const stored = localStorage.getItem(ACTIVE_KEY);
+      const valid = cs.find(c => c.id === stored);
+      if (!valid && cs.length > 0) {
+        setActiveId(cs[0].id);
+        localStorage.setItem(ACTIVE_KEY, cs[0].id);
+      }
+    }).catch(() => setChildren([]));
+  };
+
+  const switchChild = (id: string) => {
+    setActiveId(id);
+    localStorage.setItem(ACTIVE_KEY, id);
+    setCardOpen(false);
+    // 通知其他组件切换了孩子
+    window.dispatchEvent(new Event('nutrikids:child-updated'));
+  };
 
   useEffect(() => {
     getAllergens().then(setAllergenDict).catch(() => {});
   }, []);
 
   useEffect(() => {
-    loadChild();
-    window.addEventListener('nutrikids:child-updated', loadChild);
-    return () => window.removeEventListener('nutrikids:child-updated', loadChild);
+    loadChildren();
+    window.addEventListener('nutrikids:child-updated', loadChildren);
+    return () => window.removeEventListener('nutrikids:child-updated', loadChildren);
   }, []);
 
   useEffect(() => {
@@ -46,6 +67,9 @@ export default function TopNav() {
     return () => document.removeEventListener('mousedown', onClick);
   }, [cardOpen]);
 
+  // 当前激活的孩子
+  const child = children.find(c => c.id === activeId) ?? children[0] ?? null;
+
   const ageText = child
     ? child.stageKey?.endsWith('m') && child.ageMonths != null
       ? `${child.ageMonths} ${isZh ? '个月' : i18n.language === 'es' ? 'meses' : 'mo'}`
@@ -56,10 +80,10 @@ export default function TopNav() {
   const stage = child ? AGE_GROUPS.find(g => g.key === child.stageKey) : null;
   const bmi = child?.heightCm && child?.weightKg ? bmiOf(child.heightCm, child.weightKg) : null;
   const childAllergens = child
-  ? child.allergens
-      .map(ca => allergenDict.find(a => a.id === ca.allergenId))
-      .filter((a): a is Allergen => !!a)
-  : [];
+    ? child.allergens
+        .map(ca => allergenDict.find(a => a.id === ca.allergenId))
+        .filter((a): a is Allergen => !!a)
+    : [];
   const avatar = child?.avatarEmoji ?? '👶';
 
   return (
@@ -85,7 +109,18 @@ export default function TopNav() {
             {icon} {t(key)}
           </NavLink>
         ))}
-         <NavLink
+      
+        <NavLink
+          to="/Support"
+          className={({ isActive }) =>
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
+              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            }`
+          }
+        >
+          💛 {isZh ? '支持我们' : i18n.language === 'es' ? 'Apóyanos' : 'Support Us'}
+        </NavLink>
+        <NavLink
           to="/about"
           className={({ isActive }) =>
             `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
@@ -115,7 +150,6 @@ export default function TopNav() {
         >
           ⚙️ {t('nav.devAdmin')}
         </NavLink>
-       
       </nav>
 
       <div className="ml-auto flex items-center gap-3">
@@ -141,6 +175,8 @@ export default function TopNav() {
 
           {cardOpen && child && (
             <div className="absolute right-0 top-[calc(100%+10px)] w-[272px] bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_48px_rgba(80,40,160,0.16),0_2px_12px_rgba(0,0,0,0.08)] border-[1.5px] border-[rgba(137,60,227,0.12)] overflow-hidden animate-[pop-in_0.18s_cubic-bezier(0.34,1.56,0.64,1)]">
+              
+              {/* 当前孩子信息 */}
               <div className="flex items-center gap-3 px-4 pt-4 pb-3.5">
                 <span className="w-11 h-11 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[22px] flex-shrink-0">{avatar}</span>
                 <div>
@@ -161,12 +197,15 @@ export default function TopNav() {
                   </div>
                 </div>
                 <button
-                  onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
+                  //onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
+                  onClick={() => { setCardOpen(false); navigate(`/onboarding?childId=${child.id}`); }}
                   className="ml-auto px-2.5 py-1 rounded-lg bg-purple-600/8 border border-purple-600/18 text-xs font-bold text-[#893ce3] hover:bg-purple-600/15 whitespace-nowrap"
                 >
                   ✏️ {isZh ? '编辑' : i18n.language === 'es' ? 'Editar' : 'Edit'}
                 </button>
               </div>
+
+              {/* 身高体重 BMI */}
               <div className="h-px bg-purple-600/8" />
               <div className="grid grid-cols-3 px-3 py-3.5">
                 {[
@@ -181,6 +220,8 @@ export default function TopNav() {
                   </div>
                 ))}
               </div>
+
+              {/* 过敏原 */}
               {childAllergens.length > 0 && (
                 <>
                   <div className="h-px bg-purple-600/8" />
@@ -201,7 +242,53 @@ export default function TopNav() {
                   </div>
                 </>
               )}
-                          </div>
+
+              {/* 切换孩子列表 */}
+              {children.length > 1 && (
+                <>
+                  <div className="h-px bg-purple-600/8" />
+                  <div className="px-3 py-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide px-1 mb-1.5">
+                      {isZh ? '切换孩子' : i18n.language === 'es' ? 'Cambiar niño' : 'Switch Child'}
+                    </p>
+                    {children.map(c => (
+                      <button
+                        key={c.id}
+                        onClick={() => switchChild(c.id)}
+                        className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${
+                          c.id === child.id
+                            ? 'bg-purple-600/10 text-[#893ce3]'
+                            : 'hover:bg-purple-600/5 text-[#1a1040]'
+                        }`}
+                      >
+                        <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[15px] flex-shrink-0">
+                          {c.avatarEmoji ?? '🧒'}
+                        </span>
+                        <span className="text-sm font-semibold">{c.name}</span>
+                        {c.id === child.id && (
+                          <span className="ml-auto text-[10px] font-bold text-[#893ce3]">✓</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* 添加新孩子 */}
+              <div className="h-px bg-purple-600/8" />
+              <div className="px-3 py-2.5">
+                <button
+                  onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
+                  className="w-full flex items-center gap-2 px-2 py-2 rounded-xl text-left hover:bg-purple-600/5 transition-colors"
+                >
+                  <span className="w-8 h-8 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center text-purple-400 text-lg flex-shrink-0">+</span>
+                  <span className="text-sm font-semibold text-[#893ce3]">
+                    {isZh ? '添加新孩子' : i18n.language === 'es' ? 'Agregar niño' : 'Add Child'}
+                  </span>
+                </button>
+              </div>
+
+            </div>
           )}
         </div>
 
