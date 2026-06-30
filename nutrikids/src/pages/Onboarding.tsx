@@ -168,6 +168,7 @@ export default function Onboarding() {
       weightKg: Math.round(weightKg * 10) / 10,
       allergenIds,
       avatarEmoji: gender === 'girl' ? '👧' : gender === 'boy' ? '👦' : '🧒',
+      goalIds: [1, 2, 3, 4, 5, 6, 7, 8],
     };
     try {
       if (existing) await updateChild(existing.id, input);

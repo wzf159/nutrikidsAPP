@@ -144,10 +144,11 @@ export default function ScienceInsights() {
     const out: Record<Tier, DevGoal[]> = { core: [], important: [], supporting: [] };
     DEV_GOALS.forEach(g => {
       const tierData = g.tiersByAge[ageIdx];
-      const tier: Tier =
+      const tier: Tier | null =
         genderKey === 'male'   ? tierData.male   :
         genderKey === 'female' ? tierData.female :
         higherTier(tierData.male, tierData.female);
+      if (tier === null) return;  // 该年龄段不适用，跳过这个 goal
       out[tier].push(g);
     });
     return out;
@@ -250,7 +251,7 @@ export default function ScienceInsights() {
                 const goals = tiers[tier];
                 return (
                   <div key={tier}>
-                    <p className="flex items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide pb-1.5 mb-2 border-b-2"
+                    <p className="flex items-center gap-1.5 text-[12px] font-extrabold uppercase tracking-wide pb-1.5 mb-2 border-b-2"
                       style={{ color: tc.color, borderColor: `${tc.color}33` }}>
                       <span className="w-[7px] h-[7px] rounded-full inline-block flex-shrink-0" style={{ background: tc.color }} />
                       {isZh ? `${tc.labelZh}发育` : isEs ? `${tc.labelEs} Desarrollo` : `${tc.label} Development`}
@@ -258,12 +259,18 @@ export default function ScienceInsights() {
                     <div className="flex flex-col gap-2">
                       {goals.length === 0 && <p className="text-[11px] text-gray-300 text-center py-2">—</p>}
                       {goals.map(g => {
+                        /*
                         const isBrain = g.id === 'brain';
                         const cardBg     = isBrain ? 'rgba(219,70,166,0.07)' : tc.bg;
                         const cardBorder = isBrain ? '#db46a655' : `${tc.color}55`;
                         const cardTextColor = isBrain ? '#7a1850' : tc.textColor;
                         const tagColor  = isBrain ? '#db46a6' : tc.color;
-                        const tagBorder = isBrain ? '#db46a644' : `${tc.color}44`;
+                        const tagBorder = isBrain ? '#db46a644' : `${tc.color}44`;*/
+                        const cardBg = tc.bg;
+                        const cardBorder = `${tc.color}55`;
+                        const cardTextColor = tc.textColor;
+                        const tagColor = tc.color;
+                        const tagBorder = `${tc.color}44`;
 
                         // 性别感知营养素
                         const nutrByAge   = g.nutrientsByAge[ageIdx];

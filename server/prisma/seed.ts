@@ -46,11 +46,12 @@ async function main() {
   const goals = [
     { id: 1, icon: '🧠', label: 'Brain Development',  labelZh: '大脑发育'  },
     { id: 2, icon: '🦴', label: 'Bone Development',   labelZh: '骨骼发育'  },
-    { id: 3, icon: '📏', label: 'Healthy Growth',     labelZh: '健康成长'  },
+    { id: 3, icon: '📏', label: 'Heart Growth',       labelZh: '心脏发育'  },
     { id: 4, icon: '💪', label: 'Muscle Development', labelZh: '肌肉发育'  },
     { id: 5, icon: '🛡️', label: 'Immune Development', labelZh: '免疫发育'  },
     { id: 6, icon: '🦠', label: 'Gut Development',    labelZh: '肠道发育'  },
-    { id: 7, icon: '😌', label: 'Emotional & Mood',   labelZh: '情绪与心理' },
+    { id: 7, icon: '👀', label: 'Vision Development', labelZh: '视力发育'  },
+    { id: 8, icon: '🦷', label: 'Dental Development', labelZh: '牙齿发育'  },
   ];
   for (const g of goals) await prisma.developmentGoal.upsert({ where: { id: g.id }, create: g, update: g });
 
