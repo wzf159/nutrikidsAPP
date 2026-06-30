@@ -4,15 +4,25 @@ import { prisma } from './prisma.js';
 const SUGAR_NUTRIENT_ID = 15;
 const ENERGY_NUTRIENT_ID = 16;
 
+
 type DevTier = 'core' | 'important' | 'supporting';
-const DEV_TIERS: Record<number, { male: DevTier; female: DevTier }[]> = {
-  1: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'important'},{male:'supporting',female:'supporting'}],
+const DEV_TIERS: Record<number, { male: DevTier | null; female: DevTier | null }[]> = {
+  // 1 🧠 Brain Development
+  1: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'important'},{male:'supporting',female:'important'}],
+  // 2 🦴 Bone Development
   2: [{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'}],
-  3: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'important',female:'supporting'}],
-  4: [{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'important'},{male:'core',female:'important'}],
+  // 3 📏 Heart Growth
+  3: [{male:null,female:null},{male:null,female:null},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'core'}],
+  // 4 💪 Muscle Development
+  4: [{male:null,female:null},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'important'},{male:'core',female:'important'}],
+  // 5 🛡️ Immune Development
   5: [{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'}],
-  6: [{male:'core',female:'core'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'core'}],
-  7: [{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'core'}],
+  // 6 🦠 Gut Development
+  6: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'important'}],
+  // 7 👀 Vision Development
+  7: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'supporting'},{male:null,female:null},{male:null,female:null}],
+  // 8 🦷 Dental Development
+  8: [{male:null,female:null},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'}],
 };
 
 function stageIdx(stageKey: string | null): number {
@@ -37,11 +47,12 @@ const WEIGHTS = {
 const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
   1: [3, 1, 2, 12, 4],         // 🧠 Brain: Omega-3/Iron/Zinc/B12/B族
   2: [5, 6, 7, 13],            // 🦴 Bone: 钙/维D/磷/蛋白质
-  3: [13, 1, 2, 11, 4, 8],     // 📏 Healthy Growth: 蛋白质/Iron/Zinc/维A/B族/复合碳水
+  3: [13, 1, 2, 14],           // 📏 Heart Growth: 蛋白质/Iron/Zinc/钾(Fiber/Omega-3未在nutrient字典中，用相近替代)
   4: [13, 1, 2, 6, 14, 8],     // 💪 Muscle: 蛋白质/Iron/Zinc/维D/钾/复合碳水
   5: [11, 9, 6, 2, 1, 13, 10], // 🛡️ Immune: 维A/维C/维D/Zinc/Iron/蛋白质/硒
   6: [1, 3, 2, 12],            // 🦠 Gut: Iron/Omega-3/Zinc/B12
-  7: [3, 1, 2, 6, 4],          // 😌 Mood: Omega-3/Iron/Zinc/维D/B族
+  7: [11, 2, 6],               // 👀 Vision: VitA(11) / Zinc(2) / VitD(6)
+  8: [5, 6, 9, 13],            // 🦷 Dental: Calcium(5) / VitD(6) / VitC(9) / Protein(13)
 };
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
@@ -165,7 +176,7 @@ export async function scoreFood(input: ScoreInput) {
   
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
-    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? 'supporting';
+    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;  
   };
 
   const viewGoals = allGoals.map((g) => ({
@@ -178,7 +189,15 @@ export async function scoreFood(input: ScoreInput) {
     //tier: childGoalIds.has(g.id) ? tierOf(g.id) : null,
     supportDV: Math.round(goalSupport[g.id] ?? 0),
   }));
-
+  // scoreFood 函数里，在 flows 计算之前加
+  console.log('childGoalIds:', [...childGoalIds]);
+  console.log('viewNutrIds:', [...viewNutrIds]);
+  console.log('viewNutrients:', viewNutrients.map(n => ({ id: n.id, name: n.name, dv: n.dailyValue })));
+  console.log('GOAL_NUTRIENT_MAP check:', [...childGoalIds].map(gid => ({
+    goalId: gid,
+    mappedNutrients: GOAL_NUTRIENT_MAP[gid] ?? [],
+    matches: (GOAL_NUTRIENT_MAP[gid] ?? []).filter(nid => viewNutrIds.has(nid)),
+  })));
   // 留意成分（8 固定槽位，规则可后续细化）
   const ingNames = product.ingredients.map((i: { ingredient: { name: string; nameZh: string | null } }) => `${i.ingredient.name} ${i.ingredient.nameZh ?? ''}`.toLowerCase());
   const hasIng = (re: RegExp) => ingNames.some((n: string) => re.test(n));

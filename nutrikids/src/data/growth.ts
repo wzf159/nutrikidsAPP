@@ -135,10 +135,10 @@ export const DEV_GOALS: DevGoal[] = [
     nutrientsZhByAge: [],
   },
   {
-    id: 'growth', emoji: '📏', name: 'Healthy Growth', nameZh: '健康成长', nameEs: 'Crecimiento Saludable',
+    id: 'heart', emoji: '📏', name: 'Heart Growth', nameZh: '心脏发育', nameEs: 'Crecimiento Cardíaco',
     tiersByAge: [
-      { male: 'supporting', female: 'supporting' },  // 0-6m
-      { male: 'supporting', female: 'supporting' },  // 7-12m
+      { male: null, female: null },  // 0-6m
+      { male: null, female: null },  // 7-12m
       { male: 'important', female: 'important' },  // 1-3y
       { male: 'important', female: 'important' },  // 4-8y
       { male: 'important', female: 'important' },  // 9-13y
@@ -158,7 +158,7 @@ export const DEV_GOALS: DevGoal[] = [
   {
     id: 'muscle', emoji: '💪', name: 'Muscle Development', nameZh: '肌肉发育', nameEs: 'Desarrollo Muscular',
     tiersByAge: [
-      { male: 'supporting', female: 'supporting' },  // 0-6m
+      { male: null, female: null },  // 0-6m
       { male: 'supporting', female: 'supporting' },  // 7-12m
       { male: 'supporting', female: 'supporting' },  // 1-3y
       { male: 'important', female: 'important' },  // 4-8y
@@ -219,34 +219,14 @@ export const DEV_GOALS: DevGoal[] = [
     nutrientsZhByAge: [],
   },
   {
-    id: 'mood', emoji: '😌', name: 'Emotional & Mood', nameZh: '情绪与心理', nameEs: 'Emocional y Ánimo',
-    tiersByAge: [
-      { male: 'supporting', female: 'supporting' },  // 0-6m
-      { male: 'supporting', female: 'supporting' },  // 7-12m
-      { male: 'supporting', female: 'supporting' },  // 1-3y
-      { male: 'supporting', female: 'supporting' },  // 4-8y
-      { male: 'supporting', female: 'supporting' },  // 9-13y
-      { male: 'supporting', female: 'supporting' },  // 14-18y
-    ],
-    nutrientsByAge: [
-      { male: [], female: [] },  // 0-6m
-      { male: [], female: [] },  // 7-12m
-      { male: [], female: [] },  // 1-3y
-      { male: [], female: [] },  // 4-8y
-      { male: [], female: [] },  // 9-13y
-      { male: [], female: [] },  // 14-18y
-    ],
-    nutrientsZhByAge: [],
-  },
-  {
     id: 'vision', emoji: '👀', name: 'Vision Development', nameZh: '视力发育', nameEs: 'Desarrollo Visual',
     tiersByAge: [
       { male: 'core', female: 'core' },  // 0-6m
       { male: 'core', female: 'core' },  // 7-12m
       { male: 'important', female: 'important' },  // 1-3y
       { male: 'supporting', female: 'supporting' },  // 4-8y
-      { male: 'supporting', female: 'supporting' },  // 9-13y
-      { male: 'supporting', female: 'supporting' },  // 14-18y
+      { male: null, female: null },  // 9-13y
+      { male: null, female: null },  // 14-18y
     ],
     nutrientsByAge: [
       { male: ['DHA', 'Vitamin A', 'Lutein', 'Zeaxanthin'], female: ['DHA', 'Vitamin A', 'Lutein', 'Zeaxanthin'] },  // 0-6m
@@ -259,9 +239,9 @@ export const DEV_GOALS: DevGoal[] = [
     nutrientsZhByAge: [],
   },
   {
-    id: 'dental', emoji: '🦷', name: 'Dental Health', nameZh: '口腔健康', nameEs: 'Salud Dental',
+    id: 'dental', emoji: '🦷', name: 'Dental Development', nameZh: '牙齿发育', nameEs: 'Desarrollo Dental',
     tiersByAge: [
-      { male: 'supporting', female: 'supporting' },  // 0-6m
+      { male: null, female: null },  // 0-6m
       { male: 'supporting', female: 'supporting' },  // 7-12m
       { male: 'important', female: 'important' },  // 1-3y
       { male: 'important', female: 'important' },  // 4-8y
@@ -297,9 +277,9 @@ export function mergeNeutral(a: string[], b: string[]): string[] {
 }
 
 export const TIER_CONFIG: Record<Tier, { color: string; bg: string; label: string; labelZh: string; labelEs: string; textColor: string }> = {
-  core:       { color: '#893ce3', bg: 'rgba(137,60,227,0.05)', label: 'Core',       labelZh: '核心', labelEs: 'Esencial',       textColor: '#3b1f6e' },
-  important:  { color: '#0891b2', bg: 'rgba(8,145,178,0.06)',  label: 'Important',  labelZh: '重要', labelEs: 'Importante',     textColor: '#0e7490' },
-  supporting: { color: '#16a34a', bg: 'rgba(22,163,74,0.05)',  label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario', textColor: '#15803d' },
+  core:       { color: '#4c1d95', bg: 'rgba(109,40,217,0.07)',  label: 'Core',       labelZh: '核心', labelEs: 'Esencial',       textColor: '#4c1d95' },
+  important:  { color: '#a21caf', bg: 'rgba(162,28,175,0.07)',  label: 'Important',  labelZh: '重要', labelEs: 'Importante',     textColor: '#701a75' },
+  supporting: { color: '#db2777', bg: 'rgba(219,39,119,0.07)',  label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario', textColor: '#9d174d' },
 };
 
 /* ================================================================

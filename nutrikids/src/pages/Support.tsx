@@ -182,6 +182,25 @@ export default function Support() {
         {view === 'form' && (
           <div style={cardStyle}>
             {/* Header */}
+            <button
+              onClick={() => setView('landing')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontFamily: ff,
+                fontSize: '13px',
+                fontWeight: 700,
+                color: '#893ce3',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                marginBottom: '16px',
+              }}
+            >
+              ← Back to Support
+            </button>
             <div style={{ marginBottom: '6px' }}>
               <span style={{
                 fontFamily: "'Poppins', sans-serif",

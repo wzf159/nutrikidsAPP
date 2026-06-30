@@ -65,11 +65,9 @@ export default async function childrenRoutes(app: FastifyInstance) {
     const existing = await prisma.child.findUnique({ where: { id } });
     if (!existing || existing.userId !== req.user.sub)
       return reply.code(404).send({ error: '未找到' });
-
     const parsed = childSchema.partial().safeParse(req.body);
     if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
     const d = parsed.data;
-
     const child = await prisma.child.update({
       where: { id },
       data: {
@@ -81,6 +79,12 @@ export default async function childrenRoutes(app: FastifyInstance) {
         weightKg: d.weightKg,
         stageKey: d.stageKey,
         avatarEmoji: d.avatarEmoji,
+        ...(d.goalIds !== undefined && {
+          goals: {
+            deleteMany: {},
+            create: d.goalIds.map((goalId) => ({ goalId })),
+          },
+        }),
         ...(d.allergenIds !== undefined && {
           allergens: {
             deleteMany: {},

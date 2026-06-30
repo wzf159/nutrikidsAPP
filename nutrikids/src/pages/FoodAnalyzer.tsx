@@ -14,9 +14,9 @@ import {
 type Tier = 'core' | 'important' | 'supporting';
 
 const TIER_COLOR: Record<Tier, string> = {
-  core: '#893ce3',
-  important: '#b441c3',
-  supporting: '#db46a6',
+  core: '#4c1d95',
+  important: '#a21caf',
+  supporting: '#db2777',
 };
 
 const NUTRIENT_PALETTE = ['#0ea5e9', '#06b6d4', '#14b8a6', '#38bdf8', '#22d3ee', '#fbbf24'];
@@ -49,7 +49,7 @@ function SectionBadge({ n }: { n: number }) {
 /* Sankey 布局（由接口数据驱动）                                       */
 /* ------------------------------------------------------------------ */
 
-const SK = { width: 920, height: 640, nodeWidth: 24, leftX: 175, rightX: 920 - 230, padTop: 16, gap: 30 };
+const SK = { width: 1100, height: 640, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 16, gap: 30 };
 
 interface NodeLayout { id: number; y0: number; y1: number }
 
@@ -648,9 +648,9 @@ export default function FoodAnalyzer() {
                     {tierCounts && (
                       <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
                         {isZh ? `支持 ${tierCounts.core + tierCounts.important + tierCounts.supporting} 项目标` : `Supports ${tierCounts.core + tierCounts.important + tierCounts.supporting} goals`} ·{' '}
-                        <span className="text-[#893ce3] font-extrabold">{tierCounts.core} {isZh ? '核心' : 'Core'}</span> ·{' '}
-                        <span className="text-[#b441c3] font-extrabold">{tierCounts.important} {isZh ? '重要' : 'Important'}</span> ·{' '}
-                        <span className="text-[#db46a6] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
+                        <span className="text-[#4c1d95] font-extrabold">{tierCounts.core} {isZh ? '核心' : 'Core'}</span> ·{' '}
+                        <span className="text-[#a21caf] font-extrabold">{tierCounts.important} {isZh ? '重要' : 'Important'}</span> ·{' '}
+                        <span className="text-[#db2777] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
                       </p>
                     )}
                     <div className="grid grid-cols-4 gap-1.5">
@@ -676,7 +676,7 @@ export default function FoodAnalyzer() {
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '需要留意' : 'THINGS TO WATCH'}</h4>
                       <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
                     </div>
-                    <p className="text-[10px] font-bold text-[#a09080] mb-2.5">
+                    <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
                         ? `${presentWatch.length} 项值得注意的成分${nova ? ` · NOVA ${view.product.novaScore} ${nova.zh}` : ''}`
                         : isEs
@@ -871,9 +871,9 @@ export default function FoodAnalyzer() {
 
                     <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
                       <div className="space-y-1.5 text-sm font-semibold">
-                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.core }} /> <span className="text-[#893ce3]">{isZh ? '核心目标' : 'Core Goals'}</span></p>
-                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.important }} /> <span className="text-[#b441c3]">{isZh ? '重要目标' : 'Important Goals'}</span></p>
-                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.supporting }} /> <span className="text-[#db46a6]">{isZh ? '辅助目标' : 'Supporting Goals'}</span></p>
+                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.core }} /> <span className="text-[#4c1d95]">{isZh ? '核心目标' : 'Core Goals'}</span></p>
+                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.important }} /> <span className="text-[#a21caf]">{isZh ? '重要目标' : 'Important Goals'}</span></p>
+                        <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.supporting }} /> <span className="text-[#db2777]">{isZh ? '辅助目标' : 'Supporting Goals'}</span></p>
                       </div>
                       <div className="text-right text-xs text-gray-500">
                         <p className="font-bold text-gray-700 text-sm mb-0.5">% {isZh ? '每日营养参考值说明' : 'Daily Value guide'}</p>
@@ -881,6 +881,13 @@ export default function FoodAnalyzer() {
                         <p>{isZh ? `低 < 10% · 基于${view.child.age ?? 8}岁儿童膳食参考摄入量` : `Low < 10% · based on age ${view.child.age ?? 8} DRI`}</p>
                       </div>
                     </div>
+                    <p className="mt-3 text-[11px] text-gray-400 leading-relaxed">
+                      {isZh
+                        ? '数据来源：Dietary Reference Intakes (DRI)，美国医学研究所（IOM）· 发育目标基于 NIH ODS 营养学资料'
+                        : isEs
+                        ? 'Fuente: Dietary Reference Intakes (DRI), Instituto de Medicina · Objetivos de desarrollo basados en NIH ODS'
+                        : 'Source: Dietary Reference Intakes (DRI), Institute of Medicine · Development goals based on NIH ODS nutrition data'}
+                    </p>
                   </>
                 )}
                   </div>
