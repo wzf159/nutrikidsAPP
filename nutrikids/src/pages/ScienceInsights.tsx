@@ -329,7 +329,7 @@ export default function ScienceInsights() {
                 : 'Recommended daily intake by age · synced with Growth Stage above'}
             </p>
 
-            <DriChart ageIdx={ageIdx} isZh={isZh} isEs={isEs} />
+            <DriChart ageIdx={ageIdx} isZh={isZh} isEs={isEs} gender={child?.gender ?? null} />
 
             <div className="flex gap-4 mt-2 flex-wrap">
               {DRI_CATEGORIES.map(c => (

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 
 const ff = "'Nunito', sans-serif";
 const ctaGradient = 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)';
@@ -84,7 +83,7 @@ export default function Support() {
     cursor: 'pointer',
   };
 
-  const qLabel = (text: React.ReactNode): React.CSSProperties => ({
+  const qLabel = (): React.CSSProperties => ({
     fontFamily: ff,
     fontSize: '14px',
     fontWeight: 800,
@@ -251,7 +250,7 @@ export default function Support() {
 
               {/* Q1 */}
               <div>
-                <p style={qLabel('')}>1. What is your name?</p>
+                <p style={qLabel()}>1. What is your name?</p>
                 <input
                   type="text"
                   placeholder="Your name"
@@ -265,7 +264,7 @@ export default function Support() {
 
               {/* Q2 */}
               <div>
-                <p style={qLabel('')}>2. What is the best way to contact you?</p>
+                <p style={qLabel()}>2. What is the best way to contact you?</p>
                 <p style={hint}>Examples: Email, LinkedIn, phone number, personal website, or other preferred contact method.</p>
                 <input
                   type="text"
@@ -280,7 +279,7 @@ export default function Support() {
 
               {/* Q3 */}
               <div>
-                <p style={qLabel('')}>
+                <p style={qLabel()}>
                   3. Which area(s) would you like to contribute to?{' '}
                   <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Select all that apply</span>
                 </p>
@@ -301,7 +300,7 @@ export default function Support() {
 
               {/* Q4 */}
               <div>
-                <p style={qLabel('')}>4. What skills, experience, or expertise would you like to contribute?</p>
+                <p style={qLabel()}>4. What skills, experience, or expertise would you like to contribute?</p>
                 <p style={hint}>Examples: Programming, nutrition research, public health, education, design, data analysis, community engagement, fundraising, communications, etc.</p>
                 <textarea
                   rows={4}
@@ -316,7 +315,7 @@ export default function Support() {
 
               {/* Q5 */}
               <div>
-                <p style={qLabel('')}>5. Approximately how much time could you contribute?</p>
+                <p style={qLabel()}>5. Approximately how much time could you contribute?</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {TIME_OPTIONS.map((o) => (
                     <label key={o} style={labelStyle}>
@@ -336,7 +335,7 @@ export default function Support() {
 
               {/* Q6 */}
               <div>
-                <p style={qLabel('')}>
+                <p style={qLabel()}>
                   6. Have you already sent your resume and/or cover letter to{' '}
                   <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>?
                 </p>
@@ -359,7 +358,7 @@ export default function Support() {
 
               {/* Q7 */}
               <div>
-                <p style={qLabel('')}>
+                <p style={qLabel()}>
                   7. Why are you interested in contributing to NutriKids?{' '}
                   <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Optional</span>
                 </p>
@@ -377,7 +376,7 @@ export default function Support() {
 
               {/* Q8 */}
               <div>
-                <p style={qLabel('')}>
+                <p style={qLabel()}>
                   8. Is there anything else you would like us to know?{' '}
                   <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Optional</span>
                 </p>

@@ -17,11 +17,10 @@ interface Metric {
   value: number;
 }
 
-function PercentileChart({ metrics, isZh, isEs, childName }: {
+function PercentileChart({ metrics, isZh, isEs }: {
   metrics: Metric[];
   isZh: boolean;
   isEs: boolean;
-  childName: string;
 }) {
   const W = 720, H = 340;
   const PAD_L = 52, PAD_R = 20, PAD_T = 28, PAD_B = 48;
@@ -275,7 +274,7 @@ export default function GrowthProfile() {
                   {subtitle}
                 </p>
 
-                <PercentileChart metrics={metrics} isZh={isZh} isEs={isEs} childName={child.name} />
+                <PercentileChart metrics={metrics} isZh={isZh} isEs={isEs} />
 
                 {/* Legend */}
                 <div className="flex gap-6 mt-3 flex-wrap" style={{ fontFamily: 'Nunito, sans-serif', fontSize: '13px', fontWeight: 700, color: '#4b5563' }}>
