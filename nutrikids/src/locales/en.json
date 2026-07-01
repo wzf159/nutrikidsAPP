@@ -193,6 +193,144 @@
     "zh": "中文",
     "en": "EN"
   },
+  "about": {
+    "tabs": {
+      "aboutNutrikids": "About NutriKids",
+      "mission": "Mission",
+      "howItWorks": "How It Works",
+      "team": "Team",
+      "sources": "Scientific Sources",
+      "aiDisclaimer": "AI Disclaimer",
+      "medicalDisclaimer": "Medical Disclaimer",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfUse": "Terms of Use",
+      "getInTouch": "Get in Touch"
+    },
+    "panelAbout": {
+      "title": "About NutriKids",
+      "paragraphs": [
+        "NutriKids is an evidence-informed nutrition education platform designed to help families understand how food choices may support their children's unique growth and developmental needs.",
+        "By combining nutrition science, publicly available food and nutrition data, and artificial intelligence technology, NutriKids translates complex food information into practical, child-centered insights that are easier for families to understand and apply.",
+        "Unlike general food analysis tools, NutriKids is being developed to help parents evaluate foods in the context of a child's age, growth stage, and nutritional needs.",
+        "Our first release focuses on the <strong>Food Analyzer</strong>, which helps families better understand packaged foods and how their nutritional characteristics may support different aspects of child development. Future releases will introduce Daily Nutrition Tracking and Personalized Nutrition Plans to provide a more comprehensive and individualized nutrition experience.",
+        "Our long-term vision is to create a trusted nutrition companion that helps families make informed decisions and build healthier habits throughout childhood."
+      ]
+    },
+    "panelMission": {
+      "title": "Mission",
+      "paragraphs": [
+        "At NutriKids, we believe that every child deserves access to nutrition guidance that reflects their unique developmental needs.",
+        "Our mission is to <strong>empower parents and caregivers</strong> with accessible, trustworthy, and science-informed nutrition insights that support healthier food choices and lifelong wellbeing.",
+        "By making nutrition information easier to understand and apply, we aim to help families build healthy habits and make confident decisions about the foods their children consume."
+      ]
+    },
+    "panelHowItWorks": {
+      "title": "How It Works",
+      "foodAnalyzer": {
+        "title": "Food Analyzer",
+        "badge": "Available Now",
+        "desc": "The Food Analyzer evaluates packaged foods based on ingredients, nutrient content, and food characteristics. Rather than simply displaying nutrition facts, NutriKids helps parents understand how nutrients and ingredients may contribute to different aspects of child growth and development while highlighting nutritional strengths and potential areas of concern."
+      },
+      "dailyTracking": {
+        "title": "Daily Nutrition Tracking",
+        "badge": "Coming Soon",
+        "desc": "Daily Nutrition Tracking will help families evaluate a child's overall nutrient intake throughout the day and better understand dietary patterns over time."
+      },
+      "personalizedPlans": {
+        "title": "Personalized Nutrition Plans",
+        "badge": "Coming Soon",
+        "desc": "Personalized Nutrition Plans will provide tailored nutrition guidance based on factors such as age, growth stage, dietary habits, and individual nutritional needs."
+      },
+      "approach": {
+        "title": "Our Approach",
+        "desc": "NutriKids is designed to <strong>support—not replace</strong>—parental judgment and professional healthcare guidance. Our goal is to make nutrition information easier to understand so families can make informed decisions with greater confidence."
+      }
+    },
+    "panelTeam": {
+      "title": "Team",
+      "desc": "NutriKids is developed by a multidisciplinary team with backgrounds in research, product design, data science, and software development. The project is led by <strong>SENSE Institute</strong>, a nonprofit organization dedicated to advancing community wellbeing through research, education, and innovation.",
+      "members": [
+        { "name": "Houpu Li", "role": "Founder & CEO, Research Lead" },
+        { "name": "Yanyao Cui", "role": "Product Manager & Researcher" },
+        { "name": "Shiyun Wen", "role": "Data Engineer & Developer" },
+        { "name": "Zefan Wang", "role": "Data Engineer & Developer" },
+        { "name": "Zhiyan Chen", "role": "Project Coordinator & Researcher" }
+      ],
+      "footer": "We welcome collaboration with healthcare professionals, nutrition experts, educators, researchers, technologists, and community partners who share our mission."
+    },
+    "panelSources": {
+      "title": "Scientific Sources",
+      "desc": "NutriKids is informed by publicly available scientific evidence, nutrition research, and guidance from recognized health and nutrition organizations, including:",
+      "items": [
+        "United States Department of Agriculture (USDA)",
+        "Centers for Disease Control and Prevention (CDC)",
+        "National Institutes of Health (NIH)",
+        "American Academy of Pediatrics (AAP)",
+        "World Health Organization (WHO)",
+        "Peer-reviewed scientific literature and publicly available nutrition databases"
+      ],
+      "footer": "We regularly review available resources and update our educational content to reflect current evidence and best practices whenever possible."
+    },
+    "panelAIDisclaimer": {
+      "title": "AI Disclaimer",
+      "p1": "NutriKids uses artificial intelligence (AI) technology to help analyze food and nutrition information and generate educational insights.",
+      "pillText": "While we strive to provide accurate and useful information, <strong>AI-generated content may occasionally contain inaccuracies, omissions, or interpretations</strong> that do not fully reflect an individual's unique circumstances.",
+      "p2": "Information provided by NutriKids is intended for <strong>educational purposes only</strong> and should not be considered medical, nutritional, or professional advice."
+    },
+    "panelMedicalDisclaimer": {
+      "title": "Medical Disclaimer",
+      "p1": "NutriKids is an <strong>educational platform</strong> and does not provide medical advice, diagnosis, treatment, or healthcare services.",
+      "pillText": "Information provided through NutriKids is intended for <strong>educational and informational purposes only</strong> and should not replace professional medical or nutritional guidance.",
+      "p2": "Parents and caregivers should consult <strong>qualified healthcare professionals</strong> regarding questions about a child's health, nutrition, growth, or development."
+    },
+    "panelPrivacyPolicy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last Updated: July 2026",
+      "sections": [
+        { "title": "Overview", "content": "NutriKids is committed to protecting your privacy and handling your information responsibly. This Privacy Policy explains what information we collect, how we use it, and the choices available to you when using NutriKids." },
+        { "title": "Information We May Collect", "content": "Depending on how you use NutriKids, we may collect:", "items": [
+          "Information you voluntarily provide, such as age group preferences, nutrition-related inputs, or feedback submissions",
+          "Food and nutrition information submitted for analysis",
+          "Usage and technical information, including browser type, device information, and website analytics",
+          "Contact information provided through support requests or donations"
+        ]},
+        { "title": "How We Use Information", "content": "We may use collected information to:", "items": [
+          "Provide and improve NutriKids services",
+          "Generate nutrition analyses and educational insights",
+          "Understand how users interact with the platform",
+          "Improve functionality, accuracy, and user experience",
+          "Respond to inquiries and support requests",
+          "Support research, evaluation, and product development"
+        ]},
+        { "title": "Data Sharing", "content": "<strong>NutriKids does not sell personal information.</strong> We may share information with trusted service providers that help operate the platform, such as hosting, analytics, payment processing, or AI service providers, when necessary to deliver services." },
+        { "title": "Children's Privacy", "content": "NutriKids is designed to support families and caregivers. Parents and caregivers should provide information on behalf of children. We do not knowingly collect personal information directly from children without appropriate parental involvement." },
+        { "title": "Data Security", "content": "We take reasonable measures to protect information from unauthorized access, loss, misuse, or disclosure. However, no online service can guarantee absolute security." },
+        { "title": "Updates to This Policy", "content": "We may update this Privacy Policy periodically. Updated versions will be posted on this page with a revised effective date." },
+        { "title": "Contact Us", "content": "If you have questions regarding this Privacy Policy, please contact us through the contact information provided on the website." }
+      ]
+    },
+    "panelTermsOfUse": {
+      "title": "Terms of Use",
+      "lastUpdated": "Last Updated: July 2026",
+      "sections": [
+        { "title": "Acceptance of Terms", "content": "By accessing or using NutriKids, you agree to these Terms of Use. If you do not agree with these terms, please discontinue use of the platform.", "type": "warning" },
+        { "title": "Educational Purpose", "content": "NutriKids is an educational platform designed to help families better understand food, nutrition, and healthy development. The platform is intended for <strong>informational and educational purposes only</strong>." },
+        { "title": "No Medical Advice", "content": "NutriKids does not provide medical advice, diagnosis, treatment, or healthcare services. Information provided through the platform should not be considered a substitute for professional medical, nutritional, or healthcare guidance.", "type": "alert" },
+        { "title": "User Responsibility", "content": "Users are responsible for evaluating information provided by NutriKids and determining its suitability for their individual circumstances. Parents and caregivers should consult qualified healthcare professionals regarding questions about a child's health, nutrition, growth, or development." },
+        { "title": "Accuracy of Information", "content": "We strive to provide accurate and evidence-informed information. However, NutriKids does not guarantee the accuracy, completeness, reliability, or suitability of any content, analysis, or recommendation. Information may change as scientific knowledge evolves." },
+        { "title": "Intellectual Property", "content": "Unless otherwise stated, content, design, logos, text, and materials available through NutriKids are the property of NutriKids, SENSE Institute, or their respective owners and may not be reproduced without permission." },
+        { "title": "Limitation of Liability", "content": "To the fullest extent permitted by law, NutriKids, SENSE Institute, and project contributors shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, or inability to use, the platform." },
+        { "title": "Modifications", "content": "We may modify, suspend, or discontinue any portion of NutriKids at any time without prior notice." },
+        { "title": "Updates to These Terms", "content": "We may update these Terms of Use periodically. Continued use of NutriKids after changes are posted constitutes acceptance of the revised terms." },
+        { "title": "Contact Us", "content": "If you have questions regarding these Terms of Use, please contact us through the contact information provided on the website." }
+      ]
+    },
+    "panelGetInTouch": {
+      "title": "Get in Touch",
+      "text": "Questions, feedback, or collaboration opportunities?",
+      "email": "info@sense-institute.org"
+    }
+  },
   "grade": {
     "Excellent": "Excellent",
     "Good": "Good",
