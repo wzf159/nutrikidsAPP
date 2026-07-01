@@ -193,6 +193,93 @@
     "zh": "中文",
     "en": "EN"
   },
+  "support": {
+    "title": "Support Us",
+    "landing": {
+      "subtitle": "Help us build a healthier future for children.",
+      "desc": "NutriKids is a nonprofit, community-driven initiative. Whether through financial support, technical contributions, research collaboration, or sharing our mission, you can help us make nutrition guidance more accessible for families.",
+      "donate": "Donate",
+      "becomeContributor": "Become a Contributor"
+    },
+    "form": {
+      "backBtn": "Back to Support",
+      "title": "Become a Contributor",
+      "subtitle": "Help us improve children's nutrition education and wellbeing.",
+      "desc1": "NutriKids welcomes individuals and organizations who would like to contribute their time, expertise, or resources to support healthier childhood development.",
+      "desc2": "We are particularly interested in collaborating with:",
+      "roles": [
+        "Software Developers",
+        "Data Scientists",
+        "Nutrition Researchers",
+        "Healthcare and Nutrition Professionals",
+        "Educators",
+        "Translators",
+        "Community Partners",
+        "Student Volunteers"
+      ],
+      "desc3": "Whether you can contribute technical expertise, research support, educational content, design skills, or community outreach, we would love to hear from you.",
+      "note": "Please note: Most contributor opportunities are currently volunteer-based. As NutriKids continues to grow, some roles may become eligible for paid support depending on available funding, project needs, work authorization requirements, and role availability. Compensation is not guaranteed, and participation should be considered voluntary unless otherwise agreed upon in writing.",
+      "contact": "Questions? Contact us at: ",
+      "timer": "Takes less than 2 minutes",
+      "questions": {
+        "q1": "What is your name?",
+        "q1Placeholder": "Your name",
+        "q2": "What is the best way to contact you?",
+        "q2Hint": "Examples: Email, LinkedIn, phone number, personal website, or other preferred contact method.",
+        "q2Placeholder": "Your contact info",
+        "q3": "Which area(s) would you like to contribute to? ",
+        "q3Hint": "Select all that apply",
+        "q4": "What skills, experience, or expertise would you like to contribute?",
+        "q4Hint": "Examples: Programming, nutrition research, public health, education, design, data analysis, community engagement, fundraising, communications, etc.",
+        "q4Placeholder": "Describe your skills and experience...",
+        "q5": "Approximately how much time could you contribute?",
+        "q6": "Have you already sent your resume and/or cover letter to ",
+        "q6Suffix": "?",
+        "q7": "Why are you interested in contributing to NutriKids? ",
+        "q7Hint": "Optional",
+        "q7HintFull": "We would love to learn more about your interests, goals, or motivation for getting involved.",
+        "q7Placeholder": "Share your motivation...",
+        "q8": "Is there anything else you would like us to know? ",
+        "q8Hint": "Optional",
+        "q8Placeholder": "Any additional information..."
+      },
+      "submitBtn": "Submit →",
+      "submitting": "Submitting…"
+    },
+    "success": {
+      "title": "Thank You!",
+      "messages": [
+        "Thank you for your interest in supporting NutriKids.",
+        "Our team reviews submissions periodically and may contact contributors when opportunities align with project needs and available resources.",
+        "We appreciate your willingness to help improve children's nutrition education and wellbeing."
+      ]
+    },
+    "areas": {
+      "softwareDev": "Software Development",
+      "dataScience": "Data Science & Analytics",
+      "nutritionResearch": "Nutrition Research",
+      "healthcare": "Healthcare & Nutrition Expertise",
+      "contentDev": "Educational Content Development",
+      "design": "Product Design / UI & UX",
+      "translation": "Translation & Localization",
+      "community": "Community Outreach",
+      "fundraising": "Fundraising & Partnerships",
+      "volunteer": "Student Volunteer Opportunities",
+      "other": "Other"
+    },
+    "timeOptions": {
+      "lt2": "Less than 2 hours per week",
+      "2to5": "2–5 hours per week",
+      "5to10": "5–10 hours per week",
+      "gt10": "10+ hours per week",
+      "flexible": "Project-based / Flexible"
+    },
+    "resumeOptions": {
+      "yes": "Yes",
+      "no": "No",
+      "planned": "Not yet, but I plan to"
+    }
+  },
   "about": {
     "tabs": {
       "aboutNutrikids": "About NutriKids",

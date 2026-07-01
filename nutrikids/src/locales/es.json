@@ -194,6 +194,93 @@
     "en": "EN",
     "es": "ES"
   },
+  "support": {
+    "title": "Apóyanos",
+    "landing": {
+      "subtitle": "Ayúdanos a construir un futuro más saludable para los niños.",
+      "desc": "NutriKids es una iniciativa sin fines de lucro, impulsada por la comunidad. Ya sea a través de apoyo financiero, contribuciones técnicas, colaboración en investigación o compartiendo nuestra misión, puedes ayudarnos a hacer que la guía nutricional sea más accesible para las familias.",
+      "donate": "Donar",
+      "becomeContributor": "Ser Contribuidor"
+    },
+    "form": {
+      "backBtn": "Volver a Apoyo",
+      "title": "Ser Contribuidor",
+      "subtitle": "Ayúdanos a mejorar la educación nutricional y el bienestar infantil.",
+      "desc1": "NutriKids da la bienvenida a personas y organizaciones que deseen contribuir con su tiempo, experiencia o recursos para apoyar un desarrollo infantil más saludable.",
+      "desc2": "Nos interesa especialmente colaborar con:",
+      "roles": [
+        "Desarrolladores de Software",
+        "Científicos de Datos",
+        "Investigadores en Nutrición",
+        "Profesionales de la Salud y Nutrición",
+        "Educadores",
+        "Traductores",
+        "Socios Comunitarios",
+        "Voluntarios Estudiantes"
+      ],
+      "desc3": "Ya sea que puedas contribuir con experiencia técnica, apoyo en investigación, contenido educativo, habilidades de diseño o extensión comunitaria, nos encantaría saber de ti.",
+      "note": "Por favor tenga en cuenta: La mayoría de las oportunidades para contribuidores actualmente son voluntarias. A medida que NutriKids continúe creciendo, algunos roles pueden ser elegibles para apoyo remunerado dependiendo de la financiación disponible, necesidades del proyecto, requisitos de autorización de trabajo y disponibilidad del rol. La compensación no está garantizada, y la participación debe considerarse voluntaria a menos que se acuerde lo contrario por escrito.",
+      "contact": "¿Preguntas? Contáctenos en: ",
+      "timer": "Toma menos de 2 minutos",
+      "questions": {
+        "q1": "¿Cuál es tu nombre?",
+        "q1Placeholder": "Tu nombre",
+        "q2": "¿Cuál es la mejor forma de contactarte?",
+        "q2Hint": "Ejemplos: Email, LinkedIn, número de teléfono, sitio web personal u otro método de contacto preferido.",
+        "q2Placeholder": "Tu información de contacto",
+        "q3": "¿A qué área(s) te gustaría contribuir? ",
+        "q3Hint": "Selecciona todas las que apliquen",
+        "q4": "¿Qué habilidades, experiencia o experiencia te gustaría contribuir?",
+        "q4Hint": "Ejemplos: Programación, investigación nutricional, salud pública, educación, diseño, análisis de datos, participación comunitaria, recaudación de fondos, comunicaciones, etc.",
+        "q4Placeholder": "Describe tus habilidades y experiencia...",
+        "q5": "¿Aproximadamente cuánto tiempo podrías contribuir?",
+        "q6": "¿Ya has enviado tu currículum y/o carta de presentación a ",
+        "q6Suffix": "?",
+        "q7": "¿Por qué estás interesado en contribuir a NutriKids? ",
+        "q7Hint": "Opcional",
+        "q7HintFull": "Nos encantaría saber más sobre tus intereses, metas o motivación para involucrarte.",
+        "q7Placeholder": "Comparte tu motivación...",
+        "q8": "¿Hay algo más que te gustaría que sepamos? ",
+        "q8Hint": "Opcional",
+        "q8Placeholder": "Cualquier información adicional..."
+      },
+      "submitBtn": "Enviar →",
+      "submitting": "Enviando…"
+    },
+    "success": {
+      "title": "¡Gracias!",
+      "messages": [
+        "Gracias por tu interés en apoyar a NutriKids.",
+        "Nuestro equipo revisa los envíos periódicamente y puede contactar a contribuidores cuando las oportunidades se alineen con las necesidades del proyecto y los recursos disponibles.",
+        "Agradecemos tu disposición para ayudar a mejorar la educación nutricional y el bienestar infantil."
+      ]
+    },
+    "areas": {
+      "softwareDev": "Desarrollo de Software",
+      "dataScience": "Ciencia de Datos y Análisis",
+      "nutritionResearch": "Investigación Nutricional",
+      "healthcare": "Experiencia en Salud y Nutrición",
+      "contentDev": "Desarrollo de Contenido Educativo",
+      "design": "Diseño de Producto / UI y UX",
+      "translation": "Traducción y Localización",
+      "community": "Extensión Comunitaria",
+      "fundraising": "Recaudación de Fondos y Alianzas",
+      "volunteer": "Oportunidades de Voluntariado Estudiantil",
+      "other": "Otro"
+    },
+    "timeOptions": {
+      "lt2": "Menos de 2 horas por semana",
+      "2to5": "2–5 horas por semana",
+      "5to10": "5–10 horas por semana",
+      "gt10": "10+ horas por semana",
+      "flexible": "Basado en proyectos / Flexible"
+    },
+    "resumeOptions": {
+      "yes": "Sí",
+      "no": "No",
+      "planned": "Aún no, pero planeo hacerlo"
+    }
+  },
   "about": {
     "tabs": {
       "aboutNutrikids": "Acerca de NutriKids",

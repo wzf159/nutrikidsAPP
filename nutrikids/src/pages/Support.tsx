@@ -1,45 +1,48 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ff = "'Nunito', sans-serif";
 const ctaGradient = 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)';
 
-const AREAS = [
-  'Software Development',
-  'Data Science & Analytics',
-  'Nutrition Research',
-  'Healthcare & Nutrition Expertise',
-  'Educational Content Development',
-  'Product Design / UI & UX',
-  'Translation & Localization',
-  'Community Outreach',
-  'Fundraising & Partnerships',
-  'Student Volunteer Opportunities',
-  'Other',
-];
-
-const TIME_OPTIONS = [
-  'Less than 2 hours per week',
-  '2–5 hours per week',
-  '5–10 hours per week',
-  '10+ hours per week',
-  'Project-based / Flexible',
-];
-
-const RESUME_OPTIONS = [
-  'Yes',
-  'No',
-  'Not yet, but I plan to',
-];
-
 type View = 'landing' | 'form' | 'success';
 
 export default function Support() {
+  const { t } = useTranslation();
+
+  const areas = [
+    t('support.areas.softwareDev'),
+    t('support.areas.dataScience'),
+    t('support.areas.nutritionResearch'),
+    t('support.areas.healthcare'),
+    t('support.areas.contentDev'),
+    t('support.areas.design'),
+    t('support.areas.translation'),
+    t('support.areas.community'),
+    t('support.areas.fundraising'),
+    t('support.areas.volunteer'),
+    t('support.areas.other'),
+  ];
+
+  const timeOptions = [
+    t('support.timeOptions.lt2'),
+    t('support.timeOptions.2to5'),
+    t('support.timeOptions.5to10'),
+    t('support.timeOptions.gt10'),
+    t('support.timeOptions.flexible'),
+  ];
+
+  const resumeOptions = [
+    t('support.resumeOptions.yes'),
+    t('support.resumeOptions.no'),
+    t('support.resumeOptions.planned'),
+  ];
+
   const [view, setView] = useState<View>('landing');
 
   // form state
   const [name, setName] = useState('');
   const [contact, setContact] = useState('');
-  const [areas, setAreas] = useState<string[]>([]);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [skills, setSkills] = useState('');
   const [time, setTime] = useState('');
   const [resume, setResume] = useState('');
@@ -48,7 +51,7 @@ export default function Support() {
   const [submitting, setSubmitting] = useState(false);
 
   const toggleArea = (val: string) =>
-    setAreas((prev) => prev.includes(val) ? prev.filter((a) => a !== val) : [...prev, val]);
+    setSelectedAreas((prev) => prev.includes(val) ? prev.filter((a) => a !== val) : [...prev, val]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !contact.trim()) return;
@@ -123,14 +126,14 @@ export default function Support() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}>
-                💛 Support Us
+                💛 {t('support.title')}
               </span>
             </div>
             <p style={{ fontFamily: ff, fontSize: '15px', fontWeight: 700, color: '#2d2a4a', lineHeight: 1.7, marginBottom: '8px' }}>
-              Help us build a healthier future for children.
+              {t('support.landing.subtitle')}
             </p>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '32px' }}>
-              NutriKids is a nonprofit, community-driven initiative. Whether through financial support, technical contributions, research collaboration, or sharing our mission, you can help us make nutrition guidance more accessible for families.
+              {t('support.landing.description')}
             </p>
             <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
               <a
@@ -152,7 +155,7 @@ export default function Support() {
                   boxShadow: '0 4px 16px rgba(137,60,227,0.25)',
                 }}
               >
-                💛 Donate
+                💛 {t('support.landing.donate')}
               </a>
               <button
                 onClick={() => setView('form')}
@@ -171,7 +174,7 @@ export default function Support() {
                   cursor: 'pointer',
                 }}
               >
-                🚀 Become a Contributor
+                🚀 {t('support.landing.becomeContributor')}
               </button>
             </div>
           </div>
@@ -198,7 +201,7 @@ export default function Support() {
                 marginBottom: '16px',
               }}
             >
-              ← Back to Support
+              ← {t('support.form.backBtn')}
             </button>
             <div style={{ marginBottom: '6px' }}>
               <span style={{
@@ -210,39 +213,36 @@ export default function Support() {
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
               }}>
-                🚀 Become a Contributor
+                🚀 {t('support.form.title')}
               </span>
             </div>
             <p style={{ fontFamily: ff, fontSize: '14px', fontWeight: 700, color: '#2d2a4a', marginBottom: '6px', lineHeight: 1.6 }}>
-              Help us improve children's nutrition education and wellbeing.
+              {t('support.form.subtitle')}
             </p>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '14px' }}>
-              NutriKids welcomes individuals and organizations who would like to contribute their time, expertise, or resources to support healthier childhood development.
+              {t('support.form.description1')}
             </p>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '8px' }}>
-              We are particularly interested in collaborating with:
+              {t('support.form.description2')}
             </p>
             <ul style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 2, margin: '0 0 14px 20px', padding: 0 }}>
-              {['Software Developers', 'Data Scientists', 'Nutrition Researchers',
-                'Healthcare and Nutrition Professionals', 'Educators', 'Translators',
-                'Community Partners', 'Student Volunteers'].map((r) => (
-                <li key={r}>{r}</li>
+              {t('support.form.roles', { returnObjects: true } as object).map((r: string, i: number) => (
+                <li key={i}>{r}</li>
               ))}
             </ul>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '14px' }}>
-              Whether you can contribute technical expertise, research support, educational content, design skills, or community outreach, we would love to hear from you.
+              {t('support.form.description3')}
             </p>
             <div style={{ background: '#fef3c7', borderLeft: '4px solid #f59e0b', borderRadius: '8px', padding: '12px 16px', marginBottom: '14px' }}>
               <p style={{ fontFamily: ff, fontSize: '12px', fontWeight: 600, color: '#78350f', lineHeight: 1.7, margin: 0 }}>
-                Please note: Most contributor opportunities are currently volunteer-based. As NutriKids continues to grow, some roles may become eligible for paid support depending on available funding, project needs, work authorization requirements, and role availability. Compensation is not guaranteed, and participation should be considered voluntary unless otherwise agreed upon in writing.
+                {t('support.form.note')}
               </p>
             </div>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', marginBottom: '8px' }}>
-              📧 Questions? Contact us at:{' '}
-              <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>
+              {t('support.form.contact')} <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>
             </p>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'linear-gradient(135deg,rgba(137,60,227,0.10),rgba(236,72,153,0.10))', border: '1.5px solid rgba(137,60,227,0.25)', borderRadius: '999px', padding: '3px 14px', fontFamily: ff, fontWeight: 800, fontSize: '12px', color: '#893ce3', marginBottom: '28px' }}>
-              ⏱ Takes less than 2 minutes
+              ⏱ {t('support.form.timer')}
             </div>
 
             {/* Questions */}
@@ -250,10 +250,10 @@ export default function Support() {
 
               {/* Q1 */}
               <div>
-                <p style={qLabel()}>1. What is your name?</p>
+                <p style={qLabel()}>{t('support.form.questions.q1')}</p>
                 <input
                   type="text"
-                  placeholder="Your name"
+                  placeholder={t('support.form.questions.q1Placeholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   style={inputStyle}
@@ -264,11 +264,11 @@ export default function Support() {
 
               {/* Q2 */}
               <div>
-                <p style={qLabel()}>2. What is the best way to contact you?</p>
-                <p style={hint}>Examples: Email, LinkedIn, phone number, personal website, or other preferred contact method.</p>
+                <p style={qLabel()}>{t('support.form.questions.q2')}</p>
+                <p style={hint}>{t('support.form.questions.q2Hint')}</p>
                 <input
                   type="text"
-                  placeholder="Your contact info"
+                  placeholder={t('support.form.questions.q2Placeholder')}
                   value={contact}
                   onChange={(e) => setContact(e.target.value)}
                   style={inputStyle}
@@ -280,15 +280,15 @@ export default function Support() {
               {/* Q3 */}
               <div>
                 <p style={qLabel()}>
-                  3. Which area(s) would you like to contribute to?{' '}
-                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Select all that apply</span>
+                  {t('support.form.questions.q3')}{' '}
+                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>{t('support.form.questions.q3Hint')}</span>
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {AREAS.map((a) => (
+                  {areas.map((a) => (
                     <label key={a} style={labelStyle}>
                       <input
                         type="checkbox"
-                        checked={areas.includes(a)}
+                        checked={selectedAreas.includes(a)}
                         onChange={() => toggleArea(a)}
                         style={{ width: '16px', height: '16px', accentColor: '#893ce3' }}
                       />
@@ -300,11 +300,11 @@ export default function Support() {
 
               {/* Q4 */}
               <div>
-                <p style={qLabel()}>4. What skills, experience, or expertise would you like to contribute?</p>
-                <p style={hint}>Examples: Programming, nutrition research, public health, education, design, data analysis, community engagement, fundraising, communications, etc.</p>
+                <p style={qLabel()}>{t('support.form.questions.q4')}</p>
+                <p style={hint}>{t('support.form.questions.q4Hint')}</p>
                 <textarea
                   rows={4}
-                  placeholder="Describe your skills and experience..."
+                  placeholder={t('support.form.questions.q4Placeholder')}
                   value={skills}
                   onChange={(e) => setSkills(e.target.value)}
                   style={{ ...inputStyle, resize: 'vertical' }}
@@ -315,9 +315,9 @@ export default function Support() {
 
               {/* Q5 */}
               <div>
-                <p style={qLabel()}>5. Approximately how much time could you contribute?</p>
+                <p style={qLabel()}>{t('support.form.questions.q5')}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {TIME_OPTIONS.map((o) => (
+                  {timeOptions.map((o) => (
                     <label key={o} style={labelStyle}>
                       <input
                         type="radio"
@@ -336,11 +336,12 @@ export default function Support() {
               {/* Q6 */}
               <div>
                 <p style={qLabel()}>
-                  6. Have you already sent your resume and/or cover letter to{' '}
-                  <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>?
+                  {t('support.form.questions.q6')}{' '}
+                  <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>{' '}
+                  {t('support.form.questions.q6Suffix')}
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {RESUME_OPTIONS.map((o) => (
+                  {resumeOptions.map((o) => (
                     <label key={o} style={labelStyle}>
                       <input
                         type="radio"
@@ -359,13 +360,13 @@ export default function Support() {
               {/* Q7 */}
               <div>
                 <p style={qLabel()}>
-                  7. Why are you interested in contributing to NutriKids?{' '}
-                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Optional</span>
+                  {t('support.form.questions.q7')}{' '}
+                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>{t('support.form.questions.q7Optional')}</span>
                 </p>
-                <p style={hint}>We would love to learn more about your interests, goals, or motivation for getting involved.</p>
+                <p style={hint}>{t('support.form.questions.q7Hint')}</p>
                 <textarea
                   rows={3}
-                  placeholder="Share your motivation..."
+                  placeholder={t('support.form.questions.q7Placeholder')}
                   value={motivation}
                   onChange={(e) => setMotivation(e.target.value)}
                   style={{ ...inputStyle, resize: 'vertical' }}
@@ -377,12 +378,12 @@ export default function Support() {
               {/* Q8 */}
               <div>
                 <p style={qLabel()}>
-                  8. Is there anything else you would like us to know?{' '}
-                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>Optional</span>
+                  {t('support.form.questions.q8')}{' '}
+                  <span style={{ fontWeight: 600, color: '#9ca3af', fontSize: '12px' }}>{t('support.form.questions.q8Optional')}</span>
                 </p>
                 <textarea
                   rows={3}
-                  placeholder="Any additional information..."
+                  placeholder={t('support.form.questions.q8Placeholder')}
                   value={extra}
                   onChange={(e) => setExtra(e.target.value)}
                   style={{ ...inputStyle, resize: 'vertical' }}
@@ -411,7 +412,7 @@ export default function Support() {
                   opacity: submitting ? 0.7 : 1,
                 }}
               >
-                {submitting ? 'Submitting…' : 'Submit →'}
+                {submitting ? t('support.form.submitting') : t('support.form.submitBtn')}
               </button>
             </div>
           </div>
@@ -422,15 +423,11 @@ export default function Support() {
           <div style={{ ...cardStyle, textAlign: 'center', padding: '40px 36px' }}>
             <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
             <p style={{ fontFamily: "'Poppins', sans-serif", fontSize: '20px', fontWeight: 700, color: '#2d2a4a', marginBottom: '12px' }}>
-              Thank You!
+              {t('support.success.title')}
             </p>
-            {[
-              'Thank you for your interest in supporting NutriKids.',
-              'Our team reviews submissions periodically and may contact contributors when opportunities align with project needs and available resources.',
-              "We appreciate your willingness to help improve children's nutrition education and wellbeing.",
-            ].map((t, i) => (
+            {(t('support.success.messages', { returnObjects: true }) as string[]).map((msg, i) => (
               <p key={i} style={{ fontFamily: ff, fontSize: '14px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '8px' }}>
-                {t}
+                {msg}
               </p>
             ))}
           </div>
