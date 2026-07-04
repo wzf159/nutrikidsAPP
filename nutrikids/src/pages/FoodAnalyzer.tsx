@@ -56,19 +56,23 @@ interface NodeLayout { id: number; y0: number; y1: number }
 function useSankeyLayout(view: AnalysisResult['view'] | null) {
   return useMemo(() => {
     if (!view) return { goalNodes: [] as NodeLayout[], nutrientNodes: [] as NodeLayout[], ribbons: [] as { goalId: number; nutrientId: number; value: number; path: string }[] };
-    const flows = view.flows;
-    const activeGoals = view.goals.filter(g => g.tier && flows.some(f => f.goalId === g.id));
-    const activeNutrients = view.nutrients.filter(n => flows.some(f => f.nutrientId === n.id));
-    if (!flows.length || !activeGoals.length || !activeNutrients.length)
+
+    const activeGoals = view.goals.filter(g => g.tier);
+    const activeGoalIds = new Set(activeGoals.map(g => g.id));
+    const activeFlows = view.flows.filter(f => activeGoalIds.has(f.goalId));
+    const activeNutrientIds = new Set(activeFlows.map(f => f.nutrientId));
+    const activeNutrients = view.nutrients.filter(n => activeNutrientIds.has(n.id));
+
+    if (!activeFlows.length || !activeGoals.length || !activeNutrients.length)
       return { goalNodes: [], nutrientNodes: [], ribbons: [] };
 
     const goalTotals: Record<number, number> = {};
     const nutrientTotals: Record<number, number> = {};
-    for (const f of flows) {
+    for (const f of activeFlows) {
       goalTotals[f.goalId] = (goalTotals[f.goalId] || 0) + f.value;
       nutrientTotals[f.nutrientId] = (nutrientTotals[f.nutrientId] || 0) + f.value;
     }
-    const total = flows.reduce((s, f) => s + f.value, 0);
+    const total = activeFlows.reduce((s, f) => s + f.value, 0);
     const rows = Math.max(activeGoals.length, activeNutrients.length);
     const avail = SK.height - SK.padTop * 2 - SK.gap * (rows - 1);
     const scale = avail / total;
@@ -89,9 +93,10 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
 
     const goalOffset: Record<number, number> = {};
     const nutrientOffset: Record<number, number> = {};
-    const ribbons = flows.map(f => {
-      const g = goalNodes.find(n => n.id === f.goalId)!;
-      const n = nutrientNodes.find(nd => nd.id === f.nutrientId)!;
+    const ribbons = activeFlows.flatMap(f => {
+      const g = goalNodes.find(n => n.id === f.goalId);
+      const n = nutrientNodes.find(nd => nd.id === f.nutrientId);
+      if (!g || !n) return [];
       const h = f.value * scale;
       const gy = g.y0 + (goalOffset[f.goalId] || 0);
       const ny = n.y0 + (nutrientOffset[f.nutrientId] || 0);
@@ -100,14 +105,8 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       const x0 = SK.leftX + SK.nodeWidth;
       const x1 = SK.rightX;
       const cx = (x0 + x1) / 2;
-      const path = [
-        `M ${x0} ${gy}`,
-        `C ${cx} ${gy}, ${cx} ${ny}, ${x1} ${ny}`,
-        `L ${x1} ${ny + h}`,
-        `C ${cx} ${ny + h}, ${cx} ${gy + h}, ${x0} ${gy + h}`,
-        'Z',
-      ].join(' ');
-      return { ...f, path };
+      const path = [`M ${x0} ${gy}`, `C ${cx} ${gy}, ${cx} ${ny}, ${x1} ${ny}`, `L ${x1} ${ny + h}`, `C ${cx} ${ny + h}, ${cx} ${gy + h}, ${x0} ${gy + h}`, 'Z'].join(' ');
+      return [{ ...f, path }];
     });
 
     return { goalNodes, nutrientNodes, ribbons };
@@ -579,7 +578,7 @@ export default function FoodAnalyzer() {
         {/* 空状态引导 */}
         {!result && phase.name === 'idle' && (
           <div className="bg-white rounded-3xl shadow-sm p-10 text-center text-gray-500">
-            <p className="text-5xl mb-4">🍎🥦🥛</p>
+            
             <p className="font-bold text-gray-700 text-lg mb-1">{isZh ? '搜索、拍照或上传图片，开始分析' : isEs ? 'Busca, toma una foto o sube una imagen para empezar' : 'Search, snap a photo, or upload an image to start'}</p>
             <p className="text-sm">{isZh ? 'AI 会识别食物并结合孩子的成长档案给出个性化评估' : isEs ? 'AI reconoce la comida y la evalúa según el perfil de tu hijo' : 'AI recognizes the food and scores it against your child’s profile'}</p>
           </div>
@@ -979,6 +978,13 @@ export default function FoodAnalyzer() {
                           👆 {isZh ? '当前食物' : 'THIS FOOD'}
                         </span>
                       </div>
+                      <p className="mt-3 text-[11px] text-gray-400 leading-relaxed">
+                        {isZh
+                          ? '加工等级来源：NOVA 食品分类系统，巴西圣保罗大学 Monteiro 等 · 成分检测基于产品配料表'
+                          : isEs
+                            ? 'Fuente: Sistema de clasificación NOVA, Monteiro et al., Universidad de São Paulo · Detección de ingredientes basada en la lista de ingredientes del producto'
+                            : 'Source: NOVA food classification system, Monteiro et al., University of São Paulo · Ingredient detection based on product ingredient list'}
+                      </p>
                     </div>
                   )}
                 </div>
