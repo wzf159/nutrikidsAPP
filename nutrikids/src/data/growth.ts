@@ -62,7 +62,7 @@ export function stageIdxForChild(
  * ================================================================ */
 
 export type Tier = 'core' | 'important' | 'supporting';
-export interface TierByGender      { male: Tier;     female: Tier }
+export interface TierByGender      { male: Tier | null;     female: Tier | null }
 export interface NutrientsByGender { male: string[];  female: string[] }
 
 export interface DevGoal {
@@ -269,7 +269,9 @@ DEV_GOALS.forEach(g => {
 
 // 工具函数：性别未知时取较高优先级
 const TIER_ORDER: Tier[] = ['core', 'important', 'supporting'];
-export function higherTier(a: Tier, b: Tier): Tier {
+export function higherTier(a: Tier | null, b: Tier | null): Tier | null {
+  if (a === null) return b;
+  if (b === null) return a;
   return TIER_ORDER.indexOf(a) <= TIER_ORDER.indexOf(b) ? a : b;
 }
 export function mergeNeutral(a: string[], b: string[]): string[] {

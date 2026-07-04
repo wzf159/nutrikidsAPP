@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
+import { getChildren, type Child } from '../services/api';
 
 const ACTIVE_KEY = 'nutrikids_active_child_id';
 
@@ -11,7 +11,7 @@ export function useChildren() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getChildren().then(list => {
+    getChildren().then((list: Child[]) => {
       setChildren(list);
       // 如果没有存过 activeId，默认选第一个
       if (!localStorage.getItem(ACTIVE_KEY) && list.length > 0) {
