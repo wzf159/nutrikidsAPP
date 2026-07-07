@@ -3,55 +3,13 @@
  * ================================================================ */
 
 const API = '/api';
-const TOKEN_KEY = 'nutrikids_token';
-
-// 游客模式：自动用演示账号登录（注册/登录 UI 完成前的过渡方案）
-const DEMO_CREDENTIALS = { email: 'demo@nutrikids.app', password: 'demo123456' };
-
-let tokenPromise: Promise<string> | null = null;
-
-async function getToken(): Promise<string> {
-  const cached = localStorage.getItem(TOKEN_KEY);
-  if (cached) return cached;
-  if (!tokenPromise) {
-    tokenPromise = (async () => {
-      let res = await fetch(`${API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(DEMO_CREDENTIALS),
-      });
-      if (res.status === 401) {
-        res = await fetch(`${API}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(DEMO_CREDENTIALS),
-        });
-      }
-      if (!res.ok) throw new Error('演示账号登录失败');
-      const data = await res.json();
-      localStorage.setItem(TOKEN_KEY, data.token);
-      tokenPromise = null;
-      return data.token as string;
-    })();
-  }
-  return tokenPromise;
-}
 
 async function authedFetch(path: string, init?: RequestInit): Promise<Response> {
-  const token = await getToken();
   const res = await fetch(`${API}${path}`, {
     ...init,
-    headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${token}` },
+    credentials: 'include',
+    headers: { ...(init?.headers ?? {}) },
   });
-  if (res.status === 401) {
-    // token 过期：清掉重来一次
-    localStorage.removeItem(TOKEN_KEY);
-    const fresh = await getToken();
-    return fetch(`${API}${path}`, {
-      ...init,
-      headers: { ...(init?.headers ?? {}), Authorization: `Bearer ${fresh}` },
-    });
-  }
   return res;
 }
 

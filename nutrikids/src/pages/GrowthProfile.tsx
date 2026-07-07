@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getChildren, type Child } from '../services/api';
 import {
   AGE_GROUPS, CDC_AGE8_HEIGHT, CDC_AGE8_WEIGHT, CDC_BMI, CDC_PCT_LABELS, CDC_PCTS,
-  bmiOf, interpolatePercentile, stageIdxForChild,
+  bmiOf, interpolatePercentile, stageIdxForChild, calcPercentiles,  
 } from '../data/growth';
 
 interface Metric {
@@ -15,6 +15,7 @@ interface Metric {
   emoji: string;
   pcts: number[];
   value: number;
+  percentile?: number;
 }
 
 function PercentileChart({ metrics, isZh, isEs }: {
@@ -87,7 +88,7 @@ function PercentileChart({ metrics, isZh, isEs }: {
       {metrics.map((m, mi) => {
         const cx = PAD_L + (mi + 0.5) * groupW;
         const x = cx - barW / 2;
-        const pct = interpolatePercentile(m.value, m.pcts);
+        const pct = m.percentile ?? interpolatePercentile(m.value, m.pcts);
         const yTop = y(pct);
         const yBottom = PAD_T + chartH;
         const r = 7;
@@ -187,26 +188,20 @@ export default function GrowthProfile() {
 
   const metrics = useMemo<Metric[]>(() => {
     if (!child?.heightCm || !child?.weightKg) return [];
-
-    const stage = AGE_GROUPS[stageIdxForChild(child.stageKey, child.age)];
+    const ageMonths = child.ageMonths ?? (child.age != null ? child.age * 12 : null);
+    if (ageMonths == null) return [];
+  
+    const pcts = calcPercentiles({ ageMonths, gender: child.gender, heightCm: child.heightCm, weightKg: child.weightKg });
+    const bmi = bmiOf(child.heightCm, child.weightKg);
+    const stage = AGE_GROUPS[stageIdxForChild(child.stageKey, child.age, child.ageMonths)];
     const bmiTable = (child.gender === 'girl' ? CDC_BMI.girls : CDC_BMI.boys)[stage.key];
-
-    const bmi: Metric = {
-      name: 'BMI', nameZh: 'BMI', nameEs: 'IMC',
-      unit: '', emoji: '📐',
-      pcts: bmiTable,
-      value: bmiOf(child.heightCm, child.weightKg),
-    };
-
-    if (child.age === 8) {
-      return [
-        { name: 'Height', nameZh: '身高', nameEs: 'Altura', unit: 'cm', emoji: '📏', pcts: CDC_AGE8_HEIGHT, value: child.heightCm },
-        { name: 'Weight', nameZh: '体重', nameEs: 'Peso',   unit: 'kg', emoji: '⚖️', pcts: CDC_AGE8_WEIGHT, value: child.weightKg },
-        bmi,
-      ];
-    }
-    return [bmi];
-  }, [child]);
+  
+    return [
+      ...(pcts.height != null ? [{ name: 'Height', nameZh: '身高', nameEs: 'Altura', unit: 'cm', emoji: '📏', pcts: CDC_AGE8_HEIGHT, value: child.heightCm, percentile: pcts.height }] : []),
+      ...(pcts.weight != null ? [{ name: 'Weight', nameZh: '体重', nameEs: 'Peso', unit: 'kg', emoji: '⚖️', pcts: CDC_AGE8_WEIGHT, value: child.weightKg, percentile: pcts.weight }] : []),
+      { name: 'BMI', nameZh: 'BMI', nameEs: 'IMC', unit: '', emoji: '📐', pcts: bmiTable, value: bmi, percentile: pcts.bmi ?? undefined },
+    ];
+}, [child]);
 
   const group = child ? AGE_GROUPS[stageIdxForChild(child.stageKey, child.age)] : null;
 
@@ -233,7 +228,7 @@ export default function GrowthProfile() {
             <div className="flex items-center gap-2 mb-1">
               <span className="w-3 h-3 rounded-sm bg-[#893ce3] inline-block flex-shrink-0" />
               <h2 className="text-[20px] font-bold text-[#893ce3]" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                {isZh ? '成长档案' : isEs ? 'Perfil de Crecimiento' : 'Growth Profile'}
+                {isZh ? '' : isEs ? 'Perfil de Crecimiento' : 'Growth Profile'}
               </h2>
             </div>
 

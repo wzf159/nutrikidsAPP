@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useSession } from './lib/auth';
 import TopNav from './components/E1_Layout/TopNav';
 import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
@@ -14,11 +15,26 @@ import GuidelineDetail from './pages/admin/GuidelineDetail';
 import ModelDetail from './pages/admin/ModelDetail';
 import ScienceInsightsDesign from './pages/admin/ScienceInsightsDesign';
 import FeedbackStats from './pages/admin/FeedbackStats';
-import Footer from './components/Footer';  // 加这行 import
+import Footer from './components/Footer';
 import About from './pages/About';
 import Support from './pages/Support';
+import Login from './pages/Login';
 
 export default function App() {
+  const { data: session, isPending } = useSession();
+
+  if (isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
+        <div className="text-2xl animate-pulse">🥦</div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <Login />;
+  }
+
   return (
     <BrowserRouter>
       <div className="flex flex-col min-h-screen">
@@ -48,7 +64,7 @@ export default function App() {
             </Route>
           </Routes>
         </main>
-        <Footer />   {/* 加这行 */}
+        <Footer />
       </div>
     </BrowserRouter>
   );
