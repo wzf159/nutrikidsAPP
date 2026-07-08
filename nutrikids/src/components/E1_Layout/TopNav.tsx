@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
 import { AGE_GROUPS, bmiOf } from '../../data/growth';
 import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
+import { useSession, signOut } from '../../lib/auth';
+
+
 
 const ACTIVE_KEY = 'nutrikids_active_child_id';
 
@@ -15,6 +18,9 @@ const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
 ];
 
 export default function TopNav() {
+  const { data: session } = useSession();
+  const user = session?.user;
+
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
   const navigate = useNavigate();
@@ -274,8 +280,8 @@ export default function TopNav() {
                 </>
               )}
 
-              {/* 添加新孩子 */}
-              <div className="h-px bg-purple-600/8" />
+             {/* 添加新孩子 */}
+             <div className="h-px bg-purple-600/8" />
               <div className="px-3 py-2.5">
                 <button
                   onClick={() => { setCardOpen(false); navigate('/onboarding'); }}
@@ -288,8 +294,27 @@ export default function TopNav() {
                 </button>
               </div>
 
-            </div>
+              {/* 用户信息 + 登出 */}
+              <div className="h-px bg-purple-600/8" />
+              <div className="px-4 py-3 flex items-center gap-2.5">
+                {user?.image && (
+                  <img src={user.image} className="w-7 h-7 rounded-full flex-shrink-0" alt="" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-[11px] font-bold text-gray-700 truncate">{user?.name}</p>
+                  <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
+                </div>
+                <button
+                  onClick={() => signOut({ fetchOptions: { onSuccess: () => window.location.href = '/' } })}
+                  className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
+                >
+                  {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
+                </button>
+              </div>
+
+            </div> 
           )}
+          
         </div>
 
         <LanguageSwitcher />
