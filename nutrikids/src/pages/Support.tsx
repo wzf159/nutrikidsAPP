@@ -54,12 +54,52 @@ export default function Support() {
     setSelectedAreas((prev) => prev.includes(val) ? prev.filter((a) => a !== val) : [...prev, val]);
 
   const handleSubmit = async () => {
-    if (!name.trim() || !contact.trim()) return;
     setSubmitting(true);
-    // Replace with your actual submission endpoint if needed
-    await new Promise((r) => setTimeout(r, 600));
-    setSubmitting(false);
-    setView('success');
+    try {
+      const res = await fetch('https://formspree.io/f/mrewnpqg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          contact,
+          areas: selectedAreas.join(', '),
+          skills,
+          time,
+          sentResume: resume,
+          motivation,
+          extra,
+          _subject: `NutriKids 贡献者申请 - ${name}`,
+        }),
+      });
+  
+      if (res.ok) {
+        setView('success');
+      } else {
+        const body = [
+          `Name: ${name}`,
+          `Contact: ${contact}`,
+          `Areas of Interest: ${selectedAreas.join(', ')}`,
+          `Skills & Experience: ${skills}`,
+          `Time Available: ${time}`,
+          `Resume Sent: ${resume}`,
+          `Motivation: ${motivation}`,
+          `Additional Info: ${extra}`,
+        ].join('\n\n');
+        
+        window.location.href = `mailto:info@sense-institute.org?subject=${encodeURIComponent('NutriKids Contributor Application - ' + name)}&body=${encodeURIComponent(body)}`;
+        window.location.href = `mailto:info@sense-institute.org?subject=${encodeURIComponent('NutriKids 贡献者申请 - ' + name)}&body=${encodeURIComponent(body)}`;
+        setTimeout(() => setView('success'), 500);
+      }
+    } catch (e) {
+      const body = `姓名: ${name}\n\n联系方式: ${contact}`;
+      window.location.href = `mailto:info@sense-institute.org?subject=${encodeURIComponent('NutriKids 贡献者申请')}&body=${encodeURIComponent(body)}`;
+      setTimeout(() => setView('success'), 500);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
@@ -108,6 +148,8 @@ export default function Support() {
     padding: '32px 36px',
     boxShadow: '0 2px 16px rgba(137,60,227,0.07)',
   };
+  const { i18n } = useTranslation();
+  const isZh = i18n.language === 'zh';
 
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#ccd8f5]">
@@ -220,18 +262,18 @@ export default function Support() {
               {t('support.form.subtitle')}
             </p>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '14px' }}>
-              {t('support.form.description1')}
+              {t('support.form.desc1')}
             </p>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '8px' }}>
-              {t('support.form.description2')}
+              {t('support.form.desc2')}
             </p>
-            <ul style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 2, margin: '0 0 14px 20px', padding: 0 }}>
+            <ul style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 2, margin: '0 0 14px 20px', padding: 0, listStyleType: 'disc' }}>
               {t('support.form.roles', { returnObjects: true } as object).map((r: string, i: number) => (
-                <li key={i}>{r}</li>
+                 <li key={i} style={{ listStyleType: 'disc' }}>{r}</li>
               ))}
             </ul>
             <p style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 1.8, marginBottom: '14px' }}>
-              {t('support.form.description3')}
+              {t('support.form.desc3')}
             </p>
             <div style={{ background: '#fef3c7', borderLeft: '4px solid #f59e0b', borderRadius: '8px', padding: '12px 16px', marginBottom: '14px' }}>
               <p style={{ fontFamily: ff, fontSize: '12px', fontWeight: 600, color: '#78350f', lineHeight: 1.7, margin: 0 }}>
