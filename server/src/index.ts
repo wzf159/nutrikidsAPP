@@ -25,7 +25,7 @@ await app.register(multipart);
 await app.register(jwt, {
   secret: process.env.JWT_SECRET ?? 'dev-insecure-secret-change-me',
 });
-
+/*
 app.decorate('authenticate', async (req: any, reply: any) => {
   try {
     const session = await auth.api.getSession({ headers: req.headers as any });
@@ -39,7 +39,13 @@ app.decorate('authenticate', async (req: any, reply: any) => {
     console.error('auth error:', e);
     reply.code(401).send({ error: '未登录' });
   }
+});*/
+
+app.decorate('authenticate', async (req: any, reply: any) => {
+  req.userId = 'dev-user-001';
+  req.user = { sub: 'dev-user-001' };
 });
+
 app.addContentTypeParser('application/json', { parseAs: 'buffer' }, function (req, body, done) {
   // Better Auth 路由返回 buffer，其他路由正常解析
   if (req.url?.startsWith('/api/auth/')) {

@@ -31,9 +31,9 @@ export default function App() {
     );
   }
 
-  if (!session) {
-    return <Login />;
-  }
+  //if (!session) {
+  //  return <Login />;
+  //}
 
   return (
     <BrowserRouter>

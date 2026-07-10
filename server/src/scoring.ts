@@ -117,9 +117,123 @@ export async function scoreFood(input: ScoreInput) {
   const matched = prodNutr.filter((n: { nutrientId: number; dailyValue: number | null }) => childNutrIds.has(n.nutrientId) && Number(n.dailyValue ?? 0) >= 10).length;
   const stageMatch = clamp(Math.round((matched / Math.max(childNutrIds.size, 1)) * 10), 0, 10);
 
-  const overall = Math.round(nutrientDensity + riskIngredients + processingLevel + stageMatch);
-  const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
 
+  // ── DRI 推荐量表（per day，按[0-6m, 7-12m, 1-3y, 4-8y, 9-13y, 14-18y]）──
+  // nutrientId 与 seed.ts 对应
+  const DRI_TABLE: Record<string, { male: (number|null)[]; female: (number|null)[] }> = {
+    'DHA':        { male: [100,100,null,null,250,250],    female: [100,100,null,null,250,250] },
+    'Choline':    { male: [125,150,200,250,375,550],      female: [125,150,200,250,375,400] },
+    'Iron':       { male: [0.27,11,7,10,8,11],           female: [0.27,11,7,10,8,15] },
+    'Vitamin B12':{ male: [0.4,0.5,0.9,1.2,1.8,2.4],    female: [0.4,0.5,0.9,1.2,1.8,2.4] },
+    'Folate':     { male: [65,80,150,200,300,400],        female: [65,80,150,200,300,400] },
+    'Calcium':    { male: [200,260,700,1000,1300,1300],   female: [200,260,700,1000,1300,1300] },
+    'Vitamin D':  { male: [10,10,15,15,15,15],            female: [10,10,15,15,15,15] },
+    'Phosphorus': { male: [100,275,460,500,1250,1250],    female: [100,275,460,500,1250,1250] },
+    'Vitamin A':  { male: [400,500,300,400,600,900],      female: [400,500,300,400,600,700] },
+    'Zinc':       { male: [2,3,3,5,8,11],                 female: [2,3,3,5,8,9] },
+    'Protein':    { male: [9.1,13.5,13,19,34,52],         female: [9.1,13.5,13,19,34,46] },
+    'Fluoride':   { male: [0.01,0.5,0.7,1,2,3],          female: [0.01,0.5,0.7,1,2,3] },
+    'Magnesium':  { male: [30,75,80,130,240,410],         female: [30,75,80,130,240,360] },
+    'Vitamin C':  { male: [40,50,15,25,45,75],            female: [40,50,15,25,45,65] },
+    'Vitamin K':  { male: [2,2.5,30,55,60,75],            female: [2,2.5,30,55,60,75] },
+    'Vitamin B6': { male: [0.1,0.3,0.5,0.6,1,1.3],       female: [0.1,0.3,0.5,0.6,1,1.2] },
+    'Iodine':     { male: [110,130,90,90,120,150],        female: [110,130,90,90,120,150] },
+    'Selenium':   { male: [15,20,20,30,40,55],            female: [15,20,20,30,40,55] },
+    'Potassium':  { male: [400,700,3000,3800,4500,4700],  female: [400,700,3000,3800,4500,4700] },
+    'Fiber':      { male: [null,null,19,25,26,38],        female: [null,null,19,25,31,26] },
+    'Vitamin E':  { male: [4,5,6,7,11,15],               female: [4,5,6,7,11,15] },
+  };
+
+  // 目标 → 营养素名称映射
+  const GOAL_NUTRIENT_NAMES: Record<number, string[]> = {
+    1: ['DHA','Choline','Iron','Vitamin B12','Folate'],
+    2: ['Calcium','Vitamin D','Phosphorus','Protein','Magnesium'],
+    3: ['Fiber','Potassium','Magnesium'],
+    4: ['Protein','Iron','Zinc','Vitamin D','Potassium'],
+    5: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'],
+    6: ['Fiber','Magnesium','Potassium'],
+    7: ['Vitamin A','Zinc','Vitamin E'],
+    8: ['Calcium','Vitamin D','Phosphorus','Vitamin C'],
+  };
+
+  const TIER_WEIGHT: Record<string, number> = { core: 3, important: 2, supporting: 1 };
+
+  // Step A: DevScore
+  const genderKey = child.gender === 'girl' ? 'female' : 'male';
+  const ageIdx = stageIdx(child.stageKey);
+
+  // 产品营养素 name→value map
+  const nutrientValueMap: Record<string, number> = {};
+  for (const n of prodNutr) {
+    if (n.value != null) nutrientValueMap[n.nutrient.name] = Number(n.value);
+  }
+
+  let weightedSum = 0;
+  let weightTotal = 0;
+
+  for (const goal of allGoals) {
+    const tier = DEV_TIERS[goal.id]?.[ageIdx]?.[genderKey] ?? null;
+    const w = tier ? TIER_WEIGHT[tier] : 0;
+    if (w === 0) continue;
+
+    const nutrients = GOAL_NUTRIENT_NAMES[goal.id] ?? [];
+    let goalScore = 0;
+    let nutrientCount = 0;
+    for (const nName of nutrients) {
+      const dri = DRI_TABLE[nName];
+      if (!dri) continue;
+      const rec = dri[genderKey][ageIdx];
+      if (!rec) continue;
+      const actual = nutrientValueMap[nName] ?? 0;
+      if (actual === 0) continue;  // ← 跳过产品没有数据的营养素
+      const sj = Math.min(1, actual / rec);
+      goalScore += sj;
+      nutrientCount++;
+    }
+    // 用有数据的营养素数量做归一化
+    goalScore = nutrientCount > 0 ? Math.min(1, goalScore / nutrientCount) : 0;
+    weightedSum += goalScore * w;
+    weightTotal += w;
+  }
+
+  const devScore = weightTotal > 0 ? weightedSum / weightTotal : 0;
+
+  // Step B: NutriNorm（Nutri-Score 2014）
+  // 需要 per 100g 数据，serving 数据近似处理
+  const servingSizeG = parseFloat(product.servingSize ?? '100') || 100;
+  const per100 = (val: number | null) => val != null ? (val / servingSizeG) * 100 : 0;
+
+  const energyKJ = per100(prodNutr.find((n: any) => n.nutrient.name === 'Energy')?.value ?? null) * 4.184; // kcal→kJ
+  const sugarG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Sugars')?.value ?? null);
+  const satFatG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? null);
+  const saltG100 = (per100(prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? null) * 2.5) / 1000;
+  const fiberG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Fiber')?.value ?? null);
+  const proteinG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Protein')?.value ?? null);
+
+  // Negative points
+  const negEnergy = Math.min(10, Math.floor(energyKJ / 335));
+  const negSugar  = Math.min(15, Math.floor(sugarG100 / 4.5));
+  const negSatFat = Math.min(10, Math.floor(satFatG100 / 1));
+  const negSalt   = Math.min(20, Math.floor(saltG100 / 0.2));
+  const negative  = negEnergy + negSugar + negSatFat + negSalt;
+
+  // Positive points
+  const posFiber   = Math.min(5, Math.floor(fiberG100 / 0.9));
+  const posProtein = Math.min(5, Math.floor(proteinG100 / 1.6));
+  const positive   = posFiber + posProtein; // 水果/蔬菜比例暂缺，设0
+
+  const nutriNorm = Math.max(0, Math.min(1, (positive - negative + 55) / 72));
+
+  // Step C: FinalScore
+  const b = 0.6;
+
+  console.log('DevScore:', devScore.toFixed(3));
+  console.log('NutriNorm:', nutriNorm.toFixed(3));
+  console.log('FinalScore:', (100 * nutriNorm * (b + (1 - b) * devScore)).toFixed(1));
+  console.log('negative:', negative, 'positive:', positive);
+
+  const overall = Math.round(100 * nutriNorm * (b + (1 - b) * devScore));
+  const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
   // 过敏命中
   const childAllergIds = new Set(child.allergens.map((a: { allergenId: number }) => a.allergenId));
   const allergenFlags = product.allergens.map((a: { allergenId: number; present: boolean }) => ({
@@ -171,8 +285,7 @@ export async function scoreFood(input: ScoreInput) {
     }
   }
 
-  const ageIdx = stageIdx(child.stageKey);
-  const genderKey = child.gender === 'girl' ? 'female' : 'male';
+
   
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
@@ -243,10 +356,10 @@ export async function scoreFood(input: ScoreInput) {
       whyTextZh: `针对该孩子综合评分 ${overall}/100。`,
       breakdown: {
         create: [
-          { dimension: 'nutrientDensity', score: nutrientDensity, weight: WEIGHTS.nutrientDensity },
-          { dimension: 'riskIngredients', score: riskIngredients, weight: WEIGHTS.riskIngredients },
-          { dimension: 'processingLevel', score: processingLevel, weight: WEIGHTS.processingLevel },
-          { dimension: 'stageMatch', score: stageMatch, weight: WEIGHTS.stageMatch },
+          { dimension: 'devScore',   score: Math.round(devScore * 100),   weight: 0.7 },
+          { dimension: 'nutriNorm',  score: Math.round(nutriNorm * 100),  weight: 0.3 },
+          { dimension: 'negative',   score: negative,  weight: 0 },
+          { dimension: 'positive',   score: positive,  weight: 0 },
         ],
       },
       factors: { create: factors },
