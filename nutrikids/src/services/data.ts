@@ -2,7 +2,8 @@
 // 数据访问层：调用 NutriKids REST API (Fastify + Prisma + SQLite)
 // JWT 存 localStorage，自动带到 Authorization 头。
 // ============================================================
-const BASE = (import.meta.env.VITE_API_BASE_URL as string) ?? 'http://localhost:8787';
+//const BASE = (import.meta.env.VITE_API_BASE_URL as string) ?? 'http://localhost:8787';
+const BASE = '';  // 空字符串，走 Vite proxy
 const TOKEN_KEY = 'nutrikids_token';
 
 export const getToken = () => localStorage.getItem(TOKEN_KEY);
@@ -10,12 +11,11 @@ export const setToken = (t: string | null) =>
   t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY);
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
   const res = await fetch(`${BASE}${path}`, {
     ...options,
+    credentials: 'include', 
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
@@ -134,7 +134,7 @@ export const submitFeedback = (data: FeedbackSubmission) =>
   request('/feedback', { method: 'POST', body: JSON.stringify(data) });
 
 export const fetchFeedbacks = () =>
-  request<{ feedbacks: FeedbackItem[] }>('/admin/feedback');
+  request<{ feedbacks: FeedbackItem[] }>('/api/admin/feedback');
 
 export const fetchFeedbackStats = () =>
-  request<FeedbackStats>('/admin/feedback/stats');
+  request<FeedbackStats>('/api/admin/feedback/stats');

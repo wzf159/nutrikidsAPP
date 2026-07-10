@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../prisma.js';
+import { auth } from '../auth.js';
 
 const submitSchema = z.object({
   text: z.string().min(1),
@@ -19,7 +20,8 @@ export default async function feedbackRoutes(app: FastifyInstance) {
 
     let userId: string | null = null;
     try {
-      await req.jwtVerify();
+      const session = await auth.api.getSession({ headers: req.headers as any });
+      if (!session) return reply.code(401).send({ error: '未登录' });
       userId = req.user.sub;
     } catch {
       /* 匿名 */
@@ -42,7 +44,8 @@ export default async function feedbackRoutes(app: FastifyInstance) {
   });
 
   app.get('/admin/feedback', async (req, reply) => {
-    await req.jwtVerify();
+    const session = await auth.api.getSession({ headers: req.headers as any });
+    if (!session) return reply.code(401).send({ error: '未登录' });
 
     const feedbacks = await prisma.feedback.findMany({
       orderBy: { createdAt: 'desc' },
@@ -53,7 +56,8 @@ export default async function feedbackRoutes(app: FastifyInstance) {
   });
 
   app.get('/admin/feedback/stats', async (req, reply) => {
-    await req.jwtVerify();
+    const session = await auth.api.getSession({ headers: req.headers as any });
+    if (!session) return reply.code(401).send({ error: '未登录' });
 
     const total = await prisma.feedback.count();
 

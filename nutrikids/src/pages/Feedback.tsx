@@ -47,18 +47,30 @@ export default function Feedback() {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      await submitFeedback({
-        text: JSON.stringify(answers),
-        q1: answers.q1 ?? undefined,
-        q2: answers.q2 ?? undefined,
-        q3: answers.q3 ?? undefined,
-        q4: answers.q4 ?? undefined,
-        q5: answers.q5 ?? undefined,
-        comment: answers.comment || undefined,
+      const res = await fetch('https://formspree.io/f/mrewnpqg', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          helpfulness: answers.q1,
+          clarity: answers.q2,
+          mostUseful: answers.q3,
+          featureRequest: answers.q4,
+          nps: answers.q5,
+          comment: answers.comment,
+          _subject: `NutriKids Feedback - NPS: ${answers.q5}`,
+        }),
       });
-      setSubmitted(true);
-    } catch {
-      console.error('Failed to submit feedback');
+  
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        alert('Submission failed. Please try again.');
+      }
+    } catch (e) {
+      alert('Network error. Please check your connection.');
     } finally {
       setLoading(false);
     }
