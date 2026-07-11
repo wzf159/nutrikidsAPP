@@ -308,10 +308,15 @@ export default function FoodAnalyzer() {
   const handleBarcode = useCallback(async (code: string) => {
     setResult(null);
     setShowScan(false);
-    setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : isEs ? `Buscando código de barras ${code}…` : `Looking up barcode ${code}…` });
+    if (!childId) return;
+    setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
     try {
       const { product } = await lookupBarcode(code);
-      await runAnalysis(product.id, 'barcode');
+      setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
+      setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
+      const r = await analyzeProduct(childId, product.id, 'barcode');
+      setResult(r);
+      setPhase({ name: 'idle' });
     } catch (e) {
       setPhase({ name: 'error', msg: (e as Error).message });
     }
