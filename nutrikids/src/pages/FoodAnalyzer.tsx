@@ -238,13 +238,12 @@ export default function FoodAnalyzer() {
   const nutrientById = (id: number) => view!.nutrients.find(n => n.id === id)!;
 
   async function runAnalysis(productId: number, source: 'search' | 'barcode' | 'photo') {
-    if (!childId) return;
+    if (!childIdRef.current) return;
     setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : isEs ? 'Calculando puntuación para tu hijo…' : 'Scoring for your child…' });
     setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
     try {
-      const r = await analyzeProduct(childId, productId, source);
+      const r = await analyzeProduct(childIdRef.current, productId, source);
       setResult(r);
-      
       setPhase({ name: 'idle' });
     } catch (e) {
       setPhase({ name: 'error', msg: (e as Error).message });
