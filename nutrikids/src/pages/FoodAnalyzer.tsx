@@ -120,6 +120,8 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
 function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) => void; onClose: () => void; isZh: boolean }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState<string | null>(null);
+  const onCodeRef = useRef(onCode);
+  onCodeRef.current = onCode;
 
   useEffect(() => {
     const reader = new BrowserMultiFormatReader();
@@ -131,27 +133,13 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
         if (result && !stopped) {
           stopped = true;
           controls.stop();
-          onCode(result.getText());
+          onCodeRef.current(result.getText());
         }
       })
       .catch(() => setError(isZh ? '无法打开摄像头（需要授权，且要求 https 或 localhost）' : 'Camera unavailable (needs permission and https/localhost)'));
     return () => { stopped = true; stopFn?.(); };
-  }, [onCode, isZh]);
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-3xl p-5 w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="font-extrabold text-gray-900">📊 {isZh ? '对准条形码' : 'Point at the barcode'}</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
-        </div>
-        {error
-          ? <p className="text-sm text-red-500 py-8 text-center">{error}</p>
-          : <video ref={videoRef} className="w-full rounded-2xl bg-black aspect-[4/3] object-cover" />}
-      </div>
-    </div>
-  );
-}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isZh]);
 
 /* ------------------------------------------------------------------ */
 /* 页面                                                                */
