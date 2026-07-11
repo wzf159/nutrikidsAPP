@@ -134,6 +134,7 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
           stopped = true;
           controls.stop();
           console.log('barcode detected:', result.getText());
+          console.log('onCodeRef.current:', onCodeRef.current?.toString().slice(0, 100));
           onCodeRef.current(result.getText());
         }
       })
@@ -308,6 +309,7 @@ export default function FoodAnalyzer() {
   }
 
   const handleBarcode = useCallback(async (code: string) => {
+    console.log('handleBarcode called:', code);
     setResult(null);
     setShowScan(false);
     if (!childId) return;
