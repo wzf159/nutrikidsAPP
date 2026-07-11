@@ -191,6 +191,7 @@ export default function FoodAnalyzer() {
   const [selectedWatch, setSelectedWatch] = useState<string | null>(null);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
   const childIdRef = useRef<string | null>(null);
+  const analysisRequestRef = useRef(0);
   // 启动时取孩子档案（演示账号自动登录）
   const ACTIVE_KEY = 'nutrikids_active_child_id';
 
@@ -240,14 +241,28 @@ export default function FoodAnalyzer() {
   const nutrientById = (id: number) => view!.nutrients.find(n => n.id === id)!;
 
   async function runAnalysis(productId: number, source: 'search' | 'barcode' | 'photo') {
-    if (!childIdRef.current) return;
+    const activeChildId = childIdRef.current;
+    if (!activeChildId) return;
+
+    // Only the newest analysis request is allowed to update the page.
+    // This prevents an older product request from resolving later and
+    // overwriting the newly scanned product.
+    const requestId = ++analysisRequestRef.current;
+
+    setResult(null);
     setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : isEs ? 'Calculando puntuación para tu hijo…' : 'Scoring for your child…' });
-    setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
+    setSelectedGoal(null);
+    setSelectedNutrient(null);
+    setSelectedWatch(null);
+
     try {
-      const r = await analyzeProduct(childIdRef.current, productId, source);
+      const r = await analyzeProduct(activeChildId, productId, source);
+      if (requestId !== analysisRequestRef.current) return;
+
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
+      if (requestId !== analysisRequestRef.current) return;
       setPhase({ name: 'error', msg: (e as Error).message });
     }
   }
@@ -315,17 +330,22 @@ export default function FoodAnalyzer() {
   const handleBarcode = useCallback(async (code: string) => {
     console.log('handleBarcode called:', code);
     try {
-      setResult(null);
       setShowScan(false);
-      setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
+      setCapturedPhotoUrl(null);
+      setResult(null);
+      setSelectedGoal(null);
+      setSelectedNutrient(null);
+      setSelectedWatch(null);
+      setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : isEs ? `Buscando código ${code}…` : `Looking up barcode ${code}…` });
+
       const { product } = await lookupBarcode(code);
+      console.log('barcode product:', product.id, product);
       await runAnalysis(product.id, 'barcode');
-      setTimeout(() => setPhase(p => ({...p})), 0);
     } catch (e) {
       console.error('handleBarcode error:', e);
       setPhase({ name: 'error', msg: (e as Error).message });
     }
-  }, [childId, isZh, isEs]);
+  }, [isZh, isEs]);
 
   async function decodeBarcodeFromFile(file: File) {
     setPhase({ name: 'busy', msg: isZh ? '正在从图片识别条形码…' : isEs ? 'Reconociendo código de barras de la imagen…' : 'Recognizing barcode from image…' });
@@ -611,7 +631,7 @@ export default function FoodAnalyzer() {
         {view && result && grade && (
           <>
             {/* ① 食物评估 */}
-            <section className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-hidden">
+            <section key={`${view.product.id}-${result.overallScore}`} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-hidden">
               <div className="relative">
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0">
                   {/* 结论 */}
