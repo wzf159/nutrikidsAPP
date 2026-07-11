@@ -333,8 +333,7 @@ export default function FoodAnalyzer() {
       setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
       setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
       console.log('about to analyzeProduct', childIdRef.current, product.id);
-      const r = await analyzeProduct(childIdRef.current, product.id, 'barcode');
-      setResult(r);
+      await runAnalysis(product.id, 'barcode');
       setShowScan(false);
       console.log('setResult done');
       setPhase({ name: 'idle' });
