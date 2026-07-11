@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -305,7 +305,7 @@ export default function FoodAnalyzer() {
     }
   }
 
-  async function handleBarcode(code: string) {
+  const handleBarcode = useCallback(async (code: string) => {
     setResult(null);
     setShowScan(false);
     setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : isEs ? `Buscando código de barras ${code}…` : `Looking up barcode ${code}…` });
@@ -315,7 +315,7 @@ export default function FoodAnalyzer() {
     } catch (e) {
       setPhase({ name: 'error', msg: (e as Error).message });
     }
-  }
+  }, [childId, isZh, isEs]);
 
   async function decodeBarcodeFromFile(file: File) {
     setPhase({ name: 'busy', msg: isZh ? '正在从图片识别条形码…' : isEs ? 'Reconociendo código de barras de la imagen…' : 'Recognizing barcode from image…' });
