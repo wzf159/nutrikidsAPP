@@ -312,7 +312,9 @@ export default function FoodAnalyzer() {
   const handleBarcode = useCallback(async (code: string) => {
     console.log('handleBarcode called:', code);
     try {
+      console.log('before setResult');
       setResult(null);
+      console.log('after setResult');
       setShowScan(false);
       console.log('childIdRef.current:', childIdRef.current);
       if (!childIdRef.current) {
