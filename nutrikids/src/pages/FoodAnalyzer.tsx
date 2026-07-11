@@ -313,29 +313,11 @@ export default function FoodAnalyzer() {
   const handleBarcode = useCallback(async (code: string) => {
     console.log('handleBarcode called:', code);
     try {
-      console.log('before setResult');
       setResult(null);
-      console.log('after setResult');
-      
-      console.log('childIdRef.current:', childIdRef.current);
-      console.log('childIdRef.current:', childIdRef.current);
-      console.log('about to setPhase busy');
-      setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
-      console.log('about to lookupBarcode');
-      if (!childIdRef.current) {
-        console.log('childId is null, returning');
-        return;
-      }
+      setShowScan(false);
       setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
       const { product } = await lookupBarcode(code);
-      console.log('product:', product);
-      setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
-      setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
-      console.log('about to analyzeProduct', childIdRef.current, product.id);
       await runAnalysis(product.id, 'barcode');
-      setShowScan(false);
-      console.log('setResult done');
-      setPhase({ name: 'idle' });
       setTimeout(() => setPhase(p => ({...p})), 0);
     } catch (e) {
       console.error('handleBarcode error:', e);
