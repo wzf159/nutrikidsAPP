@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -754,7 +754,7 @@ export default function FoodAnalyzer() {
 
                     <svg viewBox={`0 0 ${SK.width} ${SK.height}`} className="w-full h-auto select-none">
                       <defs>
-                        {ribbons.map((r, i) => (
+                        {ribbons.map((r: any, i: number) => (
                           <linearGradient key={i} id={`flow-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor={TIER_COLOR[goalById(r.goalId).tier!]} />
                             <stop offset="100%" stopColor={nutrientColor(r.nutrientId)} />
@@ -762,13 +762,13 @@ export default function FoodAnalyzer() {
                         ))}
                       </defs>
 
-                      {ribbons.map((r, i) => (
+                      {ribbons.map((r: any, i: number) => (
                         <path key={i} d={r.path} fill={`url(#flow-${i})`}
                           opacity={ribbonActive(r) ? (selectedGoal != null || selectedNutrient != null ? 0.65 : 0.3) : 0.07}
                           className="transition-opacity duration-300 cursor-pointer" onClick={() => toggleGoal(r.goalId)} />
                       ))}
 
-                      {goalNodes.map(n => {
+                      {goalNodes.map((n: any) => {
                         const g = goalById(n.id);
                         return (
                           <g key={n.id} className="cursor-pointer" onClick={() => toggleGoal(n.id)}>
@@ -780,7 +780,7 @@ export default function FoodAnalyzer() {
                         );
                       })}
 
-                      {nutrientNodes.map(n => {
+                      {nutrientNodes.map((n: any) => {
                         const nt = nutrientById(n.id);
                         const color = nutrientColor(n.id);
                         return (
