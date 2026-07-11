@@ -6,7 +6,7 @@ import {
   analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,
   type AnalysisResult, type ProductMatch, type Recognition,
 } from '../services/api';
-
+import { flushSync } from 'react-dom';
 /* ------------------------------------------------------------------ */
 /* 常量与小工具                                                        */
 /* ------------------------------------------------------------------ */
@@ -135,8 +135,9 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
           controls.stop();
           console.log('barcode detected:', result.getText());
           console.log('onCodeRef.current:', onCodeRef.current?.toString().slice(0, 100));
-          //onCodeRef.current(result.getText());
-          setTimeout(() => onCodeRef.current(result.getText()), 0);
+          flushSync(() => {
+            onCodeRef.current(result.getText());
+          });
         }
       })
       .catch(() => setError(isZh ? '无法打开摄像头（需要授权，且要求 https 或 localhost）' : 'Camera unavailable (needs permission and https/localhost)'));
