@@ -135,7 +135,8 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
           controls.stop();
           console.log('barcode detected:', result.getText());
           console.log('onCodeRef.current:', onCodeRef.current?.toString().slice(0, 100));
-          onCodeRef.current(result.getText());
+          //onCodeRef.current(result.getText());
+          setTimeout(() => onCodeRef.current(result.getText()), 0);
         }
       })
       .catch(() => setError(isZh ? '无法打开摄像头（需要授权，且要求 https 或 localhost）' : 'Camera unavailable (needs permission and https/localhost)'));
