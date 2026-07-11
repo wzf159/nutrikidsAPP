@@ -1,5 +1,5 @@
 import { prisma } from './prisma.js';
-import { generateProductNutrition } from './minimax.js';
+import { generateProductNutrition } from './openai.js';
 
 export interface ProductFindResult {
   product: { id: number; name: string; nameZh: string | null; imageUrl: string | null; brand: { name: string } | null };
@@ -23,6 +23,11 @@ const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; un
   { nutrientId: 6, offKey: 'vitamin-d_100g', factor: 1e6, unit: 'μg', dvRef: 15 },
   { nutrientId: 11, offKey: 'vitamin-a_100g', factor: 1e6, unit: 'μg', dvRef: 400 },
   { nutrientId: 12, offKey: 'vitamin-b12_100g', factor: 1e6, unit: 'μg', dvRef: 1.8 },
+  { nutrientId: 17, offKey: 'saturated-fat_100g', factor: 1, unit: 'g', dvRef: 20 },
+  { nutrientId: 18, offKey: 'sodium_100g', factor: 1000, unit: 'mg', dvRef: 2300 },
+  { nutrientId: 19, offKey: 'fat_100g', factor: 1, unit: 'g', dvRef: 65 },
+  { nutrientId: 20, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 28 },
+  { nutrientId: 21, offKey: 'carbohydrates_100g', factor: 1, unit: 'g', dvRef: 275 },
 ];
 
 const OFF_ALLERGEN_MAP: Record<string, string> = {
@@ -145,6 +150,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
     };
     if (!data.products || data.products.length === 0) return null;
     const p = data.products[0];
+    console.log('OFF search result:', name, '->', p.product_name, 'nutrients:', Object.keys(p.nutriments ?? {}));
     if (!p.product_name) return null;
 
     let brandId: number | undefined;
@@ -171,8 +177,10 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       .filter((c): c is string => Boolean(c));
     const allergenRows = await prisma.allergen.findMany({ where: { code: { in: allergenCodes } } });
 
-    return prisma.product.create({
-      data: {
+    return prisma.product.upsert({
+      where: { barcode: p.code ?? '' },
+      update: {},
+      create: {
         barcode: p.code ?? null,
         name: p.product_name!,
         nameZh: p.product_name_zh || null,
@@ -245,6 +253,7 @@ export async function findProduct(input: ProductFindInput): Promise<ProductFindR
     const off = await importFromOpenFoodFacts(barcode);
     if (off) return { product: off, source: 'openfoodfacts' };
   }
+  
 
   if (names.length > 0) {
     const local = await findLocalByNames(names);

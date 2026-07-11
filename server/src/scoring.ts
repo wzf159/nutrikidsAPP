@@ -162,12 +162,14 @@ export async function scoreFood(input: ScoreInput) {
   const genderKey = child.gender === 'girl' ? 'female' : 'male';
   const ageIdx = stageIdx(child.stageKey);
 
+
   // 产品营养素 name→value map
   const nutrientValueMap: Record<string, number> = {};
   for (const n of prodNutr) {
     if (n.value != null) nutrientValueMap[n.nutrient.name] = Number(n.value);
   }
-
+  console.log('nutrientValueMap:', JSON.stringify(nutrientValueMap));
+  console.log('ageIdx:', ageIdx, 'gender:', genderKey); 
   let weightedSum = 0;
   let weightTotal = 0;
 

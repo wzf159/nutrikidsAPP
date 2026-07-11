@@ -148,9 +148,7 @@ export default function Support() {
     padding: '32px 36px',
     boxShadow: '0 2px 16px rgba(137,60,227,0.07)',
   };
-  const { i18n } = useTranslation();
-  const isZh = i18n.language === 'zh';
-
+  
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#ccd8f5]">
       <div style={{ maxWidth: '680px', margin: '0 auto', padding: '24px 16px 60px' }}>
@@ -268,7 +266,7 @@ export default function Support() {
               {t('support.form.desc2')}
             </p>
             <ul style={{ fontFamily: ff, fontSize: '13px', fontWeight: 600, color: '#6b7280', lineHeight: 2, margin: '0 0 14px 20px', padding: 0, listStyleType: 'disc' }}>
-              {t('support.form.roles', { returnObjects: true } as object).map((r: string, i: number) => (
+            {(t('support.form.roles', { returnObjects: true }) as string[]).map((r: string, i: number) => (
                  <li key={i} style={{ listStyleType: 'disc' }}>{r}</li>
               ))}
             </ul>

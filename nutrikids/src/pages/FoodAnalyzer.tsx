@@ -49,7 +49,7 @@ function SectionBadge({ n }: { n: number }) {
 /* Sankey 布局（由接口数据驱动）                                       */
 /* ------------------------------------------------------------------ */
 
-const SK = { width: 1100, height: 640, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 16, gap: 30 };
+const SK = { width: 1100, height: 750, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 16, gap: 30 };
 
 interface NodeLayout { id: number; y0: number; y1: number }
 
@@ -184,7 +184,8 @@ export default function FoodAnalyzer() {
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
   const [selectedNutrient, setSelectedNutrient] = useState<number | null>(null);
   const [selectedWatch, setSelectedWatch] = useState<string | null>(null);
-
+  const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
+  
   // 启动时取孩子档案（演示账号自动登录）
   const ACTIVE_KEY = 'nutrikids_active_child_id';
 
@@ -235,6 +236,7 @@ export default function FoodAnalyzer() {
     try {
       const r = await analyzeProduct(childId, productId, source);
       setResult(r);
+      
       setPhase({ name: 'idle' });
     } catch (e) {
       setPhase({ name: 'error', msg: (e as Error).message });
@@ -261,13 +263,16 @@ export default function FoodAnalyzer() {
   }
 
   async function handleImage(file: File) {
+    setCapturedPhotoUrl(null); // 清掉上次的
     setPhase({ name: 'busy', msg: isZh ? 'AI 正在识别图片（约10秒）…' : isEs ? 'AI reconociendo la imagen (~10s)…' : 'AI recognizing the image (~10s)…' });
     try {
+      const photoUrl = URL.createObjectURL(file);
+      setCapturedPhotoUrl(photoUrl);
       const { recognition, matches, source } = await recognizePhoto(file);
       await handleRecognized(recognition, matches, source);
     } catch (e) {
       const msg = (e as Error).message;
-      if (msg.includes('MINIMAX_API_KEY')) {
+      if (msg.includes('MINIMAX_API_KEY') || msg.includes('OPENAI_API_KEY') || msg.includes('API key')) { 
         setPhase({
           name: 'error',
           msg: isZh
@@ -281,7 +286,12 @@ export default function FoodAnalyzer() {
       }
     }
   }
-
+  function ProductImage({ photoUrl, networkUrl, alt }: { photoUrl: string | null; networkUrl: string | null; alt: string }) {
+    const [err, setErr] = useState(false);
+    const src = photoUrl ?? networkUrl;
+    if (!src || err) return <span className="text-3xl">🍽️</span>;
+    return <img src={src} alt={alt} className="w-full h-full object-cover" onError={() => setErr(true)} />;
+  }
   async function handleImageUrl(url: string) {
     setPhase({ name: 'busy', msg: isZh ? '正在获取并识别网页图片（约10秒）…' : isEs ? 'Obteniendo y reconociendo la imagen web (~10s)…' : 'Fetching & recognizing the web image (~10s)…' });
     try {
@@ -598,18 +608,17 @@ export default function FoodAnalyzer() {
                     </div>
                     <div className="flex gap-[14px] items-center">
                       <div className="flex-shrink-0">
-                        <div className="w-[90px] h-[90px] rounded-[12px] bg-gradient-to-br from-white/70 to-[rgba(200,240,254,0.5)] border border-[rgba(124,58,237,0.15)] flex items-center justify-center overflow-hidden">
-                          {view.product.imageUrl
-                            ? <img src={view.product.imageUrl} alt={productTitle} className="w-full h-full object-cover" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            : '🍽️'}
-                        </div>
+                      <div className="w-[90px] h-[90px] rounded-[12px] bg-gradient-to-br from-white/70 to-[rgba(200,240,254,0.5)] border border-[rgba(124,58,237,0.15)] flex items-center justify-center overflow-hidden">
+                        <ProductImage photoUrl={capturedPhotoUrl} networkUrl={view.product.imageUrl ?? null} alt={productTitle} />
+                      </div>
                         <p className="text-[10px] font-bold text-gray-400 text-center mt-1.5 leading-tight max-w-[90px]">{productTitle}</p>
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-[14px]">
                           <div className="w-[64px] h-[64px] rounded-full flex flex-col items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(90,168,96,0.35)]" style={{ background: `linear-gradient(135deg,${grade.color},${grade.color})` }}>
-                            <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif'  }}>{grade.letter}</span>
-                            <span className="text-[9px] font-bold text-white/85 tracking-wider">{isZh ? grade.zh : isEs ? grade.es : grade.en}</span>
+                            <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif'  }}>{Math.round(result.overallScore)}</span>
+                            {/*<span className="text-[9px] font-bold text-white/85 tracking-wider">{isZh ? grade.zh : isEs ? grade.es : grade.en}</span>*/}
+                            <span className="text-[9px] font-bold text-white/85 tracking-wider">{grade.letter}</span>
                           </div>
                           <div className="flex-1">
                             <h3 className="text-[26px] font-extrabold text-[#2d2a4a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { submitFeedback } from '../services/data';
+
 
 interface FeedbackAnswers {
   q1: string | null;

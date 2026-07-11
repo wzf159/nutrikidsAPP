@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
-import { recognizeFoodImage } from '../minimax.js';
 import { findProduct } from '../productFinder.js';
+import { recognizeFoodImage } from '../openai.js';
 
 async function buildRecognitionResponse(buf: Buffer, mimetype: string) {
   const recognition = await recognizeFoodImage(buf, mimetype);

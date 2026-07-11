@@ -305,7 +305,7 @@ export default function TopNav() {
                   <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
                 </div>
                 <button
-                  onClick={() => signOut({ fetchOptions: { onSuccess: () => window.location.href = '/' } })}
+                  onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
                   className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
                 >
                   {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
