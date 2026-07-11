@@ -330,8 +330,10 @@ export default function FoodAnalyzer() {
       console.log('product:', product);
       setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
       setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
+      console.log('about to analyzeProduct', childIdRef.current, product.id);
       const r = await analyzeProduct(childIdRef.current, product.id, 'barcode');
       setResult(r);
+      console.log('setResult done');
       setPhase({ name: 'idle' });
     } catch (e) {
       console.error('handleBarcode error:', e);
