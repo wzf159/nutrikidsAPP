@@ -10,11 +10,11 @@ export default function Login() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:8787/api/auth/sign-in/social', {
+      const res = await fetch('/api/auth/sign-in/social', {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ provider: 'google', callbackURL: 'http://localhost:5173/' }),
+        body: JSON.stringify({ provider: 'google', callbackURL: window.location.origin + '/' }),
       });
       const data = await res.json();
       if (data.url) {
@@ -25,6 +25,30 @@ export default function Login() {
       setLoading(false);
     }
   };
+  const isWebView = /wv|WebView/.test(navigator.userAgent) || 
+  (navigator.userAgent.includes('Android') && /Version\/\d+\.\d+/.test(navigator.userAgent));
+
+  if (isWebView) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
+        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
+          <div className="text-5xl">🥦</div>
+          <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
+          <p className="text-sm text-gray-600 text-center">
+            {isZh ? '请在系统浏览器（Safari/Chrome）中打开此页面登录' : 'Please open this page in your system browser (Safari/Chrome) to sign in'}
+          </p>
+          <a 
+            href="https://nutrikids.sense-institute.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-full text-center px-6 py-3 rounded-full bg-[#893ce3] text-white font-semibold"
+          >
+            {isZh ? '在浏览器中打开' : 'Open in Browser'}
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
