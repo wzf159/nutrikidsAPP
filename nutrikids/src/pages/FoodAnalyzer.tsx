@@ -133,6 +133,7 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
         if (result && !stopped) {
           stopped = true;
           controls.stop();
+          console.log('barcode detected:', result.getText());
           onCodeRef.current(result.getText());
         }
       })
