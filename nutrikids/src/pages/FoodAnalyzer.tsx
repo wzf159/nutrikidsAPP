@@ -313,8 +313,11 @@ export default function FoodAnalyzer() {
     console.log('handleBarcode called:', code);
     setResult(null);
     setShowScan(false);
-    console.log('childIdRef.current:', childIdRef.current);
-    if (!childIdRef.current) return; 
+    console.log('childIdRef.current:', childIdRef.current);  // ← 移到 if 外面
+    if (!childIdRef.current) {
+      console.log('childId is null, returning');
+      return;
+    }
     setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
     try {
       const { product } = await lookupBarcode(code);
