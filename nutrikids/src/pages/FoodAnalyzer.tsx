@@ -188,7 +188,7 @@ export default function FoodAnalyzer() {
   const [selectedNutrient, setSelectedNutrient] = useState<number | null>(null);
   const [selectedWatch, setSelectedWatch] = useState<string | null>(null);
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState<string | null>(null);
-  
+  const childIdRef = useRef<string | null>(null);
   // 启动时取孩子档案（演示账号自动登录）
   const ACTIVE_KEY = 'nutrikids_active_child_id';
 
@@ -200,6 +200,7 @@ export default function FoodAnalyzer() {
           const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
           if (c) {
             setChildId(c.id);
+            childIdRef.current = c.id;
             setResult(null);
             setPhase({ name: 'idle' });
           }
@@ -312,13 +313,13 @@ export default function FoodAnalyzer() {
     console.log('handleBarcode called:', code);
     setResult(null);
     setShowScan(false);
-    if (!childId) return;
+    if (!childIdRef.current) return; 
     setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
     try {
       const { product } = await lookupBarcode(code);
       setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
       setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
-      const r = await analyzeProduct(childId, product.id, 'barcode');
+      const r = await analyzeProduct(childIdRef.current, product.id, 'barcode');
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
