@@ -140,7 +140,20 @@ function BarcodeScanModal({ onCode, onClose, isZh }: { onCode: (code: string) =>
     return () => { stopped = true; stopFn?.(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isZh]);
-
+  return (
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-3xl p-5 w-full max-w-md" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-extrabold text-gray-900">📊 {isZh ? '对准条形码' : 'Point at the barcode'}</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
+        </div>
+        {error
+          ? <p className="text-red-500 text-sm">{error}</p>
+          : <video ref={videoRef} className="w-full rounded-xl" />}
+      </div>
+    </div>
+  );
+}
 /* ------------------------------------------------------------------ */
 /* 页面                                                                */
 /* ------------------------------------------------------------------ */
