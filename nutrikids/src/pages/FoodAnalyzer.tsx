@@ -324,7 +324,8 @@ export default function FoodAnalyzer() {
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
-      setPhase({ name: 'error', msg: (e as Error).message });
+      console.error('getChildren error:', e);
+      setPhase({ name: 'error', msg: isZh ? '无法连接后端服务' : 'Cannot reach the API server' });
     }
   }, [childId, isZh, isEs]);
 
