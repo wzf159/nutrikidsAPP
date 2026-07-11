@@ -225,6 +225,8 @@ export default function FoodAnalyzer() {
     return () => clearTimeout(id);
   }, [query]);
 
+
+
   const view = result?.view ?? null;
   const { goalNodes, nutrientNodes, ribbons } = useSankeyLayout(view);
 
@@ -315,7 +317,7 @@ export default function FoodAnalyzer() {
       console.log('before setResult');
       setResult(null);
       console.log('after setResult');
-      setShowScan(false);
+      
       console.log('childIdRef.current:', childIdRef.current);
       console.log('childIdRef.current:', childIdRef.current);
       console.log('about to setPhase busy');
@@ -333,8 +335,10 @@ export default function FoodAnalyzer() {
       console.log('about to analyzeProduct', childIdRef.current, product.id);
       const r = await analyzeProduct(childIdRef.current, product.id, 'barcode');
       setResult(r);
+      setShowScan(false);
       console.log('setResult done');
       setPhase({ name: 'idle' });
+      setTimeout(() => setPhase(p => ({...p})), 0);
     } catch (e) {
       console.error('handleBarcode error:', e);
       setPhase({ name: 'error', msg: (e as Error).message });
