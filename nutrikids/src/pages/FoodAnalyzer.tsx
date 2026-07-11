@@ -190,17 +190,19 @@ export default function FoodAnalyzer() {
   const ACTIVE_KEY = 'nutrikids_active_child_id';
 
   const loadChild = () => {
-    getChildren()
-      .then(cs => {
-        const activeId = localStorage.getItem(ACTIVE_KEY);
-        const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
-        if (c) {
-          setChildId(c.id);
-          setResult(null);  // 切换孩子时清空上一个孩子的分析结果
-          setPhase({ name: 'idle' });
-        }
-      })
-      .catch(() => setPhase({ name: 'error', msg: isZh ? '无法连接后端服务（请确认 server 已启动）' : isEs ? 'No se puede conectar al servidor (verifica que el server esté iniciado)' : 'Cannot reach the API server' }));
+    setTimeout(() => {
+      getChildren()
+        .then(cs => {
+          const activeId = localStorage.getItem(ACTIVE_KEY);
+          const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
+          if (c) {
+            setChildId(c.id);
+            setResult(null);
+            setPhase({ name: 'idle' });
+          }
+        })
+        .catch(() => setPhase({ name: 'error', msg: isZh ? '无法连接后端服务' : 'Cannot reach the API server' }));
+    }, 50);
   };
   
   useEffect(() => {
@@ -263,6 +265,7 @@ export default function FoodAnalyzer() {
   }
 
   async function handleImage(file: File) {
+    setResult(null);
     setCapturedPhotoUrl(null); // 清掉上次的
     setPhase({ name: 'busy', msg: isZh ? 'AI 正在识别图片（约10秒）…' : isEs ? 'AI reconociendo la imagen (~10s)…' : 'AI recognizing the image (~10s)…' });
     try {
@@ -303,6 +306,7 @@ export default function FoodAnalyzer() {
   }
 
   async function handleBarcode(code: string) {
+    setResult(null);
     setShowScan(false);
     setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : isEs ? `Buscando código de barras ${code}…` : `Looking up barcode ${code}…` });
     try {
