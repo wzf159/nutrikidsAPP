@@ -311,15 +311,15 @@ export default function FoodAnalyzer() {
 
   const handleBarcode = useCallback(async (code: string) => {
     console.log('handleBarcode called:', code);
-    setResult(null);
-    setShowScan(false);
-    console.log('childIdRef.current:', childIdRef.current);  // ← 移到 if 外面
-    if (!childIdRef.current) {
-      console.log('childId is null, returning');
-      return;
-    }
-    setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
     try {
+      setResult(null);
+      setShowScan(false);
+      console.log('childIdRef.current:', childIdRef.current);
+      if (!childIdRef.current) {
+        console.log('childId is null, returning');
+        return;
+      }
+      setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
       const { product } = await lookupBarcode(code);
       setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
       setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
@@ -327,8 +327,8 @@ export default function FoodAnalyzer() {
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
-      console.error('getChildren error:', e);
-      setPhase({ name: 'error', msg: isZh ? '无法连接后端服务' : 'Cannot reach the API server' });
+      console.error('handleBarcode error:', e);
+      setPhase({ name: 'error', msg: (e as Error).message });
     }
   }, [childId, isZh, isEs]);
 
