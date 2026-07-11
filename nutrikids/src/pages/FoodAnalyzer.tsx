@@ -317,12 +317,17 @@ export default function FoodAnalyzer() {
       console.log('after setResult');
       setShowScan(false);
       console.log('childIdRef.current:', childIdRef.current);
+      console.log('childIdRef.current:', childIdRef.current);
+      console.log('about to setPhase busy');
+      setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
+      console.log('about to lookupBarcode');
       if (!childIdRef.current) {
         console.log('childId is null, returning');
         return;
       }
       setPhase({ name: 'busy', msg: isZh ? `查询条形码 ${code}…` : `Looking up barcode ${code}…` });
       const { product } = await lookupBarcode(code);
+      console.log('product:', product);
       setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : 'Scoring for your child…' });
       setSelectedGoal(null); setSelectedNutrient(null); setSelectedWatch(null);
       const r = await analyzeProduct(childIdRef.current, product.id, 'barcode');
