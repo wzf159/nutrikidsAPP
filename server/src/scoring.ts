@@ -233,6 +233,13 @@ export async function scoreFood(input: ScoreInput) {
   console.log('NutriNorm:', nutriNorm.toFixed(3));
   console.log('FinalScore:', (100 * nutriNorm * (b + (1 - b) * devScore)).toFixed(1));
   console.log('negative:', negative, 'positive:', positive);
+    // 按年龄段的每日上限
+  const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25; // 0-6m/7-12m不建议，1-3y 12g，4+岁 25g
+  const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5; // 触发警告的阈值
+  const sodiumLimit = [200, 370, 800, 1200, 1500, 1500][ageIdx]; // mg/day by age group
+  const sodiumThreshold = [100, 150, 300, 400, 500, 500][ageIdx];
+  const satfatLimit = [null, null, 10, 12, 15, 20][ageIdx]; // g/day
+  const satfatThreshold = [1, 1, 2, 3, 4, 5][ageIdx];
 
   const overall = Math.round(100 * nutriNorm * (b + (1 - b) * devScore));
   const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
@@ -321,9 +328,14 @@ export async function scoreFood(input: ScoreInput) {
 
   const watch = [
     // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
-    { code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖', present: sugarG >= 5 && (product.novaScore ?? 4) >= 2,
-      detail: `~${sugarG}g sugar per serving — about ${Math.round((sugarG / 25) * 100)}% of a child's daily limit (25g).`,
-      detailZh: `每份含约${sugarG}克糖，约占儿童每日上限(25克)的${Math.round((sugarG / 25) * 100)}%。` },
+    { code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
+      present: sugarG >= sugarThreshold && (product.novaScore ?? 4) >= 2,
+      detail: sugarLimit === 0
+        ? `~${sugarG}g sugar per serving — added sugar is not recommended for this age group.`
+        : `~${sugarG}g sugar per serving — about ${Math.round((sugarG / sugarLimit) * 100)}% of daily limit (${sugarLimit}g).`,
+      detailZh: sugarLimit === 0
+        ? `每份含约${sugarG}克糖，该年龄段不建议摄入添加糖。`
+        : `每份含约${sugarG}克糖，约占每日上限(${sugarLimit}克)的${Math.round((sugarG / sugarLimit) * 100)}%。` },
     { code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精', present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/),
       detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。' },
@@ -332,12 +344,13 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: '含人工色素，部分色素与敏感儿童多动相关。' },
     { code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/),
       detail: 'Contains preservatives.', detailZh: '含防腐剂。' },
-      { code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-        present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > 400,
-        detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium per serving — high sodium intake is linked to elevated blood pressure.`,
-        detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，高钠摄入与血压升高相关。` },
-      { code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-        present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > 3,
+    { code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
+        present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
+        detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium — daily limit for this age is ${sodiumLimit}mg.`,
+        detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，该年龄段每日上限为${sodiumLimit}mg。` },
+      
+    { code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
+        present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > satfatThreshold,
         detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g saturated fat per serving.`,
         detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g饱和脂肪。` },
     { code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪', present: hasIng(/hydrogenated|氢化/),
