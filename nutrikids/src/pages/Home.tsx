@@ -12,9 +12,9 @@ export default function Home() {
       <div className="absolute w-[360px] h-[360px] rounded-full bg-[rgba(236,72,153,0.15)] blur-[80px] -bottom-15 -right-20 pointer-events-none" />
       <div className="absolute w-[280px] h-[280px] rounded-full bg-[rgba(6,182,212,0.12)] blur-[80px] top-[40%] left-[60%] pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col items-center text-center max-w-xl">
+      <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto">
         <div className="flex flex-col items-center gap-0 mb-4">
-          <img src="/images/logoall.png" alt="" className="h-38 w-auto" />
+        <img src="/images/logoall.png" alt="" className="h-40 w-auto" />
           <h1 className="text-[38px] sm:text-[42px] font-bold text-[#1a1040] leading-[1.25] tracking-tight mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
             {i18n.language === 'es' ? <>Nutrición inteligente para<br />tu niño en crecimiento.</> : isZh ? <>聪明的营养选择，<br />伴随孩子成长。</> : <>Smart nutrition for<br />your growing child.</>}
           </h1>
