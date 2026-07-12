@@ -5,7 +5,7 @@ import { prisma } from './prisma.js';
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'sqlite' }),
   baseURL: process.env.BETTER_AUTH_BASE_URL ?? 'http://localhost:8787',
-  trustedOrigins: ['http://localhost:5173', 'http://localhost:5174'],
+  trustedOrigins: ['http://localhost:5173', 'http://localhost:5174', 'https://nutrikids.sense-institute.org'],
   secret: process.env.BETTER_AUTH_SECRET!,
   socialProviders: {
     google: {
@@ -23,9 +23,9 @@ export const auth = betterAuth({
     disableCSRFCheck: true,
     defaultCookieAttributes: {
       sameSite: 'lax',
-      httpOnly: false,
-      secure: false,
-      domain: 'localhost',
+      httpOnly: true,
+      secure: true,
+      domain: 'nutrikids.sense-institute.org',
     },
   },
 });
