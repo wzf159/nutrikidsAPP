@@ -6,14 +6,11 @@ import { AGE_GROUPS, bmiOf } from '../../data/growth';
 import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
 import { useSession, signOut } from '../../lib/auth';
 
-
-
 const ACTIVE_KEY = 'nutrikids_active_child_id';
 
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
   { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
   { icon: '🌱', key: 'nav.scienceInsights', path: '/science-insights' },
-  
   { icon: '💬', key: 'nav.feedback', path: '/feedback' },
 ];
 
@@ -30,8 +27,11 @@ export default function TopNav() {
     () => localStorage.getItem(ACTIVE_KEY)
   );
   const [cardOpen, setCardOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
   const [allergenDict, setAllergenDict] = useState<Allergen[]>([]);
+
+  
 
   const loadChildren = () => {
     getChildren().then(cs => {
@@ -93,13 +93,14 @@ export default function TopNav() {
   const avatar = child?.avatarEmoji ?? '👶';
 
   return (
-    <header className="sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-7 flex items-center gap-5">
+    <header className="relative sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-7 flex items-center gap-5">
       <NavLink to="/" className="flex items-center gap-1.5 shrink-0">
         <img src="/images/logo2.png" alt="" className="h-9 w-auto" />
         <img src="/images/logo4.png" alt="NutriKids" className="h-6 w-auto hidden sm:block" />
       </NavLink>
 
-      <nav className="flex items-center gap-2">
+      {/* 桌面导航（≥768px 显示） */}
+      <nav className="hidden md:flex items-center gap-2">
         {NAV_ITEMS.map(({ icon, key, path }, i) => (
           <NavLink
             key={path}
@@ -115,7 +116,7 @@ export default function TopNav() {
             {icon} {t(key)}
           </NavLink>
         ))}
-      
+
         <NavLink
           to="/Support"
           className={({ isActive }) =>
@@ -136,8 +137,16 @@ export default function TopNav() {
         >
           ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
         </NavLink>
-        
       </nav>
+
+      {/* 汉堡按钮（<768px 显示） */}
+      <button
+        onClick={() => setMenuOpen(o => !o)}
+        className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-purple-600/8 text-[#2a2a4a] text-xl flex-shrink-0"
+        aria-label="Menu"
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
 
       <div className="ml-auto flex items-center gap-3">
         <div className="relative" ref={wrapRef}>
@@ -300,6 +309,48 @@ export default function TopNav() {
 
         <LanguageSwitcher />
       </div>
+
+      {/* 手机端折叠菜单面板 */}
+      {menuOpen && (
+        <div className="md:hidden absolute top-full left-0 right-0 bg-white/96 backdrop-blur-xl border-b border-white/80 shadow-[0_16px_48px_rgba(80,40,160,0.16)] px-5 py-3 flex flex-col gap-1">
+          {NAV_ITEMS.map(({ icon, key, path }) => (
+            <NavLink
+              key={path}
+              to={path}
+              onClick={() => setMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold ${
+                  isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+                }`
+              }
+            >
+              {icon} {t(key)}
+            </NavLink>
+          ))}
+          <NavLink
+            to="/Support"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold ${
+                isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+              }`
+            }
+          >
+            💛 {isZh ? '支持我们' : i18n.language === 'es' ? 'Apóyanos' : 'Support Us'}
+          </NavLink>
+          <NavLink
+            to="/about"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold ${
+                isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+              }`
+            }
+          >
+            ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
+          </NavLink>
+        </div>
+      )}
     </header>
   );
 }

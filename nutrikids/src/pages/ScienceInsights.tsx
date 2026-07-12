@@ -125,7 +125,7 @@ function PercentileChart({ metrics, isZh, isEs }: {
   isEs: boolean;
 }) {
   const W = 720, H = 340;
-  const PAD_L = 52, PAD_R = 20, PAD_T = 28, PAD_B = 48;
+  const PAD_L = 52, PAD_R = 20, PAD_T = 48, PAD_B = 48;
   const chartW = W - PAD_L - PAD_R;
   const chartH = H - PAD_T - PAD_B;
   const groupW = chartW / metrics.length;

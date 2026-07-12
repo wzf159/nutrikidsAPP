@@ -171,7 +171,7 @@ export default function Feedback() {
           <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(137,60,227,0.07)', borderRadius: 999, padding: '5px 14px' }}>
             <span>🔒</span>
             <span style={{ fontFamily: ff, fontSize: 11, fontWeight: 600, color: '#893ce3' }}>
-              Your responses are anonymous and used only to improve NutriKids.
+              {t('feedback.privacyNote')} 
             </span>
           </div>
         </div>

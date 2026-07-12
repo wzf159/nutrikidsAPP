@@ -143,21 +143,22 @@
     "title": "Comparte tu opinión",
     "subtitle": "Ayúdanos a hacer que NutriKids sea aún mejor para ti y tu hijo.",
     "timer": "Completar la encuesta toma menos de 2 minutos",
+    "privacyNote": "Tus respuestas son anónimas y solo se usan para mejorar NutriKids.",
     "q1": {
-      "label": "1. ¿Cuál de las siguientes opciones te describe mejor?",
+      "label": "¿Cuál de las siguientes opciones te describe mejor?",
       "1": "👨‍👩‍👧 Padre o madre",
       "2": "🤲 Cuidador(a) (abuelo(a), tutor(a) u otro familiar)",
       "3": "👩‍⚕️ Profesional de la salud o nutrición"
     },
     "q2": {
-      "label": "2. ¿Cuál es tu género?",
+      "label": "¿Cuál es tu género?",
       "1": "♀️ Femenino",
       "2": "♂️ Masculino",
       "3": "⚧ No binario / Diversidad de género",
       "4": "🤐 Prefiero no decirlo"
     },
     "q3": {
-      "label": "3. ¿NutriKids te ha ayudado a elegir mejores alimentos para tu hijo?",
+      "label": "¿NutriKids te ha ayudado a elegir mejores alimentos para tu hijo?",
       "1": "Para nada",
       "2": "No mucho",
       "3": "Algo",
@@ -165,7 +166,7 @@
       "5": "Muy útil"
     },
     "q4": {
-      "label": "4. ¿Qué tan fácil es entender la información mostrada en la pantalla?",
+      "label": "¿Qué tan fácil es entender la información mostrada en la pantalla?",
       "1": "🎓 Demasiado técnica, difícil de entender",
       "2": "🙂 Mayormente comprensible",
       "3": "✅ Muy fácil de entender, clara e intuitiva",
@@ -173,7 +174,7 @@
       "5": "✨ Los elementos visuales distraen un poco"
     },
     "q5": {
-      "label": "5. ¿Qué tan confiable te parece NutriKids?",
+      "label": "¿Qué tan confiable te parece NutriKids?",
       "1": "⭐⭐⭐⭐⭐ Muy confiable",
       "2": "⭐⭐⭐⭐ Bastante confiable",
       "3": "⭐⭐⭐ Neutral",
@@ -181,7 +182,7 @@
       "5": "⭐ Nada confiable"
     },
     "q6": {
-      "label": "6. ¿Qué opinas del diseño general de la aplicación?",
+      "label": "¿Qué opinas del diseño general de la aplicación?",
       "1": "😍 Me encanta",
       "2": "😊 Me gusta",
       "3": "😐 Está bien",
@@ -189,13 +190,13 @@
       "5": "😞 No me gusta"
     },
     "q7": {
-      "label": "7. ¿Qué funciones te parecieron más útiles?",
+      "label": "¿Qué funciones te parecieron más útiles?",
       "sub": "Selecciona todas las que correspondan",
       "1": "🏷️ Etiqueta Inteligente",
       "2": "🌱 Crecimiento Saludable"
     },
     "q8": {
-      "label": "8. ¿Qué función te gustaría que NutriKids agregara próximamente?",
+      "label": "¿Qué función te gustaría que NutriKids agregara próximamente?",
       "sub": "Selecciona todas las que correspondan",
       "1": "📅 Seguimiento diario de nutrición",
       "2": "🎯 Plan de nutrición personalizado",
@@ -204,12 +205,12 @@
       "5": "🤖 Asistente de nutrición con IA"
     },
     "q9": {
-      "label": "9. ¿Qué tan probable es que recomiendes NutriKids a otros padres?",
+      "label": "¿Qué tan probable es que recomiendes NutriKids a otros padres?",
       "low": "Nada probable",
       "high": "Extremadamente probable"
     },
     "q10": {
-      "label": "10. ¿Tienes algún otro comentario o sugerencia?",
+      "label": "¿Tienes algún otro comentario o sugerencia?",
       "placeholder": "Cuéntanos tu opinión… leemos cada respuesta 💜"
     },
     "submit": "Enviar comentarios",
@@ -379,12 +380,12 @@
       "title": "Fuentes Científicas",
       "desc": "NutriKids se basa en evidencia científica disponible públicamente, investigación nutricional y orientación de organizaciones de salud y nutrición reconocidas, incluyendo:",
       "items": [
-        "Departamento de Agricultura de EE. UU. (USDA)",
-        "Centros para el Control y la Prevención de Enfermedades (CDC)",
-        "Institutos Nacionales de Salud (NIH)",
-        "Academia Americana de Pediatría (AAP)",
-        "Organización Mundial de la Salud (OMS)",
-        "Literatura científica revisada por pares y bases de datos de nutrición públicas"
+        { "emoji": "🇺🇸", "label": "Departamento de Agricultura de EE. UU. (USDA)" },
+        { "emoji": "🏥", "label": "Centros para el Control y la Prevención de Enfermedades (CDC)" },
+        { "emoji": "🔬", "label": "Institutos Nacionales de Salud (NIH)" },
+        { "emoji": "👶", "label": "Academia Americana de Pediatría (AAP)" },
+        { "emoji": "🌍", "label": "Organización Mundial de la Salud (OMS)" },
+        { "emoji": "📚", "label": "Literatura científica revisada por pares y bases de datos de nutrición públicas" }
       ],
       "footer": "Revisamos regularmente los recursos disponibles y actualizamos nuestro contenido educativo para reflejar la evidencia actual y las mejores prácticas siempre que sea posible."
     },
