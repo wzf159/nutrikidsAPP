@@ -13,9 +13,14 @@ export default function Home() {
       <div className="absolute w-[280px] h-[280px] rounded-full bg-[rgba(6,182,212,0.12)] blur-[80px] top-[40%] left-[60%] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl">
-        <div className="flex items-center gap-2 mb-6">
-          <img src="/images/logo2.png" alt="" className="h-16 w-auto" />
-          <img src="/images/logo4.png" alt="NutriKids" className="h-10 w-auto" />
+        <div className="flex items-center gap-3 mb-6">
+          <img src="/images/logo2.png" alt="" className="h-20 w-auto" />
+          <div className="flex flex-col gap-1">
+            <img src="/images/logo4.png" alt="NutriKids" className="h-10 w-auto" />
+            <span className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'Nunito, sans-serif' }}>
+              {i18n.language === 'es' ? 'Nutrición inteligente para mentes en desarrollo' : isZh ? '为成长中的大脑提供智慧营养' : 'Smart nutrition for growing minds'}
+            </span>
+          </div>
         </div>
 
         <button
