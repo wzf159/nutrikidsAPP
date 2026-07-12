@@ -13,10 +13,10 @@ export default function Home() {
       <div className="absolute w-[280px] h-[280px] rounded-full bg-[rgba(6,182,212,0.12)] blur-[80px] top-[40%] left-[60%] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto">
-        <div className="flex flex-col items-center gap-0 mb-4">
-          <img src="/images/logoall.png" alt="" className="h-40 w-auto" />
-         </div>
-         <button
+        <div className="flex flex-col items-center gap-0 mb-2">
+          <img src="/images/logoall.png" alt="" className="h-60 w-auto" />
+        </div>
+        <button
           onClick={() => navigate('/onboarding')}
           className="flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-lg font-bold shadow-[0_8px_28px_rgba(137,60,227,0.30)] hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(137,60,227,0.38)] transition-all mb-4"
           style={{ fontFamily: 'Poppins, sans-serif' }}
