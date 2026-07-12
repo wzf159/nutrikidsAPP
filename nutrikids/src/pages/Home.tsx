@@ -16,7 +16,7 @@ export default function Home() {
         <div className="flex items-center gap-3 mb-6">
           <img src="/images/logo2.png" alt="" className="h-20 w-auto" />
           <div className="flex flex-col gap-1">
-            <img src="/images/logo4.png" alt="NutriKids" className="h-10 w-auto" />
+            <img src="/images/logo4.png" alt="NutriKids" className="h-10 w-20" />
             <span className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'Nunito, sans-serif' }}>
               {i18n.language === 'es' ? 'Nutrición inteligente para mentes en desarrollo' : isZh ? '为成长中的大脑提供智慧营养' : 'Smart nutrition for growing minds'}
             </span>
