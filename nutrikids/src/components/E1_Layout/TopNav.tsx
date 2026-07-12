@@ -78,7 +78,6 @@ export default function TopNav() {
         ? `${child.age} ${isZh ? '岁' : i18n.language === 'es' ? 'años' : 'yrs'}`
         : ''
     : '';
-  const stage = child ? AGE_GROUPS.find(g => g.key === child.stageKey) : null;
   const bmi = child?.heightCm && child?.weightKg ? bmiOf(child.heightCm, child.weightKg) : null;
   const childAllergens = child
     ? child.allergens
