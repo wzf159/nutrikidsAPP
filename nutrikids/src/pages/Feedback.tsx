@@ -15,7 +15,7 @@ interface FeedbackAnswers {
 
 const ff = "'Nunito', 'Inter', sans-serif";
 const grad = 'linear-gradient(135deg,#893ce3,#ec4899)';
-const { t } = useTranslation();
+
 function RadioOption({ value: _value, label, selected, onSelect }: { value: string; label: string; selected: boolean; onSelect: () => void }) {
   return (
     <button
@@ -79,6 +79,7 @@ function QLabel({ n, text, sub }: { n: number; text: string; sub?: string }) {
 }
 
 export default function Feedback() {
+  const { t } = useTranslation();
   const [answers, setAnswers] = useState<FeedbackAnswers>({
     q1: null, q2: null, q3: null, q4: null, q5: null, q6: null,
     q7: [], q8: [], q9: null, comment: '',
