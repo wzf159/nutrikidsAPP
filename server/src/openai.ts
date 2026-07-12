@@ -11,6 +11,7 @@ export interface FoodRecognition {
   confidence: number; 
   alternatives: { nameEn: string; nameZh: string }[];
 }
+type NutrientInfo = { nutrientId: number; value: number; unit: string; dailyValue: number };
 
 export async function recognizeFoodImage(buf: Buffer, mimetype: string): Promise<FoodRecognition> {
   const base64 = buf.toString('base64');
@@ -165,7 +166,8 @@ export async function generateProductNutrition(nameEn: string, nameZh: string): 
         const dailyValue = Math.round((value / dvRef) * 100);
         return { nutrientId, value, unit, dailyValue };
       })
-      .filter((n): n is { nutrientId: number; value: number; unit: string; dailyValue: number } => n !== null);
+      .filter((n: NutrientInfo | null): n is NutrientInfo => n !== null);
+      //.filter((n): n is { nutrientId: number; value: number; unit: string; dailyValue: number } => n !== null);
 
     const allergens = Array.isArray(j.allergens) ? j.allergens.map((a: unknown) => String(a).toLowerCase()) : [];
     const novaScore = typeof j.nova_score === 'number' ? j.nova_score : null;

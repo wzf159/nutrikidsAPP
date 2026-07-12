@@ -40,7 +40,7 @@ export default async function authRoutes(app: FastifyInstance) {
     const { email, password } = parsed.data;
 
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
+    if (!user || !user.passwordHash || !(await bcrypt.compare(password, user.passwordHash)))
       return reply.code(401).send({ error: '邮箱或密码错误' });
 
     const token = app.jwt.sign({ sub: user.id });
