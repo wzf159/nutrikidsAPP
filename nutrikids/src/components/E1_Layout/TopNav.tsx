@@ -11,8 +11,8 @@ import { useSession, signOut } from '../../lib/auth';
 const ACTIVE_KEY = 'nutrikids_active_child_id';
 
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
-  { icon: '🍊', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
-  { icon: '🎯', key: 'nav.scienceInsights', path: '/science-insights' },
+  { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
+  { icon: '🌱', key: 'nav.scienceInsights', path: '/science-insights' },
   { icon: '📈', key: 'nav.growthProfile', path: '/growth-profile' },
   { icon: '💬', key: 'nav.feedback', path: '/feedback' },
 ];

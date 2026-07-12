@@ -1,9 +1,9 @@
 {
   "nav": {
     "home": "Home",
-    "foodAnalyzer": "Food Analyzer",
+    "foodAnalyzer": "Smart Label",
     "foodFact": "Food Facts",
-    "scienceInsights": "Science Insights",
+    "scienceInsights": "Healthy Growth",
     "growthProfile": "Growth Profile",
     "feedback": "Feedback",
     "admin": "Admin",
@@ -144,43 +144,72 @@
     "subtitle": "Help us make NutriKids better for you and your child.",
     "timer": "Takes less than 2 minutes",
     "q1": {
-      "label": "1. Has NutriKids helped you make better food choices for your child?",
-      "1": "Not<br/>at all",
-      "2": "Not<br/>really",
-      "3": "Somewhat",
-      "4": "Yes,<br/>helpful",
-      "5": "Very<br/>helpful"
+      "label": "1. Which best describes you?",
+      "1": "👨‍👩‍👧 Parent",
+      "2": "🤲 Caregiver (grandparent, guardian, or other family member)",
+      "3": "👩‍⚕️ Healthcare or Nutrition Professional"
     },
     "q2": {
-      "label": "2. How easy is it to understand the information shown on screen?",
+      "label": "2. What is your gender?",
+      "1": "♀️ Female",
+      "2": "♂️ Male",
+      "3": "⚧ Non-binary / Gender non-conforming",
+      "4": "🤐 Prefer not to say"
+    },
+    "q3": {
+      "label": "3. Has NutriKids helped you make better food choices for your child?",
+      "1": "Not at all",
+      "2": "Not really",
+      "3": "Somewhat",
+      "4": "Yes, helpful",
+      "5": "Very helpful"
+    },
+    "q4": {
+      "label": "4. How easy is it to understand the information shown on screen?",
       "1": "🎓 Too professional — too much jargon, hard to follow",
       "2": "🙂 Mostly understandable — I can follow most of it",
       "3": "✅ Easy to understand — clear and intuitive",
-      "4": "📊 Charts and data aren't clear enough — too dense or hard to read",
-      "5": "✨ Visuals are a bit distracting — animations or graphics pull focus"
+      "4": "📊 Charts and data aren't clear enough",
+      "5": "✨ Visuals are a bit distracting"
     },
-    "q3": {
-      "label": "3. Which feature did you find most useful?",
-      "1": "🍊 Food Analyzer",
-      "2": "📊 Growth Profile",
-      "3": "🎯 Development Goals",
-      "4": "🥗 Nutrition Guide"
+    "q5": {
+      "label": "5. How trustworthy does NutriKids feel?",
+      "1": "⭐⭐⭐⭐⭐ Very trustworthy",
+      "2": "⭐⭐⭐⭐ Mostly trustworthy",
+      "3": "⭐⭐⭐ Neutral",
+      "4": "⭐⭐ Somewhat skeptical",
+      "5": "⭐ Not trustworthy at all"
     },
-    "q4": {
-      "label": "4. Which feature would you most like NutriKids to add next?",
+    "q6": {
+      "label": "6. How do you feel about the overall design?",
+      "1": "😍 Love it",
+      "2": "😊 Like it",
+      "3": "😐 It's okay",
+      "4": "😕 Don't really like it",
+      "5": "😞 Dislike it"
+    },
+    "q7": {
+      "label": "7. Which feature did you find most useful?",
+      "sub": "Select all that apply",
+      "1": "🏷️ Smart Label",
+      "2": "🌱 Healthy Growth"
+    },
+    "q8": {
+      "label": "8. Which feature would you most like NutriKids to add next?",
+      "sub": "Select all that apply",
       "1": "📅 Daily Nutrition Tracker",
       "2": "🎯 Personalized Nutrition Plan",
       "3": "🛒 Healthy Food Recommendations",
       "4": "📈 Growth Progress Tracking",
       "5": "🤖 AI Nutrition Coach"
     },
-    "q5": {
-      "label": "5. How likely are you to recommend NutriKids to other parents?",
+    "q9": {
+      "label": "9. How likely are you to recommend NutriKids to other parents?",
       "low": "Not at all likely",
       "high": "Extremely likely"
     },
-    "q6": {
-      "label": "6. Any other thoughts or suggestions for us?",
+    "q10": {
+      "label": "10. Any other thoughts or suggestions for us?",
       "placeholder": "Tell us what you think… we read every response 💜"
     },
     "submit": "Submit Feedback",

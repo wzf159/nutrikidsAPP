@@ -1,312 +1,339 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
-
 interface FeedbackAnswers {
-  q1: string | null;
-  q2: string | null;
-  q3: string | null;
-  q4: string | null;
-  q5: string | null;
-  comment: string;
+  q1: string | null;        // Role
+  q2: string | null;        // Gender
+  q3: string | null;        // Helpfulness (5-scale)
+  q4: string | null;        // Clarity (radio)
+  q5: string | null;        // Trust (radio)
+  q6: string | null;        // Design (radio)
+  q7: string[];             // Most useful features (multi)
+  q8: string[];             // Feature requests (multi)
+  q9: string | null;        // NPS (0-10)
+  comment: string;          // Open comment
+}
+
+const ff = "'Nunito', 'Inter', sans-serif";
+const grad = 'linear-gradient(135deg,#893ce3,#ec4899)';
+const { t } = useTranslation();
+function RadioOption({ value, label, selected, onSelect }: { value: string; label: string; selected: boolean; onSelect: () => void }) {
+  return (
+    <button
+      onClick={onSelect}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '12px 16px', borderRadius: 12, width: '100%', textAlign: 'left',
+        border: `1.5px solid ${selected ? '#893ce3' : '#e5e7eb'}`,
+        background: selected ? 'rgba(137,60,227,0.06)' : '#fff',
+        fontFamily: ff, fontSize: 14, fontWeight: 600,
+        color: selected ? '#893ce3' : '#374151', cursor: 'pointer',
+        transition: 'all 0.15s',
+      }}
+    >
+      <span style={{
+        width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+        border: `2px solid ${selected ? '#893ce3' : '#d1d5db'}`,
+        background: selected ? '#893ce3' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {selected && <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#fff', display: 'block' }} />}
+      </span>
+      {label}
+    </button>
+  );
+}
+
+function EmojiScale({ value, onSelect }: { value: string | null; onSelect: (v: string) => void }) {
+  const opts = [
+    { v: '1', emoji: '😞', label: 'Not\nat all' },
+    { v: '2', emoji: '😕', label: 'Not\nreally' },
+    { v: '3', emoji: '😐', label: 'Somewhat' },
+    { v: '4', emoji: '😊', label: 'Yes,\nhelpful' },
+    { v: '5', emoji: '😍', label: 'Very\nhelpful' },
+  ];
+  return (
+    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      {opts.map(o => (
+        <button key={o.v} onClick={() => onSelect(o.v)} style={{
+          flex: 1, minWidth: 60, padding: '12px 8px', borderRadius: 12, border: `1.5px solid ${value === o.v ? '#893ce3' : '#e5e7eb'}`,
+          background: value === o.v ? 'rgba(137,60,227,0.08)' : '#fff', cursor: 'pointer',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+          fontFamily: ff, fontSize: 11, fontWeight: 600, color: value === o.v ? '#893ce3' : '#6b7280',
+          transition: 'all 0.15s',
+        }}>
+          <span style={{ fontSize: 28 }}>{o.emoji}</span>
+          <span style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>{o.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CheckOption({ value, label, selected, onToggle }: { value: string; label: string; selected: boolean; onToggle: () => void }) {
+  return (
+    <button onClick={onToggle} style={{
+      display: 'flex', alignItems: 'center', gap: 10,
+      padding: '11px 14px', borderRadius: 12, border: `1.5px solid ${selected ? '#893ce3' : '#e5e7eb'}`,
+      background: selected ? 'rgba(137,60,227,0.06)' : '#fff',
+      fontFamily: ff, fontSize: 14, fontWeight: 600,
+      color: selected ? '#893ce3' : '#374151', cursor: 'pointer',
+      transition: 'all 0.15s', textAlign: 'left',
+    }}>
+      <span style={{
+        width: 18, height: 18, borderRadius: 4, border: `2px solid ${selected ? '#893ce3' : '#d1d5db'}`,
+        background: selected ? '#893ce3' : 'transparent',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        {selected && <span style={{ color: '#fff', fontSize: 11, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+      </span>
+      {label}
+    </button>
+  );
+}
+
+function QLabel({ n, text, sub }: { n: number; text: string; sub?: string }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <p style={{ fontFamily: ff, fontSize: 16, fontWeight: 800, color: '#1f2937', margin: 0 }}>
+        {n}. {text}
+        {sub && <span style={{ fontSize: 12, fontWeight: 600, color: '#9ca3af', marginLeft: 8 }}>{sub}</span>}
+      </p>
+    </div>
+  );
 }
 
 export default function Feedback() {
-  const { t } = useTranslation();
   const [answers, setAnswers] = useState<FeedbackAnswers>({
-    q1: null,
-    q2: null,
-    q3: null,
-    q4: null,
-    q5: null,
-    comment: '',
+    q1: null, q2: null, q3: null, q4: null, q5: null, q6: null,
+    q7: [], q8: [], q9: null, comment: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSelectRating = (question: keyof FeedbackAnswers, value: string) => {
-    setAnswers(prev => ({ ...prev, [question]: value }));
-  };
+  const setQ = (key: keyof FeedbackAnswers, val: string) =>
+    setAnswers(prev => ({ ...prev, [key]: val }));
 
-  const handleSelectRadio = (question: keyof FeedbackAnswers, value: string) => {
-    setAnswers(prev => ({ ...prev, [question]: value }));
-  };
-
-  const handleSelectChoice = (question: keyof FeedbackAnswers, value: string) => {
-    setAnswers(prev => ({ ...prev, [question]: value }));
-  };
-
-  const handleSelectNPS = (value: string) => {
-    setAnswers(prev => ({ ...prev, q5: value }));
-  };
-
-  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setAnswers(prev => ({ ...prev, comment: e.target.value }));
-  };
+  const toggleMulti = (key: 'q7' | 'q8', val: string) =>
+    setAnswers(prev => {
+      const arr = prev[key] as string[];
+      return { ...prev, [key]: arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val] };
+    });
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
       const res = await fetch('https://formspree.io/f/mrewnpqg', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
-          helpfulness: answers.q1,
-          clarity: answers.q2,
-          mostUseful: answers.q3,
-          featureRequest: answers.q4,
-          nps: answers.q5,
+          role: answers.q1,
+          gender: answers.q2,
+          helpfulness: answers.q3,
+          clarity: answers.q4,
+          trust: answers.q5,
+          design: answers.q6,
+          mostUseful: answers.q7.join(', '),
+          featureRequest: answers.q8.join(', '),
+          nps: answers.q9,
           comment: answers.comment,
-          _subject: `NutriKids Feedback - NPS: ${answers.q5}`,
+          _subject: `NutriKids Feedback - NPS: ${answers.q8}`,
         }),
       });
-  
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
-        alert('Submission failed. Please try again.');
-      }
-    } catch (e) {
-      alert('Network error. Please check your connection.');
+      if (res.ok) setSubmitted(true);
+      else alert('Submission failed. Please try again.');
+    } catch {
+      alert('Network error. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setSubmitted(false);
-    setAnswers({
-      q1: null,
-      q2: null,
-      q3: null,
-      q4: null,
-      q5: null,
-      comment: '',
-    });
+  const card = {
+    background: '#fff', borderRadius: 20, padding: '24px 24px',
+    boxShadow: '0 1px 8px rgba(0,0,0,0.06)', marginBottom: 16,
+    border: '1px solid rgba(137,60,227,0.08)',
   };
 
-  return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#ccd8f5]">
-      <div className="max-w-[680px] mx-auto px-4 py-8">
-        <div className="card" style={{ padding: '32px', maxWidth: '680px', margin: '0 auto' }}>
-          {submitted ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-              <div style={{ fontSize: '64px', marginBottom: '16px' }}>🎉</div>
-              <div style={{ fontFamily: 'Poppins, sans-serif', fontSize: '22px', fontWeight: '700', color: '#2d2a4a', marginBottom: '8px' }}>
-                {t('feedback.successTitle')}
-              </div>
-              <div style={{ fontFamily: 'Nunito, sans-serif', fontSize: '15px', color: '#6b7280', lineHeight: '1.6' }}>
-                <span dangerouslySetInnerHTML={{ __html: t('feedback.successMsg') }} />
-              </div>
-              <button
-                onClick={handleReset}
-                style={{
-                  background: 'linear-gradient(135deg,#893ce3,#ec4899)',
-                  color: '#fff',
-                  fontFamily: 'Poppins, sans-serif',
-                  fontSize: '15px',
-                  fontWeight: '700',
-                  padding: '16px 32px',
-                  border: 'none',
-                  borderRadius: '999px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 16px rgba(137,60,227,0.3)',
-                  transition: 'transform .15s, box-shadow .15s',
-                  marginTop: '24px',
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.03)')}
-                onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-              >
-                {t('feedback.submitAnother')} ✨
-              </button>
-            </div>
-          ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                <span style={{ fontFamily: 'Poppins, sans-serif', fontSize: '24px', fontWeight: '700', background: 'linear-gradient(135deg,#893ce3,#ec4899)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  💬 {t('feedback.title')}
-                </span>
-              </div>
-              <p style={{ fontFamily: 'Nunito, sans-serif', fontSize: '14px', color: '#6b7280', marginBottom: '32px', lineHeight: '1.6' }}>
-                {t('feedback.subtitle')} 
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: 'linear-gradient(135deg,rgba(137,60,227,0.10),rgba(236,72,153,0.10))', border: '1.5px solid rgba(137,60,227,0.25)', borderRadius: '999px', padding: '2px 12px', fontWeight: '800', fontSize: '13px', color: '#893ce3', whiteSpace: 'nowrap' }}>
-                  ⏱️ {t('feedback.timer')}
-                </span>
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-                {/* Q1: Helpfulness */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q1.label')}</div>
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '12px', flexWrap: 'wrap' }}>
-                    {[
-                      { emoji: '😞', label: t('feedback.q1.1') },
-                      { emoji: '😕', label: t('feedback.q1.2') },
-                      { emoji: '😐', label: t('feedback.q1.3') },
-                      { emoji: '😊', label: t('feedback.q1.4') },
-                      { emoji: '😍', label: t('feedback.q1.5') },
-                    ].map((item, index) => (
-                      <button
-                        key={index}
-                        className={`fb-rating-btn ${answers.q1 === item.emoji ? 'selected' : ''}`}
-                        onClick={() => handleSelectRating('q1', item.emoji)}
-                      >
-                        {item.emoji}
-                        <span dangerouslySetInnerHTML={{ __html: item.label }} />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q2: Information clarity */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q2.label')}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                    {[
-                      { key: 'q2_1', text: t('feedback.q2.1') },
-                      { key: 'q2_2', text: t('feedback.q2.2') },
-                      { key: 'q2_3', text: t('feedback.q2.3') },
-                      { key: 'q2_4', text: t('feedback.q2.4') },
-                      { key: 'q2_5', text: t('feedback.q2.5') },
-                    ].map((item) => (
-                      <button
-                        key={item.key}
-                        className={`fb-radio-btn ${answers.q2 === item.text ? 'selected' : ''}`}
-                        onClick={() => handleSelectRadio('q2', item.text)}
-                      >
-                        {item.text}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q3: Most useful feature */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q3.label')}</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '12px' }}>
-                    {[
-                      { key: 'q3_1', text: t('feedback.q3.1') },
-                      { key: 'q3_2', text: t('feedback.q3.2') },
-                      { key: 'q3_3', text: t('feedback.q3.3') },
-                      { key: 'q3_4', text: t('feedback.q3.4') },
-                    ].map((item) => (
-                      <button
-                        key={item.key}
-                        className={`fb-choice-btn ${answers.q3 === item.text ? 'selected' : ''}`}
-                        onClick={() => handleSelectChoice('q3', item.text)}
-                      >
-                        {item.text}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q4: Feature request */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q4.label')}</div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
-                    {[
-                      { key: 'q4_1', text: t('feedback.q4.1') },
-                      { key: 'q4_2', text: t('feedback.q4.2') },
-                      { key: 'q4_3', text: t('feedback.q4.3') },
-                      { key: 'q4_4', text: t('feedback.q4.4') },
-                      { key: 'q4_5', text: t('feedback.q4.5') },
-                    ].map((item) => (
-                      <button
-                        key={item.key}
-                        className={`fb-radio-btn ${answers.q4 === item.text ? 'selected' : ''}`}
-                        onClick={() => handleSelectRadio('q4', item.text)}
-                      >
-                        {item.text}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Q5: NPS */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q5.label')}</div>
-                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
-                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <button
-                        key={num}
-                        className={`fb-nps-btn ${answers.q5 === num.toString() ? 'selected' : ''}`}
-                        onClick={() => handleSelectNPS(num.toString())}
-                      >
-                        {num}
-                      </button>
-                    ))}
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
-                    <span style={{ fontSize: '11px', color: '#9ca3af' }}>{t('feedback.q5.low')}</span>
-                    <span style={{ fontSize: '11px', color: '#9ca3af' }}>{t('feedback.q5.high')}</span>
-                  </div>
-                </div>
-
-                {/* Q6: Comment */}
-                <div className="fb-q">
-                  <div className="fb-q-label">{t('feedback.q6.label')}</div>
-                  <textarea
-                    value={answers.comment}
-                    onChange={handleCommentChange}
-                    placeholder={t('feedback.q6.placeholder')}
-                    style={{
-                      width: '100%',
-                      marginTop: '12px',
-                      padding: '14px 16px',
-                      border: '1.5px solid rgba(124,58,237,0.2)',
-                      borderRadius: '14px',
-                      fontFamily: 'Nunito, sans-serif',
-                      fontSize: '14px',
-                      color: '#1a1a3a',
-                      background: 'rgba(255,255,255,0.8)',
-                      resize: 'vertical',
-                      minHeight: '100px',
-                      boxSizing: 'border-box',
-                      outline: 'none',
-                      lineHeight: '1.6',
-                    }}
-                    onFocus={(e) => (e.currentTarget.style.borderColor = '#893ce3')}
-                    onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(124,58,237,0.2)')}
-                  />
-                </div>
-
-                {/* Submit */}
-                <button
-                  onClick={handleSubmit}
-                  disabled={loading}
-                  style={{
-                    background: 'linear-gradient(135deg,#893ce3,#ec4899)',
-                    color: '#fff',
-                    fontFamily: 'Poppins, sans-serif',
-                    fontSize: '15px',
-                    fontWeight: '700',
-                    padding: '16px 32px',
-                    border: 'none',
-                    borderRadius: '999px',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 16px rgba(137,60,227,0.3)',
-                    transition: 'transform .15s, box-shadow .15s',
-                    alignSelf: 'flex-start',
-                    opacity: loading ? 0.7 : 1,
-                  }}
-                  onMouseOver={(e) => !loading && (e.currentTarget.style.transform = 'scale(1.03)')}
-                  onMouseOut={(e) => !loading && (e.currentTarget.style.transform = 'scale(1)')}
-                >
-                  {loading ? (
-                    <span>{t('feedback.submitting')}</span>
-                  ) : (
-                    <span>{t('feedback.submit')} ✨</span>
-                  )}
-                </button>
-              </div>
-            </>
-          )}
+  if (submitted) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f5f0ff,#fdf2f8)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <div style={{ ...card, textAlign: 'center', maxWidth: 480, width: '100%' }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
+          <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 22, fontWeight: 800, color: '#1f2937', marginBottom: 10 }}>Thank you!</p>
+          <p style={{ fontFamily: ff, fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 6 }}>
+            Your feedback means a lot to us. We'll use it to make NutriKids even better for families like yours.
+          </p>
+          <p style={{ fontFamily: ff, fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 24 }}>
+            If you have more thoughts, feel free to reach out anytime at{' '}
+            <a href="mailto:info@sense-institute.org" style={{ color: '#893ce3', fontWeight: 700 }}>info@sense-institute.org</a>.
+          </p>
+          <button onClick={() => setSubmitted(false)} style={{
+            background: grad, color: '#fff', border: 'none', borderRadius: 999,
+            padding: '12px 28px', fontFamily: ff, fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          }}>
+            Submit Another Response
+          </button>
         </div>
       </div>
+    );
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#f5f0ff,#fdf2f8)', padding: '32px 16px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto' }}>
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <span style={{ fontSize: 36 }}>💬</span>
+          <h1 style={{ fontFamily: "'Poppins',sans-serif", fontSize: 24, fontWeight: 800, color: '#1f2937', margin: '8px 0 6px' }}>
+            {t('feedback.title')}
+          </h1>
+          <p style={{ fontFamily: ff, fontSize: 13, color: '#6b7280', margin: 0 }}>
+            {t('feedback.subtitle')} <span style={{ fontWeight: 700 }}>{t('feedback.timer')}</span>
+          </p>
+          <div style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(137,60,227,0.07)', borderRadius: 999, padding: '5px 14px' }}>
+            <span>🔒</span>
+            <span style={{ fontFamily: ff, fontSize: 11, fontWeight: 600, color: '#893ce3' }}>
+              Your responses are anonymous and used only to improve NutriKids.
+            </span>
+          </div>
+        </div>
+
+        {/* Q1 - Role */}
+        <div style={card}>
+          <QLabel n={1} text={t('feedback.q1.label')} />
+          {['1', '2', '3'].map(k => {
+            const opt = t(`feedback.q1.${k}`);
+            return <RadioOption key={k} value={opt} label={opt} selected={answers.q1 === opt} onSelect={() => setQ('q1', opt)} />;
+          })}
+        </div>
+      </div>
+      {/* Q2 - Role */}
+      <div style={card}>
+        <QLabel n={2} text={t('feedback.q2.label')} />
+        {['1', '2', '3', '4'].map(k => {
+          const opt = t(`feedback.q2.${k}`);
+          return <RadioOption key={k} value={opt} label={opt} selected={answers.q2 === opt} onSelect={() => setQ('q2', opt)} />;
+        })}
+      </div>
+
+      {/* Q3 - Helpfulness */}
+      <div style={card}>
+        <QLabel n={3} text={t('feedback.q3.label')} />
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {[{ v: '1', e: '😞' }, { v: '2', e: '😕' }, { v: '3', e: '😐' }, { v: '4', e: '😊' }, { v: '5', e: '😍' }].map(o => (
+            <button key={o.v} onClick={() => setQ('q3', o.v)} style={{
+              flex: 1, minWidth: 60, padding: '12px 8px', borderRadius: 12,
+              border: `1.5px solid ${answers.q3 === o.v ? '#893ce3' : '#e5e7eb'}`,
+              background: answers.q3 === o.v ? 'rgba(137,60,227,0.08)' : '#fff', cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+              fontFamily: ff, fontSize: 11, fontWeight: 600, color: answers.q3 === o.v ? '#893ce3' : '#6b7280',
+            }}>
+              <span style={{ fontSize: 28 }}>{o.e}</span>
+              <span style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>{t(`feedback.q3.${o.v}`)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Q4 - Clarity */}
+      <div style={card}>
+        <QLabel n={4} text={t('feedback.q4.label')} />
+        {['1', '2', '3', '4', '5'].map(k => {
+          const opt = t(`feedback.q4.${k}`);
+          return <RadioOption key={k} value={opt} label={opt} selected={answers.q4 === opt} onSelect={() => setQ('q4', opt)} />;
+        })}
+      </div>
+
+      {/* Q5 - Trust */}
+      <div style={card}>
+        <QLabel n={5} text={t('feedback.q5.label')} />
+        {['1', '2', '3', '4', '5'].map(k => {
+          const opt = t(`feedback.q5.${k}`);
+          return <RadioOption key={k} value={opt} label={opt} selected={answers.q5 === opt} onSelect={() => setQ('q5', opt)} />;
+        })}
+      </div>
+
+      {/* Q6 - Design */}
+      <div style={card}>
+        <QLabel n={4} text={t('feedback.q6.label')} />
+        {['1', '2', '3', '4', '5'].map(k => {
+          const opt = t(`feedback.q6.${k}`);
+          return <RadioOption key={k} value={opt} label={opt} selected={answers.q6 === opt} onSelect={() => setQ('q6', opt)} />;
+        })}
+      </div>
+
+      {/* Q7 - Most useful (multi) */}
+      <div style={card}>
+        <QLabel n={7} text={t('feedback.q7.label')} sub={t('feedback.q7.sub')} />
+        {['1', '2'].map(k => {
+          const opt = t(`feedback.q7.${k}`);
+          return <CheckOption key={k} value={opt} label={opt} selected={answers.q7.includes(opt)} onToggle={() => toggleMulti('q7', opt)} />;
+        })}
+      </div>
+
+      {/* Q8 - Feature request (multi) */}
+      <div style={card}>
+        <QLabel n={8} text={t('feedback.q8.label')} sub={t('feedback.q8.sub')} />
+        {['1', '2', '3', '4', '5'].map(k => {
+          const opt = t(`feedback.q8.${k}`);
+          return <CheckOption key={k} value={opt} label={opt} selected={answers.q8.includes(opt)} onToggle={() => toggleMulti('q8', opt)} />;
+        })}
+      </div>
+
+      {/* Q9 - NPS */}
+      <div style={card}>
+        <QLabel n={9} text={t('feedback.q9.label')} />
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
+          {Array.from({ length: 11 }, (_, i) => String(i)).map(v => (
+            <button key={v} onClick={() => setQ('q9', v)} style={{
+              width: 40, height: 40, borderRadius: 10, border: `1.5px solid ${answers.q9 === v ? '#893ce3' : '#e5e7eb'}`,
+              background: answers.q9 === v ? '#893ce3' : '#fff',
+              color: answers.q9 === v ? '#fff' : '#374151',
+              fontFamily: ff, fontSize: 13, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s',
+            }}>{v}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: ff, fontSize: 11, color: '#9ca3af', fontWeight: 600 }}>
+          <span>{t('feedback.q9.low')}</span>
+          <span>{t('feedback.q9.high')}</span>
+        </div>
+      </div>
+
+      {/* Q10 - Comment */}
+      <div style={card}>
+        <QLabel n={10} text={t('feedback.q10.label')} />
+        <textarea
+          value={answers.comment}
+          onChange={e => setAnswers(prev => ({ ...prev, comment: e.target.value }))}
+          placeholder={t('feedback.q10.placeholder')}
+          rows={4}
+          style={{
+            width: '100%', borderRadius: 12, border: '1.5px solid #e5e7eb', padding: '12px 14px',
+            fontFamily: ff, fontSize: 14, color: '#374151', resize: 'vertical', outline: 'none',
+            boxSizing: 'border-box',
+          }}
+        />
+      </div>
+
+      {/* Submit */}
+      <div style={{ textAlign: 'center', paddingBottom: 32 }}>
+        <button
+          onClick={handleSubmit}
+          disabled={loading}
+          style={{
+            background: loading ? '#d1d5db' : grad,
+            color: '#fff', border: 'none', borderRadius: 999,
+            padding: '14px 40px', fontFamily: ff, fontSize: 15, fontWeight: 800,
+            cursor: loading ? 'not-allowed' : 'pointer',
+            boxShadow: loading ? 'none' : '0 4px 16px rgba(137,60,227,0.3)',
+          }}
+        >
+          {loading ? t('feedback.submitting') : t('feedback.submit')}
+        </button>
+      </div>
+
     </div>
+   
   );
 }

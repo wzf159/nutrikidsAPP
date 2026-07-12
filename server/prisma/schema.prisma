@@ -136,16 +136,19 @@ model ChildAllergen {
 model Feedback {
   id        String   @id @default(uuid())
   userId    String?  @map("user_id")
-  text      String
+  text      String?
   q1        String?
   q2        String?
   q3        String?
   q4        String?
   q5        String?
+  q6        String?
+  q7        String?
+  q8        String?
+  q9        String?
   comment   String?
   createdAt DateTime @default(now()) @map("created_at")
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-
   @@map("feedback")
 }
 

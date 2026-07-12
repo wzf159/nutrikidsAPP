@@ -1,9 +1,9 @@
 {
   "nav": {
     "home": "Inicio",
-    "foodAnalyzer": "Analizador de Alimentos",
+    "foodAnalyzer": "Etiqueta inteligente",
     "foodFact": "Datos de Alimentos",
-    "scienceInsights": "Consejos Científicos",
+    "scienceInsights": "Crecimiento saludable",
     "growthProfile": "Perfil de Crecimiento",
     "feedback": "Comentarios",
     "admin": "Admin",
@@ -140,54 +140,83 @@
     "subtitle": "Conocimiento nutricional basado en evidencia para niños"
   },
   "feedback": {
-    "title": "Comparte Tu Opinión",
-    "subtitle": "Ayúdanos a mejorar NutriKids para ti y tu hijo.",
-    "timer": "Menos de 2 minutos",
+    "title": "Comparte tu opinión",
+    "subtitle": "Ayúdanos a hacer que NutriKids sea aún mejor para ti y tu hijo.",
+    "timer": "Completar la encuesta toma menos de 2 minutos",
     "q1": {
-      "label": "1. ¿Te ha ayudado NutriKids a tomar mejores decisiones alimentarias para tu hijo?",
-      "1": "Para<br/>nada",
-      "2": "No<br/>mucho",
-      "3": "Un poco",
-      "4": "Sí,<br/>útil",
-      "5": "Muy<br/>útil"
+      "label": "1. ¿Cuál de las siguientes opciones te describe mejor?",
+      "1": "👨‍👩‍👧 Padre o madre",
+      "2": "🤲 Cuidador(a) (abuelo(a), tutor(a) u otro familiar)",
+      "3": "👩‍⚕️ Profesional de la salud o nutrición"
     },
     "q2": {
-      "label": "2. ¿Qué tan fácil es entender la información que se muestra en la pantalla?",
-      "1": "🎓 Demasiado profesional — demasiado jerga, difícil de seguir",
-      "2": "🙂 Mayormente comprensible — puedo seguir la mayoría",
-      "3": "✅ Fácil de entender — claro e intuitivo",
-      "4": "📊 Los gráficos y datos no son lo suficientemente claros — demasiado densos o difíciles de leer",
-      "5": "✨ Los visuales son un poco distrayentes — las animaciones o gráficos atraen la atención"
+      "label": "2. ¿Cuál es tu género?",
+      "1": "♀️ Femenino",
+      "2": "♂️ Masculino",
+      "3": "⚧ No binario / Diversidad de género",
+      "4": "🤐 Prefiero no decirlo"
     },
     "q3": {
-      "label": "3. ¿Qué función te resultó más útil?",
-      "1": "🍊 Analizador de Alimentos",
-      "2": "📊 Perfil de Crecimiento",
-      "3": "🎯 Objetivos de Desarrollo",
-      "4": "🥗 Guía de Nutrición"
+      "label": "3. ¿NutriKids te ha ayudado a elegir mejores alimentos para tu hijo?",
+      "1": "Para nada",
+      "2": "No mucho",
+      "3": "Algo",
+      "4": "Sí, ha sido útil",
+      "5": "Muy útil"
     },
     "q4": {
-      "label": "4. ¿Qué función te gustaría que NutriKids agregara a continuación?",
-      "1": "📅 Rastreador de Nutrición Diaria",
-      "2": "🎯 Plan de Nutrición Personalizado",
-      "3": "🛒 Recomendaciones de Alimentos Saludables",
-      "4": "📈 Rastreo del Progreso del Crecimiento",
-      "5": "🤖 Entrenador de Nutrición AI"
+      "label": "4. ¿Qué tan fácil es entender la información mostrada en la pantalla?",
+      "1": "🎓 Demasiado técnica, difícil de entender",
+      "2": "🙂 Mayormente comprensible",
+      "3": "✅ Muy fácil de entender, clara e intuitiva",
+      "4": "📊 Los gráficos y datos no son lo suficientemente claros",
+      "5": "✨ Los elementos visuales distraen un poco"
     },
     "q5": {
-      "label": "5. ¿Qué tan probable es que recomiendes NutriKids a otros padres?",
+      "label": "5. ¿Qué tan confiable te parece NutriKids?",
+      "1": "⭐⭐⭐⭐⭐ Muy confiable",
+      "2": "⭐⭐⭐⭐ Bastante confiable",
+      "3": "⭐⭐⭐ Neutral",
+      "4": "⭐⭐ Algo escéptico(a)",
+      "5": "⭐ Nada confiable"
+    },
+    "q6": {
+      "label": "6. ¿Qué opinas del diseño general de la aplicación?",
+      "1": "😍 Me encanta",
+      "2": "😊 Me gusta",
+      "3": "😐 Está bien",
+      "4": "😕 No me gusta mucho",
+      "5": "😞 No me gusta"
+    },
+    "q7": {
+      "label": "7. ¿Qué funciones te parecieron más útiles?",
+      "sub": "Selecciona todas las que correspondan",
+      "1": "🏷️ Etiqueta Inteligente",
+      "2": "🌱 Crecimiento Saludable"
+    },
+    "q8": {
+      "label": "8. ¿Qué función te gustaría que NutriKids agregara próximamente?",
+      "sub": "Selecciona todas las que correspondan",
+      "1": "📅 Seguimiento diario de nutrición",
+      "2": "🎯 Plan de nutrición personalizado",
+      "3": "🛒 Recomendaciones de alimentos saludables",
+      "4": "📈 Seguimiento del crecimiento",
+      "5": "🤖 Asistente de nutrición con IA"
+    },
+    "q9": {
+      "label": "9. ¿Qué tan probable es que recomiendes NutriKids a otros padres?",
       "low": "Nada probable",
       "high": "Extremadamente probable"
     },
-    "q6": {
-      "label": "6. ¿Alguna otra idea o sugerencia para nosotros?",
-      "placeholder": "Cuéntanos lo que piensas… leemos cada respuesta 💜"
+    "q10": {
+      "label": "10. ¿Tienes algún otro comentario o sugerencia?",
+      "placeholder": "Cuéntanos tu opinión… leemos cada respuesta 💜"
     },
-    "submit": "Enviar Comentario",
+    "submit": "Enviar comentarios",
     "submitting": "Enviando...",
-    "successTitle": "¡Gracias!",
-    "successMsg": "Tu feedback significa mucho para nosotros.<br/>Lo usaremos para hacer NutriKids aún mejor para ti y tu hijo 💜",
-    "submitAnother": "Enviar Otro"
+    "successTitle": "¡Muchas gracias!",
+    "successMsg": "Tu opinión significa mucho para nosotros.<br/>La utilizaremos para seguir mejorando NutriKids para ti y tu hijo 💜",
+    "submitAnother": "Enviar otra respuesta"
   },
   "lang": {
     "zh": "中文",

@@ -50,18 +50,7 @@ export default function App() {
             <Route path="/food-fact" element={<FoodFactVisualization />} />
             <Route path="/support" element={<Support />} />
             <Route path="/about" element={<About />} />
-            <Route path="/admin" element={<ManagementLayout />}>
-              <Route index element={<Navigate to="feedback-stats" replace />} />
-              <Route path="feedback-stats" element={<FeedbackStats />} />
-            </Route>
-            <Route path="/dev-admin" element={<AdminLayout />}>
-              <Route index element={<Navigate to="datasources/nih-ods" replace />} />
-              <Route path="datasources/:id" element={<DataSourceDetail />} />
-              <Route path="rules/:id" element={<GuidelineDetail />} />
-              <Route path="models/:id" element={<ModelDetail />} />
-              <Route path="science-insights" element={<ScienceInsightsDesign />} />
-              <Route path="feedback-stats" element={<FeedbackStats />} />
-            </Route>
+           
           </Routes>
         </main>
         <Footer />
