@@ -34,13 +34,7 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="absolute bottom-8 z-10 flex items-center gap-2.5 text-xs font-bold text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
-        <span>🏥 {i18n.language === 'es' ? 'Datos CDC y OMS' : isZh ? 'CDC 与 WHO 数据' : 'CDC & WHO data'}</span>
-        <span className="text-gray-300">·</span>
-        <span>🔬 {i18n.language === 'es' ? 'Normas nutricionales IOM' : isZh ? 'IOM 营养标准' : 'IOM nutrition standards'}</span>
-        <span className="text-gray-300">·</span>
-        <span>🧒 {i18n.language === 'es' ? 'Creado para padres' : isZh ? '为家长而生' : 'Built for parents'}</span>
-      </div>
+      
     </div>
   );
 }
