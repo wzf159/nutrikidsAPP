@@ -15,9 +15,9 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto">
         <div className="flex flex-col items-center gap-0 mb-4">
         <img src="/images/logoall.png" alt="" className="h-40 w-auto" />
-          <h1 className="text-[38px] sm:text-[42px] font-bold text-[#1a1040] leading-[1.25] tracking-tight mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+          <p className="text-[38px] sm:text-[42px] font-bold text-[#1a1040] leading-[1.25] tracking-tight mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
             {i18n.language === 'es' ? <>Nutrición inteligente para<br />tu niño en crecimiento.</> : isZh ? <>聪明的营养选择，<br />伴随孩子成长。</> : <>Smart nutrition for<br />your growing child.</>}
-          </h1>
+          </p>
           <p className="text-[17px] font-semibold text-gray-500 leading-[1.6] mb-10" style={{ fontFamily: 'Nunito, sans-serif' }}>
             {i18n.language === 'es' ? 'Entiende lo que realmente hay en su comida — y por qué importa.' : isZh ? '看懂食物里真正的成分——以及它为什么重要。' : "Understand what's really in their food — and why it matters."}
           </p>
