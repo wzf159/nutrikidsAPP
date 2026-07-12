@@ -135,7 +135,7 @@ export const DEV_GOALS: DevGoal[] = [
     nutrientsZhByAge: [],
   },
   {
-    id: 'heart', emoji: '📏', name: 'Heart Growth', nameZh: '心脏发育', nameEs: 'Crecimiento Cardíaco',
+    id: 'heart', emoji: '❤️', name: 'Heart Development', nameZh: '心脏发育', nameEs: 'Crecimiento Cardíaco',
     tiersByAge: [
       { male: null, female: null },  // 0-6m
       { male: null, female: null },  // 7-12m
@@ -219,7 +219,7 @@ export const DEV_GOALS: DevGoal[] = [
     nutrientsZhByAge: [],
   },
   {
-    id: 'vision', emoji: '👀', name: 'Vision Development', nameZh: '视力发育', nameEs: 'Desarrollo Visual',
+    id: 'vision', emoji: '👀', name: 'Visual Development', nameZh: '视力发育', nameEs: 'Desarrollo Visual',
     tiersByAge: [
       { male: 'core', female: 'core' },  // 0-6m
       { male: 'core', female: 'core' },  // 7-12m

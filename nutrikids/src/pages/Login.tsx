@@ -32,7 +32,7 @@ export default function Login() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
         <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
-          <div className="text-5xl">🥦</div>
+          <img src="/images/logoall.png" alt="" className="w-16 h-16 mx-auto" />
           <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
           <p className="text-sm text-gray-600 text-center">
             {isZh ? '请在系统浏览器（Safari/Chrome）中打开此页面登录' : 'Please open this page in your system browser (Safari/Chrome) to sign in'}

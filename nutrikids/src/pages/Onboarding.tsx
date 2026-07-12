@@ -450,9 +450,7 @@ export default function Onboarding() {
                     <span className="block text-sm font-extrabold text-[#893ce3]">
                       {isZh ? `第 ${bmiPct} 百分位` : isEs ? `Percentil ${bmiPct}` : `${ordinal(bmiPct)} percentile`}
                     </span>
-                    <span className="block text-xs font-bold" style={{ color: bmiCat.color, fontFamily: 'Nunito, sans-serif' }}>
-                      {isZh ? bmiCat.labelZh : isEs ? bmiCat.labelEs : bmiCat.label}
-                    </span>
+                    
                   </span>
                 ) : null}
               </div>

@@ -243,14 +243,14 @@ export default function GrowthProfile() {
               <div className="py-10 text-center">
                 <p className="text-4xl mb-3">📏⚖️📐</p>
                 <p className="font-bold text-gray-700 mb-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                  {isZh ? '还没有身体数据' : isEs ? 'No hay mediciones corporales aún' : 'No body measurements yet'}
+                  {isZh ? '还没有生长数据' : isEs ? 'Aún no hay datos de crecimiento' : 'No growth data yet'}
                 </p>
                 <p className="text-sm text-gray-500 mb-5" style={{ fontFamily: 'Nunito, sans-serif' }}>
                   {isZh
-                    ? '填写孩子的身高体重后，即可对比同龄人百分位。'
+                    ? '输入您孩子的身高和体重，以追踪其生长情况并与同龄标准进行比较。'
                     : isEs
-                    ? 'Agrega la altura y peso de tu hijo para comparar con otros niños.'
-                    : "Add your child's height & weight to compare against peers."}
+                    ? 'Añade la estatura y el peso de tu hijo para hacer un seguimiento de su crecimiento y compararlo con los estándares según la edad.'
+                    : "Add your child's height and weight to track growth and compare with age-based standards."}
                 </p>
                 <button
                   onClick={() => navigate('/onboarding')}
