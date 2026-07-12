@@ -95,7 +95,7 @@ export default function TopNav() {
   return (
     <header className="relative sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-7 flex items-center gap-5">
       <NavLink to="/" className="flex items-center gap-1.5 shrink-0">
-        <img src="/images/logo2.png" alt="" className="h-9 w-auto" />
+        <img src="/images/logo21.png" alt="" className="h-9 w-auto" />
         <img src="/images/logo4.png" alt="NutriKids" className="h-6 w-auto hidden sm:block" />
       </NavLink>
 
