@@ -12,7 +12,7 @@ import {
 } from '../data/growth';
 /* ---------------- 每日营养指南柱状图（SVG） ---------------- */
 
-function DriChart({ ageIdx, isZh, isEs,gender }: { ageIdx: number; isZh: boolean; isEs: boolean; gender: string | null; }) {
+function DriChart({ ageIdx, isZh, isEs, gender }: { ageIdx: number; isZh: boolean; isEs: boolean; gender: string | null; }) {
   const W = 920, H = 340;
   const PAD_L = 4, PAD_R = 4, PAD_T = 32, PAD_B = 36;
   const chartH = H - PAD_T - PAD_B;
@@ -260,27 +260,27 @@ export default function ScienceInsights() {
   const [ageIdx, setAgeIdx] = useState(3);
 
   const genderKey: 'male' | 'female' | 'neutral' =
-    child?.gender === 'boy'  ? 'male'   :
-    child?.gender === 'girl' ? 'female' : 'neutral';
+    child?.gender === 'boy' ? 'male' :
+      child?.gender === 'girl' ? 'female' : 'neutral';
 
-    const ACTIVE_KEY = 'nutrikids_active_child_id';
+  const ACTIVE_KEY = 'nutrikids_active_child_id';
 
-    const loadChild = () => {
-      getChildren()
-        .then(cs => {
-          const activeId = localStorage.getItem(ACTIVE_KEY);
-          const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
-          setChild(c);
-          if (c) setAgeIdx(stageIdxForChild(c.stageKey, c.age, c.ageMonths));
-        })
-        .catch(() => setChild(null));
-    };
-    
-    useEffect(() => {
-      loadChild();
-      window.addEventListener('nutrikids:child-updated', loadChild);
-      return () => window.removeEventListener('nutrikids:child-updated', loadChild);
-    }, []);
+  const loadChild = () => {
+    getChildren()
+      .then(cs => {
+        const activeId = localStorage.getItem(ACTIVE_KEY);
+        const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
+        setChild(c);
+        if (c) setAgeIdx(stageIdxForChild(c.stageKey, c.age, c.ageMonths));
+      })
+      .catch(() => setChild(null));
+  };
+
+  useEffect(() => {
+    loadChild();
+    window.addEventListener('nutrikids:child-updated', loadChild);
+    return () => window.removeEventListener('nutrikids:child-updated', loadChild);
+  }, []);
 
   const childIdx = child ? stageIdxForChild(child.stageKey, child.age, child.ageMonths) : null;
   const growthMetrics = useMemo<GrowthMetric[]>(() => {
@@ -303,16 +303,16 @@ export default function ScienceInsights() {
   const growthSubtitle = !child ? '' : isZh
     ? `${child.name} 与同龄孩子的百分位对比 · CDC & WHO`
     : isEs
-    ? `Cómo ${child.name} se compara con niños de la misma edad — CDC & OMS`
-    : `How ${child.name} compares to children of the same age — CDC & WHO`;
+      ? `Cómo ${child.name} se compara con niños de la misma edad — CDC & OMS`
+      : `How ${child.name} compares to children of the same age — CDC & WHO`;
   const tiers = useMemo(() => {
     const out: Record<Tier, DevGoal[]> = { core: [], important: [], supporting: [] };
     DEV_GOALS.forEach(g => {
       const tierData = g.tiersByAge[ageIdx];
       const tier: Tier | null =
-        genderKey === 'male'   ? tierData.male   :
-        genderKey === 'female' ? tierData.female :
-        higherTier(tierData.male, tierData.female);
+        genderKey === 'male' ? tierData.male :
+          genderKey === 'female' ? tierData.female :
+            higherTier(tierData.male, tierData.female);
       if (tier === null) return;  // 该年龄段不适用，跳过这个 goal
       out[tier].push(g);
     });
@@ -346,8 +346,8 @@ export default function ScienceInsights() {
                   {isZh
                     ? '填写孩子的身高体重后，即可对比同龄人百分位。'
                     : isEs
-                    ? 'Agrega la altura y peso de tu hijo para comparar con otros niños.'
-                    : "Add your child's height & weight to compare against peers."}
+                      ? 'Agrega la altura y peso de tu hijo para comparar con otros niños.'
+                      : "Add your child's height & weight to compare against peers."}
                 </p>
                 <button
                   onClick={() => navigate('/onboarding')}
@@ -403,8 +403,8 @@ export default function ScienceInsights() {
                   {isZh
                     ? (child.gender === 'girl' ? '女孩数据' : '男孩数据')
                     : isEs
-                    ? (child.gender === 'girl' ? 'Datos femeninos' : 'Datos masculinos')
-                    : (child.gender === 'girl' ? 'Female data' : 'Male data')}
+                      ? (child.gender === 'girl' ? 'Datos femeninos' : 'Datos masculinos')
+                      : (child.gender === 'girl' ? 'Female data' : 'Male data')}
                 </span>
               )}
             </div>
@@ -415,8 +415,8 @@ export default function ScienceInsights() {
                 {isZh
                   ? '💡 填写孩子性别后，可查看性别专属的发育优先级和营养建议'
                   : isEs
-                  ? '💡 Completa el género para ver recomendaciones personalizadas'
-                  : "💡 Add your child's gender for gender-specific development priorities"}
+                    ? '💡 Completa el género para ver recomendaciones personalizadas'
+                    : "💡 Add your child's gender for gender-specific development priorities"}
               </p>
             )}
 
@@ -458,67 +458,89 @@ export default function ScienceInsights() {
             </div>
 
             {/* 三层目标网格 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
-              {(['core', 'important', 'supporting'] as Tier[]).map(tier => {
-                const tc = TIER_CONFIG[tier];
-                const goals = tiers[tier];
-                return (
-                  <div key={tier}>
-                    <p className="flex items-center gap-1.5 text-[12px] font-extrabold uppercase tracking-wide pb-1.5 mb-2 border-b-2"
-                      style={{ color: tc.color, borderColor: `${tc.color}33` }}>
-                      <span className="w-[7px] h-[7px] rounded-full inline-block flex-shrink-0" style={{ background: tc.color }} />
-                      {isZh ? `${tc.labelZh}发育` : isEs ? `${tc.labelEs} Desarrollo` : `${tc.label} Development`}
-                    </p>
-                    <div className="flex flex-col gap-2">
-                      {goals.length === 0 && <p className="text-[11px] text-gray-300 text-center py-2">—</p>}
-                      {goals.map(g => {
-                        /*
-                        const isBrain = g.id === 'brain';
-                        const cardBg     = isBrain ? 'rgba(219,70,166,0.07)' : tc.bg;
-                        const cardBorder = isBrain ? '#db46a655' : `${tc.color}55`;
-                        const cardTextColor = isBrain ? '#7a1850' : tc.textColor;
-                        const tagColor  = isBrain ? '#db46a6' : tc.color;
-                        const tagBorder = isBrain ? '#db46a644' : `${tc.color}44`;*/
-                        const cardBg = tc.bg;
-                        const cardBorder = `${tc.color}55`;
-                        const cardTextColor = tc.textColor;
-                        const tagColor = tc.color;
-                        const tagBorder = `${tc.color}44`;
+            {!child ? (
+              <div className="py-8 text-center">
+                <p className="text-3xl mb-2">🎯</p>
+                <p className="font-bold text-gray-700 mb-1 text-sm">
+                  {isZh ? '还没有孩子档案' : isEs ? 'Aún no hay perfil' : 'No child profile yet'}
+                </p>
+                <p className="text-xs text-gray-500 mb-4">
+                  {isZh
+                    ? '创建孩子档案后，即可查看专属发育目标优先级。'
+                    : isEs
+                      ? 'Crea un perfil para ver las prioridades de desarrollo personalizadas.'
+                      : "Set up your child's profile to see personalized development priorities."}
+                </p>
+                <button
+                  onClick={() => navigate('/onboarding')}
+                  className="px-5 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-xs font-bold shadow-[0_4px_16px_rgba(137,60,227,0.3)] hover:scale-[1.04] transition"
+                >
+                  ✨ {isZh ? '去填写档案' : isEs ? 'Configurar perfil' : 'Set up profile'}
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-start">
+                {(['core', 'important', 'supporting'] as Tier[]).map(tier => {
+                  const tc = TIER_CONFIG[tier];
+                  const goals = tiers[tier];
+                  return (
+                    <div key={tier}>
+                      <p className="flex items-center gap-1.5 text-[12px] font-extrabold uppercase tracking-wide pb-1.5 mb-2 border-b-2"
+                        style={{ color: tc.color, borderColor: `${tc.color}33` }}>
+                        <span className="w-[7px] h-[7px] rounded-full inline-block flex-shrink-0" style={{ background: tc.color }} />
+                        {isZh ? `${tc.labelZh}发育` : isEs ? `${tc.labelEs} Desarrollo` : `${tc.label} Development`}
+                      </p>
+                      <div className="flex flex-col gap-2">
+                        {goals.length === 0 && <p className="text-[11px] text-gray-300 text-center py-2">—</p>}
+                        {goals.map(g => {
+                          /*
+                          const isBrain = g.id === 'brain';
+                          const cardBg     = isBrain ? 'rgba(219,70,166,0.07)' : tc.bg;
+                          const cardBorder = isBrain ? '#db46a655' : `${tc.color}55`;
+                          const cardTextColor = isBrain ? '#7a1850' : tc.textColor;
+                          const tagColor  = isBrain ? '#db46a6' : tc.color;
+                          const tagBorder = isBrain ? '#db46a644' : `${tc.color}44`;*/
+                          const cardBg = tc.bg;
+                          const cardBorder = `${tc.color}55`;
+                          const cardTextColor = tc.textColor;
+                          const tagColor = tc.color;
+                          const tagBorder = `${tc.color}44`;
 
-                        // 性别感知营养素
-                        const nutrByAge   = g.nutrientsByAge[ageIdx];
-                        const nutrZhByAge = g.nutrientsZhByAge[ageIdx];
-                        const nutrients =
-                          genderKey === 'male'   ? (isZh ? nutrZhByAge.male   : nutrByAge.male)   :
-                          genderKey === 'female' ? (isZh ? nutrZhByAge.female : nutrByAge.female) :
-                          (isZh
-                            ? mergeNeutral(nutrZhByAge.male, nutrZhByAge.female)
-                            : mergeNeutral(nutrByAge.male,   nutrByAge.female));
+                          // 性别感知营养素
+                          const nutrByAge = g.nutrientsByAge[ageIdx];
+                          const nutrZhByAge = g.nutrientsZhByAge[ageIdx];
+                          const nutrients =
+                            genderKey === 'male' ? (isZh ? nutrZhByAge.male : nutrByAge.male) :
+                              genderKey === 'female' ? (isZh ? nutrZhByAge.female : nutrByAge.female) :
+                                (isZh
+                                  ? mergeNeutral(nutrZhByAge.male, nutrZhByAge.female)
+                                  : mergeNeutral(nutrByAge.male, nutrByAge.female));
 
-                        return (
-                          <div key={g.id} className="rounded-xl px-3 py-2.5 border-[1.5px]" style={{ background: cardBg, borderColor: cardBorder }}>
-                            <p className="flex items-center gap-1.5 mb-1.5">
-                              <span className="text-[20px]">{g.emoji}</span>
-                              <span className="text-[13px] font-bold" style={{ color: cardTextColor }}>
-                                {isZh ? g.nameZh : isEs ? g.nameEs : g.name}
-                              </span>
-                            </p>
-                            <p className="flex flex-wrap gap-1">
-                              {nutrients.map(n => (
-                                <span key={n} className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-white/70 border"
-                                  style={{ color: tagColor, borderColor: tagBorder }}>
-                                  {n}
+                          return (
+                            <div key={g.id} className="rounded-xl px-3 py-2.5 border-[1.5px]" style={{ background: cardBg, borderColor: cardBorder }}>
+                              <p className="flex items-center gap-1.5 mb-1.5">
+                                <span className="text-[20px]">{g.emoji}</span>
+                                <span className="text-[13px] font-bold" style={{ color: cardTextColor }}>
+                                  {isZh ? g.nameZh : isEs ? g.nameEs : g.name}
                                 </span>
-                              ))}
-                            </p>
-                          </div>
-                        );
-                      })}
+                              </p>
+                              <p className="flex flex-wrap gap-1">
+                                {nutrients.map(n => (
+                                  <span key={n} className="text-[10px] font-bold rounded-full px-2 py-0.5 bg-white/70 border"
+                                    style={{ color: tagColor, borderColor: tagBorder }}>
+                                    {n}
+                                  </span>
+                                ))}
+                              </p>
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </section>
 
@@ -538,11 +560,15 @@ export default function ScienceInsights() {
               {isZh
                 ? '按年龄推荐的每日摄入量 · 与上方成长阶段联动'
                 : isEs
-                ? 'Ingesta diaria recomendada por edad · sincronizada con la etapa de crecimiento anterior'
-                : 'Recommended daily intake by age · synced with Growth Stage above'}
+                  ? 'Ingesta diaria recomendada por edad · sincronizada con la etapa de crecimiento anterior'
+                  : 'Recommended daily intake by age · synced with Growth Stage above'}
             </p>
 
-            <DriChart ageIdx={ageIdx} isZh={isZh} isEs={isEs} gender={child?.gender ?? null} />
+            <div className="overflow-x-auto -mx-1 px-1">
+              <div className="min-w-[640px] sm:min-w-0">
+                <DriChart ageIdx={ageIdx} isZh={isZh} isEs={isEs} gender={child?.gender ?? null} />
+              </div>
+            </div>
 
             <div className="flex gap-4 mt-2 flex-wrap">
               {DRI_CATEGORIES.map(c => (
@@ -557,8 +583,8 @@ export default function ScienceInsights() {
               {isZh
                 ? '数据来源：Dietary Reference Intakes (DRI)，美国医学研究所（IOM）· 图示为各年龄段每日推荐量'
                 : isEs
-                ? 'Fuente: Dietary Reference Intakes (DRI), Instituto de Medicina · Los valores mostrados son cantidades diarias recomendadas por grupo de edad'
-                : 'Source: Dietary Reference Intakes (DRI), Institute of Medicine · Values shown are recommended daily amounts per age group'}
+                  ? 'Fuente: Dietary Reference Intakes (DRI), Instituto de Medicina · Los valores mostrados son cantidades diarias recomendadas por grupo de edad'
+                  : 'Source: Dietary Reference Intakes (DRI), Institute of Medicine · Values shown are recommended daily amounts per age group'}
             </p>
           </div>
         </section>

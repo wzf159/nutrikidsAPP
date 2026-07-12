@@ -53,7 +53,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
-        <div className="text-5xl">🥦</div>
+        <img src="/images/logoall.png" alt="" className="w-16 h-16 mx-auto" />
         <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
         <p className="text-sm text-gray-500 text-center">
           {isZh ? '追踪孩子的营养，科学喂养每一天' : isEs ? 'Rastrea la nutrición de tu hijo, alimentación inteligente cada día' : 'Track your childs nutrition, smart feeding every day'}

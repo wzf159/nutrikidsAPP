@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-import {  bmiOf } from '../../data/growth';
+import { bmiOf } from '../../data/growth';
 import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
 import { useSession, signOut } from '../../lib/auth';
 
@@ -51,7 +51,7 @@ export default function TopNav() {
   };
 
   useEffect(() => {
-    getAllergens().then(setAllergenDict).catch(() => {});
+    getAllergens().then(setAllergenDict).catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -81,8 +81,8 @@ export default function TopNav() {
   const bmi = child?.heightCm && child?.weightKg ? bmiOf(child.heightCm, child.weightKg) : null;
   const childAllergens = child
     ? child.allergens
-        .map(ca => allergenDict.find(a => a.id === ca.allergenId))
-        .filter((a): a is Allergen => !!a)
+      .map(ca => allergenDict.find(a => a.id === ca.allergenId))
+      .filter((a): a is Allergen => !!a)
     : [];
   const avatar = child?.avatarEmoji ?? '👶';
 
@@ -93,46 +93,40 @@ export default function TopNav() {
         <img src="/images/logo4.png" alt="NutriKids" className="h-6 w-auto hidden sm:block" />
       </NavLink>
 
-      {/* 导航标签：始终显示，窄屏只留图标 */}
-      <nav className="flex items-center gap-1 sm:gap-2 overflow-hidden">
+      {/* 导航标签：文字始终显示，窄屏横向可滑动 */}
+      <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-1 min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {NAV_ITEMS.map(({ icon, key, path }, i) => (
           <NavLink
             key={path}
             to={path}
             className={({ isActive }) =>
               i === 0
-                ? `flex items-center gap-1.5 px-2.5 sm:px-[18px] py-[7px] rounded-full text-sm font-bold text-white whitespace-nowrap bg-gradient-to-r from-[#893ce3] to-[#ec4899] shadow-[0_2px_12px_rgba(236,72,153,0.3)] transition-all ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.02]'}`
-                : `px-2 sm:px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-                    isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-                  }`
+                ? `flex items-center gap-1.5 px-[18px] py-[7px] rounded-full text-sm font-bold text-white whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-[#893ce3] to-[#ec4899] shadow-[0_2px_12px_rgba(236,72,153,0.3)] transition-all ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.02]'}`
+                : `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+                }`
             }
           >
-            <span>{icon}</span>
-            <span className="hidden sm:inline">&nbsp;{t(key)}</span>
+            {icon} {t(key)}
           </NavLink>
         ))}
 
         <NavLink
           to="/Support"
           className={({ isActive }) =>
-            `px-2 sm:px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
             }`
           }
         >
-          <span>💛</span>
-          <span className="hidden sm:inline">&nbsp;{isZh ? '支持我们' : i18n.language === 'es' ? 'Apóyanos' : 'Support Us'}</span>
+          💛 {isZh ? '支持我们' : i18n.language === 'es' ? 'Apóyanos' : 'Support Us'}
         </NavLink>
         <NavLink
           to="/about"
           className={({ isActive }) =>
-            `px-2 sm:px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
+            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
             }`
           }
         >
-          <span>ℹ️</span>
-          <span className="hidden sm:inline">&nbsp;{isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}</span>
+          ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
         </NavLink>
       </nav>
 
@@ -232,11 +226,10 @@ export default function TopNav() {
                         <button
                           key={c.id}
                           onClick={() => switchChild(c.id)}
-                          className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${
-                            c.id === child.id
+                          className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${c.id === child.id
                               ? 'bg-purple-600/10 text-[#893ce3]'
                               : 'hover:bg-purple-600/5 text-[#1a1040]'
-                          }`}
+                            }`}
                         >
                           <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[15px] flex-shrink-0">
                             {c.avatarEmoji ?? '🧒'}
@@ -360,9 +353,8 @@ export default function TopNav() {
                       <button
                         key={c.id}
                         onClick={() => switchChild(c.id)}
-                        className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${
-                          c.id === child.id ? 'bg-purple-600/10 text-[#893ce3]' : 'hover:bg-purple-600/5 text-[#1a1040]'
-                        }`}
+                        className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${c.id === child.id ? 'bg-purple-600/10 text-[#893ce3]' : 'hover:bg-purple-600/5 text-[#1a1040]'
+                          }`}
                       >
                         <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[15px] flex-shrink-0">
                           {c.avatarEmoji ?? '🧒'}

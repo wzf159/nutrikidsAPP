@@ -283,24 +283,26 @@ export async function scoreFood(input: ScoreInput) {
   const dvOf = (nid: number) => Number(prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === nid)?.dailyValue ?? 0);
 
   const flows: { goalId: number; nutrientId: number; value: number }[] = [];
-  const goalSupport: Record<number, number> = {};
+  const goalSupport: Record<number, number> = {}; // 现在存的是该目标映射营养素里的最大单项 %DV，不再是累加总和
   for (const goalId of childGoalIds) {
     for (const nid of GOAL_NUTRIENT_MAP[goalId] ?? []) {
       const dv = dvOf(nid);
       if (dv > 0 && viewNutrIds.has(nid)) {
         flows.push({ goalId, nutrientId: nid, value: Math.round(dv) });
-        goalSupport[goalId] = (goalSupport[goalId] ?? 0) + dv;
+        goalSupport[goalId] = Math.max(goalSupport[goalId] ?? 0, dv);
       }
     }
   }
 
 
   
+  const SUPPORT_DV_THRESHOLD = 15; // 该目标映射营养素里，至少一项要达到每日推荐量的 15%
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
+    if ((goalSupport[goalId] ?? 0) < SUPPORT_DV_THRESHOLD) return null;
     return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;  
   };
-
+  
   const viewGoals = allGoals.map((g) => ({
     id: g.id,
     icon: g.icon,

@@ -449,7 +449,7 @@ export default function FoodAnalyzer() {
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
-  const topNutrients = view?.nutrients.slice(0, 2) ?? [];
+  const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
   const selectedGoalData = selectedGoal != null && view ? goalById(selectedGoal) : null;
   const selectedNutrientData = selectedNutrient != null && view ? nutrientById(selectedNutrient) : null;
   const selectedWatchData = selectedWatch != null && view ? view.watch.find(w => w.code === selectedWatch) : null;
@@ -673,8 +673,8 @@ export default function FoodAnalyzer() {
                   key={m.id}
                   onClick={() => runAnalysis(m.id, 'photo')}
                   className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${idx === 0
-                      ? 'border-purple-300 bg-purple-50/50 hover:border-purple-400 hover:bg-purple-50'
-                      : 'border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50'
+                    ? 'border-purple-300 bg-purple-50/50 hover:border-purple-400 hover:bg-purple-50'
+                    : 'border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                 >
                   <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${idx === 0 ? 'bg-purple-100' : 'bg-gray-100'
@@ -717,9 +717,9 @@ export default function FoodAnalyzer() {
             {/* ① 食物评估 */}
             <section key={`${view.product.id}-${result.overallScore}`} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-hidden">
               <div className="relative">
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0">
+                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0 lg:gap-0">
                   {/* 结论 */}
-                  <div className="lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
+                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <div className="flex items-center gap-2 mb-3">
                       <SectionBadge n={1} />
                       <h2 className="text-[19px] font-extrabold text-[#2d2a4a]" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.01em' }}>{isZh ? '食物评估' : isEs ? 'Evaluación de Alimentos' : 'Food Assessment'}</h2>
@@ -744,9 +744,19 @@ export default function FoodAnalyzer() {
                                 : (isZh ? `给 ${view.child.name} 要留意 🤔` : isEs ? `Ten cuidado con ${view.child.name} 🤔` : `Think twice for ${view.child.name} 🤔`)}
                             </h3>
                             <div className="flex flex-wrap gap-2.5 mt-1.5">
-                              <p className="text-[12px] font-semibold text-[#16a34a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                ✅ {isZh ? `未检测到 ${view.child.name} 的过敏原` : isEs ? `No se detectaron alérgenos para ${view.child.name}` : `No allergens detected for ${view.child.name}`}
-                              </p>
+                              {view.allergenSafe ? (
+                                <p className="text-[12px] font-semibold text-[#16a34a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  ✅ {isZh ? `未检测到 ${view.child.name} 的过敏原` : isEs ? `No se detectaron alérgenos para ${view.child.name}` : `No allergens detected for ${view.child.name}`}
+                                </p>
+                              ) : (
+                                <p className="text-[12px] font-semibold text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  ⚠️ {isZh
+                                    ? `含有 ${view.child.name} 的过敏原：${view.matchedAllergens.map(a => a.nameZh ?? a.name).join('、')}`
+                                    : isEs
+                                      ? `Contiene alérgenos para ${view.child.name}: ${view.matchedAllergens.map(a => a.name).join(', ')}`
+                                      : `Contains allergens for ${view.child.name}: ${view.matchedAllergens.map(a => a.name).join(', ')}`}
+                                </p>
+                              )}
                               {topNutrients.length > 0 && (
                                 <p className="text-[12px] font-semibold text-[#16a34a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                   ⭐ {isZh ? '富含' : 'Good source of'}{' '}
@@ -757,7 +767,6 @@ export default function FoodAnalyzer() {
                                   ))}
                                 </p>
                               )}
-
                             </div>
                             <span
                               onClick={() => navigate('/about', { state: { tab: 'sources' } })}
@@ -772,7 +781,7 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {/* 益处小网格 */}
-                  <div className="lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
+                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
                       <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
@@ -934,8 +943,8 @@ export default function FoodAnalyzer() {
                                     {isZh ? selectedNutrientData.nameZh ?? selectedNutrientData.name : selectedNutrientData.name}
                                   </h3>
                                   <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full mt-1 inline-block ${selectedNutrientData.level === 'High' ? 'bg-green-100 text-green-700' :
-                                      selectedNutrientData.level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-gray-100 text-gray-600'
+                                    selectedNutrientData.level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-gray-100 text-gray-600'
                                     }`}>
                                     {levelLabel(selectedNutrientData.level)} {isZh ? '来源' : 'Source'}
                                   </span>
@@ -1051,8 +1060,8 @@ export default function FoodAnalyzer() {
                         key={w.code}
                         onClick={() => w.present && setSelectedWatch(p => (p === w.code ? null : w.code))}
                         className={`rounded-xl p-3 flex flex-col items-center gap-1.5 border transition-all ${w.present
-                            ? `bg-[rgba(255,237,213,0.6)] backdrop-blur-sm border-[rgba(255,220,180,0.8)] cursor-pointer hover:scale-106 shadow-[inset_0_1.5px_0_rgba(255,255,255,0.9),0_4px_16px_rgba(249,115,22,0.18)] ${selectedWatch === w.code ? 'border-orange-400 ring-2 ring-orange-200' : ''}`
-                            : 'bg-white/35 backdrop-blur-sm border-white/65 opacity-70 cursor-default'
+                          ? `bg-[rgba(255,237,213,0.6)] backdrop-blur-sm border-[rgba(255,220,180,0.8)] cursor-pointer hover:scale-106 shadow-[inset_0_1.5px_0_rgba(255,255,255,0.9),0_4px_16px_rgba(249,115,22,0.18)] ${selectedWatch === w.code ? 'border-orange-400 ring-2 ring-orange-200' : ''}`
+                          : 'bg-white/35 backdrop-blur-sm border-white/65 opacity-70 cursor-default'
                           }`}
                       >
                         <span className={`text-[28px] ${w.present ? '' : 'grayscale-[0.6] opacity-75'}`}>{w.icon}</span>
