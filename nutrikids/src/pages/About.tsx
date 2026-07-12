@@ -157,6 +157,7 @@ function PanelTeam() {
 function PanelSources() {
   const { t } = useTranslation();
   const items = t('about.panelSources.items', { returnObjects: true }) as { emoji: string; label: string }[];
+  const scoreDims = t('about.panelSources.scoreCalc.dims', { returnObjects: true }) as { label: string; weight: string; desc: string }[]; 
   return (
     <div style={cardStyle}>
       <h2 style={{ ...gradientText, marginBottom: '16px' }}>{t('about.panelSources.title')}</h2>
@@ -169,8 +170,39 @@ function PanelSources() {
           </div>
         ))}
       </div>
+      {/* 综合评分计算逻辑 */}
+    <div style={{ marginTop: '24px', background: '#faf5ff', border: '1.5px solid rgba(137,60,227,0.15)', borderRadius: '14px', padding: '20px 22px' }}>
+        <h3 style={{ color: '#7c3aed', fontSize: '16px', fontWeight: 800, marginBottom: '6px', fontFamily: "'Nunito', sans-serif" }}>
+          📐 {t('about.panelSources.scoreCalc.title')}
+        </h3>
+        <p style={{ ...bodyText, fontSize: '13px', marginBottom: '16px' }}>
+          {t('about.panelSources.scoreCalc.desc')}
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {scoreDims.map((d, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', background: '#fff', borderRadius: '10px', padding: '10px 14px' }}>
+              <span style={{
+                flexShrink: 0, minWidth: '46px', textAlign: 'center',
+                fontWeight: 800, fontSize: '13px', color: '#893ce3',
+                background: 'rgba(137,60,227,0.1)', borderRadius: '999px', padding: '3px 8px',
+              }}>
+                {d.weight}
+              </span>
+              <div>
+                <p style={{ color: '#3b0764', fontWeight: 700, fontSize: '13.5px', margin: 0 }}>{d.label}</p>
+                <p style={{ color: '#777', fontSize: '12.5px', margin: '2px 0 0' }}>{d.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p style={{ color: '#999', fontSize: '11.5px', marginTop: '14px', lineHeight: 1.7 }}>
+          {t('about.panelSources.scoreCalc.note')}
+        </p>
+      </div>
+   
       <p style={{ color: '#888', fontSize: '13px', marginTop: '18px' }}>{t('about.panelSources.footer')}</p>
     </div>
+    
   );
 }
 

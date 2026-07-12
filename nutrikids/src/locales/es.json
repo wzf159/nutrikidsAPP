@@ -389,6 +389,16 @@
       ],
       "footer": "Revisamos regularmente los recursos disponibles y actualizamos nuestro contenido educativo para reflejar la evidencia actual y las mejores prácticas siempre que sea posible."
     },
+   "scoreCalc": {
+      "title": "Cómo se Calcula la Puntuación",
+      "desc": "Las puntuaciones de NutriKids se calculan en dos pasos mediante un motor de reglas determinista, no generado aleatoriamente por IA, para que los resultados sean estables, auditables y trazables:",
+      "dims": [
+        { "weight": "Paso 1", "label": "Equilibrio Nutricional (NutriNorm)", "desc": "Basado en el sistema Nutri-Score: energía, azúcar añadida, grasa saturada y sodio cuentan como puntos negativos (máx. 55); contenido de frutas/verduras, fibra y proteína cuentan como puntos positivos (máx. 17), combinados en una puntuación de 0-1" },
+        { "weight": "Paso 2", "label": "Coincidencia de Desarrollo (DevScore)", "desc": "Compara los nutrientes del alimento con la Ingesta Diaria de Referencia (DRI) según la edad del niño, ponderada por prioridad del objetivo de desarrollo (núcleo/importante/complementario), produciendo una puntuación de 0-1" },
+        { "weight": "Final", "label": "Puntuación Final", "desc": "Puntuación Final = 100 × Equilibrio Nutricional × (0.3 + 0.7 × Coincidencia de Desarrollo). Cuanto más equilibrada sea la nutrición y mejor se ajuste a las necesidades de desarrollo actuales del niño, mayor será la puntuación" }
+      ],
+      "note": "Las fórmulas de puntuación se ajustan a medida que hay más investigación disponible. La IA solo se usa para traducir el resultado calculado en una explicación en lenguaje sencillo, no participa en el cálculo principal."
+    },
     "panelAIDisclaimer": {
       "title": "Descargo de IA",
       "p1": "NutriKids utiliza tecnología de inteligencia artificial (IA) para ayudar a analizar información de alimentos y nutrición y generar conocimientos educativos.",

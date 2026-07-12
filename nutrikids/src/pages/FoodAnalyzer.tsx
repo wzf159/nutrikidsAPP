@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink } from 'react-router-dom';
+import { useNavigate,NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import {
   analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,
@@ -172,6 +172,7 @@ export default function FoodAnalyzer() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
   const isEs = i18n.language === 'es';
+  const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -669,7 +670,6 @@ export default function FoodAnalyzer() {
                         <div className="flex items-center gap-[14px]">
                           <div className="w-[64px] h-[64px] rounded-full flex flex-col items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(90,168,96,0.35)]" style={{ background: `linear-gradient(135deg,${grade.color},${grade.color})` }}>
                             <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif'  }}>{Math.round(result.overallScore)}</span>
-                            {/*<span className="text-[9px] font-bold text-white/85 tracking-wider">{isZh ? grade.zh : isEs ? grade.es : grade.en}</span>*/}
                             <span className="text-[9px] font-bold text-white/85 tracking-wider">{grade.letter}</span>
                           </div>
                           <div className="flex-1">
@@ -692,7 +692,14 @@ export default function FoodAnalyzer() {
                                   ))}
                                 </p>
                               )}
+                          
                             </div>
+                            <span
+                                onClick={() => navigate('/about', { state: { tab: 'sources' } })}
+                                className="text-[10px] font-semibold text-gray-400 flex items-center gap-1 cursor-pointer hover:text-[#893ce3] transition-colors mt-1.5"
+                              >
+                                👆 {isZh ? '点击查看具体计算过程' : isEs ? 'Toca para ver el cálculo' : 'Tap to see the calculations'}
+                              </span>
                           </div>
                         </div>
                       </div>
