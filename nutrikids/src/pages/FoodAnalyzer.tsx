@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
@@ -186,6 +187,10 @@ export default function FoodAnalyzer() {
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
+  const desktopCapsuleRef = useRef<HTMLDivElement>(null);
+  const mobileCapsuleRef = useRef<HTMLDivElement>(null);
+  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
+
   const [selectedGoal, setSelectedGoal] = useState<number | null>(null);
   const [selectedNutrient, setSelectedNutrient] = useState<number | null>(null);
   const [selectedWatch, setSelectedWatch] = useState<string | null>(null);
@@ -217,6 +222,23 @@ export default function FoodAnalyzer() {
     return () => window.removeEventListener('nutrikids:child-updated', loadChild);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (suggestions.length === 0) { setDropdownRect(null); return; }
+    const updateRect = () => {
+      const el = (desktopCapsuleRef.current?.offsetParent) ? desktopCapsuleRef.current : mobileCapsuleRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      setDropdownRect({ top: rect.bottom + 8, left: rect.left, width: rect.width });
+    };
+    updateRect();
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, true);
+    return () => {
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect, true);
+    };
+  }, [suggestions]);
 
   // 搜索建议（防抖）
   useEffect(() => {
@@ -488,8 +510,8 @@ export default function FoodAnalyzer() {
 
           {/* 桌面端：单行胶囊（≥sm 显示） */}
           <div
-            className={`hidden sm:flex relative w-full bg-white/52 backdrop-blur-xl saturate-180 rounded-full px-5 py-3 items-center gap-3 ${dragging ? 'ring-2 ring-[#893ce3] ring-offset-2' : ''
-              }`}
+            ref={desktopCapsuleRef}
+            className={`hidden sm:flex relative w-full bg-white/52 backdrop-blur-xl saturate-180 rounded-full px-5 py-3 items-center gap-3 ${dragging ? 'ring-2 ring-[#893ce3] ring-offset-2' : ''}`}
             style={{ border: '1px solid rgba(255,255,255,0.8)' }}
           >
             <span className="flex items-center gap-2 font-extrabold tracking-wide text-gray-500 text-sm">
@@ -538,21 +560,27 @@ export default function FoodAnalyzer() {
               🔮 {isZh ? '分析' : isEs ? 'Analizar' : 'Analyze'}
             </button>
 
-            {suggestions.length > 0 && (
-              <div className="absolute left-4 right-4 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-50 overflow-hidden">
-                {suggestions.map(s => (
-                  <button
-                    key={s.id}
-                    onClick={() => { setQuery(''); setSuggestions([]); runAnalysis(s.id, 'search'); }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
-                  >
-                    <span>🍽️</span>
-                    <span className="font-medium">{isZh ? s.nameZh ?? s.name : s.name}</span>
-                    {s.brand?.name && <span className="text-gray-400 text-xs">{s.brand.name}</span>}
-                  </button>
-                ))}
-              </div>
-            )}
+            {
+              suggestions.length > 0 && dropdownRect && createPortal(
+                <div
+                  className="fixed bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] overflow-hidden"
+                  style={{ top: dropdownRect.top, left: dropdownRect.left, width: dropdownRect.width, zIndex: 9999 }}
+                >
+                  {suggestions.map(s => (
+                    <button
+                      key={s.id}
+                      onClick={() => { setQuery(''); setSuggestions([]); runAnalysis(s.id, 'search'); }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
+                    >
+                      <span>🍽️</span>
+                      <span className="font-medium truncate">{isZh ? s.nameZh ?? s.name : s.name}</span>
+                      {s.brand?.name && <span className="text-gray-400 text-xs flex-shrink-0">{s.brand.name}</span>}
+                    </button>
+                  ))}
+                </div>,
+                document.body
+              )
+            }
           </div>
 
           {/* 手机端：两行胶囊（<sm 显示） */}
