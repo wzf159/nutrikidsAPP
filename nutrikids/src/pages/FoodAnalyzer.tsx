@@ -539,7 +539,7 @@ export default function FoodAnalyzer() {
             </button>
 
             {suggestions.length > 0 && (
-              <div className="absolute left-4 right-4 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-20 overflow-hidden">
+              <div className="absolute left-4 right-4 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-50 overflow-hidden">
                 {suggestions.map(s => (
                   <button
                     key={s.id}
@@ -572,7 +572,7 @@ export default function FoodAnalyzer() {
               />
 
               {suggestions.length > 0 && (
-                <div className="absolute left-2 right-2 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-20 overflow-hidden">
+                <div className="absolute left-2 right-2 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-50 overflow-hidden">
                   {suggestions.map(s => (
                     <button
                       key={s.id}
