@@ -173,7 +173,6 @@ export default function FoodAnalyzer() {
   const isZh = i18n.language === 'zh';
   const isEs = i18n.language === 'es';
 
-  const [childId, setChildId] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>({ name: 'idle' });
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
@@ -202,7 +201,6 @@ export default function FoodAnalyzer() {
           const activeId = localStorage.getItem(ACTIVE_KEY);
           const c = cs.find(c => c.id === activeId) ?? cs[0] ?? null;
           if (c) {
-            setChildId(c.id);
             childIdRef.current = c.id;
             setResult(null);
             setPhase({ name: 'idle' });
@@ -239,34 +237,53 @@ export default function FoodAnalyzer() {
   };
   const goalById = (id: number) => view!.goals.find(g => g.id === id)!;
   const nutrientById = (id: number) => view!.nutrients.find(n => n.id === id)!;
+  
 
-  async function runAnalysis(productId: number, source: 'search' | 'barcode' | 'photo') {
+  async function runAnalysis(
+    productId: number,
+    source: 'search' | 'barcode' | 'photo'
+  ) {
     const activeChildId = childIdRef.current;
     if (!activeChildId) return;
-
-    // Only the newest analysis request is allowed to update the page.
-    // This prevents an older product request from resolving later and
-    // overwriting the newly scanned product.
+  
+    // 当前请求编号
     const requestId = ++analysisRequestRef.current;
-
-    setResult(null);
-    setPhase({ name: 'busy', msg: isZh ? '正在为孩子计算评分…' : isEs ? 'Calculando puntuación para tu hijo…' : 'Scoring for your child…' });
+  
+    setPhase({
+      name: 'busy',
+      msg: isZh
+        ? '正在为孩子计算评分…'
+        : isEs
+          ? 'Calculando puntuación para tu hijo…'
+          : 'Scoring for your child…',
+    });
+  
     setSelectedGoal(null);
     setSelectedNutrient(null);
     setSelectedWatch(null);
-
+  
     try {
       const r = await analyzeProduct(activeChildId, productId, source);
-      if (requestId !== analysisRequestRef.current) return;
-
+  
+      // 如果已经有更新的请求开始了，就丢弃旧结果
+      if (requestId !== analysisRequestRef.current) {
+        return;
+      }
+  
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
-      if (requestId !== analysisRequestRef.current) return;
-      setPhase({ name: 'error', msg: (e as Error).message });
+      // 如果已经不是最新请求，也不要更新页面
+      if (requestId !== analysisRequestRef.current) {
+        return;
+      }
+  
+      setPhase({
+        name: 'error',
+        msg: (e as Error).message,
+      });
     }
   }
-
   async function handleRecognized(recognition: Recognition, matches: ProductMatch[], source?: 'local' | 'openfoodfacts' | 'ai') {
     if (!recognition.isFood) {
       setPhase({ name: 'error', msg: isZh ? '图片中没有识别到食物，请重拍' : isEs ? 'No se detectó comida en la foto, vuelve a intentar' : 'No food detected in the photo' });
@@ -340,6 +357,7 @@ export default function FoodAnalyzer() {
 
       const { product } = await lookupBarcode(code);
       console.log('barcode product:', product.id, product);
+      
       await runAnalysis(product.id, 'barcode');
     } catch (e) {
       console.error('handleBarcode error:', e);
