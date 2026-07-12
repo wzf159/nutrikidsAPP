@@ -184,7 +184,7 @@ export default function Feedback() {
             return <RadioOption key={k} value={opt} label={opt} selected={answers.q1 === opt} onSelect={() => setQ('q1', opt)} />;
           })}
         </div>
-      </div>
+      
       {/* Q2 - Role */}
       <div style={card}>
         <QLabel n={2} text={t('feedback.q2.label')} />
@@ -310,7 +310,7 @@ export default function Feedback() {
         </button>
       </div>
 
+      </div>
     </div>
-   
   );
 }

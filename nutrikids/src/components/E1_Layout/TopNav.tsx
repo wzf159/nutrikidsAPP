@@ -13,7 +13,7 @@ const ACTIVE_KEY = 'nutrikids_active_child_id';
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
   { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
   { icon: '🌱', key: 'nav.scienceInsights', path: '/science-insights' },
-  { icon: '📈', key: 'nav.growthProfile', path: '/growth-profile' },
+  
   { icon: '💬', key: 'nav.feedback', path: '/feedback' },
 ];
 
@@ -136,26 +136,7 @@ export default function TopNav() {
         >
           ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
         </NavLink>
-        <NavLink
-          to="/admin"
-          className={({ isActive }) =>
-            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-            }`
-          }
-        >
-          📊 {t('nav.admin')}
-        </NavLink>
-        <NavLink
-          to="/dev-admin"
-          className={({ isActive }) =>
-            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-              isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-            }`
-          }
-        >
-          ⚙️ {t('nav.devAdmin')}
-        </NavLink>
+        
       </nav>
 
       <div className="ml-auto flex items-center gap-3">
