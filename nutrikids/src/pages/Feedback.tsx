@@ -43,31 +43,6 @@ function RadioOption({ value: _value, label, selected, onSelect }: { value: stri
   );
 }
 
-function EmojiScale({ value, onSelect }: { value: string | null; onSelect: (v: string) => void }) {
-  const opts = [
-    { v: '1', emoji: '😞', label: 'Not\nat all' },
-    { v: '2', emoji: '😕', label: 'Not\nreally' },
-    { v: '3', emoji: '😐', label: 'Somewhat' },
-    { v: '4', emoji: '😊', label: 'Yes,\nhelpful' },
-    { v: '5', emoji: '😍', label: 'Very\nhelpful' },
-  ];
-  return (
-    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-      {opts.map(o => (
-        <button key={o.v} onClick={() => onSelect(o.v)} style={{
-          flex: 1, minWidth: 60, padding: '12px 8px', borderRadius: 12, border: `1.5px solid ${value === o.v ? '#893ce3' : '#e5e7eb'}`,
-          background: value === o.v ? 'rgba(137,60,227,0.08)' : '#fff', cursor: 'pointer',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-          fontFamily: ff, fontSize: 11, fontWeight: 600, color: value === o.v ? '#893ce3' : '#6b7280',
-          transition: 'all 0.15s',
-        }}>
-          <span style={{ fontSize: 28 }}>{o.emoji}</span>
-          <span style={{ whiteSpace: 'pre-line', textAlign: 'center' }}>{o.label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
 
 
 function CheckOption({ value: _value, label, selected, onToggle }: { value: string; label: string; selected: boolean; onToggle: () => void }) {
