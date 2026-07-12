@@ -8,26 +8,26 @@ const ENERGY_NUTRIENT_ID = 16;
 type DevTier = 'core' | 'important' | 'supporting';
 const DEV_TIERS: Record<number, { male: DevTier | null; female: DevTier | null }[]> = {
   // 1 🧠 Brain Development
-  1: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'important'},{male:'supporting',female:'important'}],
+  1: [{ male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'important', female: 'important' }, { male: 'supporting', female: 'important' }, { male: 'supporting', female: 'important' }],
   // 2 🦴 Bone Development
-  2: [{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'}],
+  2: [{ male: 'supporting', female: 'supporting' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'core', female: 'core' }],
   // 3 📏 Heart Growth
-  3: [{male:null,female:null},{male:null,female:null},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'core'}],
+  3: [{ male: null, female: null }, { male: null, female: null }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'important', female: 'core' }],
   // 4 💪 Muscle Development
-  4: [{male:null,female:null},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'core',female:'important'},{male:'core',female:'important'}],
+  4: [{ male: null, female: null }, { male: 'supporting', female: 'supporting' }, { male: 'supporting', female: 'supporting' }, { male: 'important', female: 'important' }, { male: 'core', female: 'important' }, { male: 'core', female: 'important' }],
   // 5 🛡️ Immune Development
-  5: [{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'}],
+  5: [{ male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'core', female: 'core' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }],
   // 6 🦠 Gut Development
-  6: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'core',female:'core'},{male:'supporting',female:'supporting'},{male:'supporting',female:'supporting'},{male:'supporting',female:'important'}],
+  6: [{ male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'supporting', female: 'supporting' }, { male: 'supporting', female: 'supporting' }, { male: 'supporting', female: 'important' }],
   // 7 👀 Vision Development
-  7: [{male:'core',female:'core'},{male:'core',female:'core'},{male:'important',female:'important'},{male:'supporting',female:'supporting'},{male:null,female:null},{male:null,female:null}],
+  7: [{ male: 'core', female: 'core' }, { male: 'core', female: 'core' }, { male: 'important', female: 'important' }, { male: 'supporting', female: 'supporting' }, { male: null, female: null }, { male: null, female: null }],
   // 8 🦷 Dental Development
-  8: [{male:null,female:null},{male:'supporting',female:'supporting'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'important',female:'important'},{male:'core',female:'core'}],
+  8: [{ male: null, female: null }, { male: 'supporting', female: 'supporting' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'important', female: 'important' }, { male: 'core', female: 'core' }],
 };
 
 function stageIdx(stageKey: string | null): number {
   const map: Record<string, number> = {
-    '0-6m':0,'7-12m':1,'1-3y':2,'4-8y':3,'9-13y':4,'14-18y':5,
+    '0-6m': 0, '7-12m': 1, '1-3y': 2, '4-8y': 3, '9-13y': 4, '14-18y': 5,
   };
   return map[stageKey ?? ''] ?? 3;
 }
@@ -120,40 +120,40 @@ export async function scoreFood(input: ScoreInput) {
 
   // ── DRI 推荐量表（per day，按[0-6m, 7-12m, 1-3y, 4-8y, 9-13y, 14-18y]）──
   // nutrientId 与 seed.ts 对应
-  const DRI_TABLE: Record<string, { male: (number|null)[]; female: (number|null)[] }> = {
-    'DHA':        { male: [100,100,null,null,250,250],    female: [100,100,null,null,250,250] },
-    'Choline':    { male: [125,150,200,250,375,550],      female: [125,150,200,250,375,400] },
-    'Iron':       { male: [0.27,11,7,10,8,11],           female: [0.27,11,7,10,8,15] },
-    'Vitamin B12':{ male: [0.4,0.5,0.9,1.2,1.8,2.4],    female: [0.4,0.5,0.9,1.2,1.8,2.4] },
-    'Folate':     { male: [65,80,150,200,300,400],        female: [65,80,150,200,300,400] },
-    'Calcium':    { male: [200,260,700,1000,1300,1300],   female: [200,260,700,1000,1300,1300] },
-    'Vitamin D':  { male: [10,10,15,15,15,15],            female: [10,10,15,15,15,15] },
-    'Phosphorus': { male: [100,275,460,500,1250,1250],    female: [100,275,460,500,1250,1250] },
-    'Vitamin A':  { male: [400,500,300,400,600,900],      female: [400,500,300,400,600,700] },
-    'Zinc':       { male: [2,3,3,5,8,11],                 female: [2,3,3,5,8,9] },
-    'Protein':    { male: [9.1,13.5,13,19,34,52],         female: [9.1,13.5,13,19,34,46] },
-    'Fluoride':   { male: [0.01,0.5,0.7,1,2,3],          female: [0.01,0.5,0.7,1,2,3] },
-    'Magnesium':  { male: [30,75,80,130,240,410],         female: [30,75,80,130,240,360] },
-    'Vitamin C':  { male: [40,50,15,25,45,75],            female: [40,50,15,25,45,65] },
-    'Vitamin K':  { male: [2,2.5,30,55,60,75],            female: [2,2.5,30,55,60,75] },
-    'Vitamin B6': { male: [0.1,0.3,0.5,0.6,1,1.3],       female: [0.1,0.3,0.5,0.6,1,1.2] },
-    'Iodine':     { male: [110,130,90,90,120,150],        female: [110,130,90,90,120,150] },
-    'Selenium':   { male: [15,20,20,30,40,55],            female: [15,20,20,30,40,55] },
-    'Potassium':  { male: [400,700,3000,3800,4500,4700],  female: [400,700,3000,3800,4500,4700] },
-    'Fiber':      { male: [null,null,19,25,26,38],        female: [null,null,19,25,31,26] },
-    'Vitamin E':  { male: [4,5,6,7,11,15],               female: [4,5,6,7,11,15] },
+  const DRI_TABLE: Record<string, { male: (number | null)[]; female: (number | null)[] }> = {
+    'DHA': { male: [100, 100, null, null, 250, 250], female: [100, 100, null, null, 250, 250] },
+    'Choline': { male: [125, 150, 200, 250, 375, 550], female: [125, 150, 200, 250, 375, 400] },
+    'Iron': { male: [0.27, 11, 7, 10, 8, 11], female: [0.27, 11, 7, 10, 8, 15] },
+    'Vitamin B12': { male: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4], female: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4] },
+    'Folate': { male: [65, 80, 150, 200, 300, 400], female: [65, 80, 150, 200, 300, 400] },
+    'Calcium': { male: [200, 260, 700, 1000, 1300, 1300], female: [200, 260, 700, 1000, 1300, 1300] },
+    'Vitamin D': { male: [10, 10, 15, 15, 15, 15], female: [10, 10, 15, 15, 15, 15] },
+    'Phosphorus': { male: [100, 275, 460, 500, 1250, 1250], female: [100, 275, 460, 500, 1250, 1250] },
+    'Vitamin A': { male: [400, 500, 300, 400, 600, 900], female: [400, 500, 300, 400, 600, 700] },
+    'Zinc': { male: [2, 3, 3, 5, 8, 11], female: [2, 3, 3, 5, 8, 9] },
+    'Protein': { male: [9.1, 13.5, 13, 19, 34, 52], female: [9.1, 13.5, 13, 19, 34, 46] },
+    'Fluoride': { male: [0.01, 0.5, 0.7, 1, 2, 3], female: [0.01, 0.5, 0.7, 1, 2, 3] },
+    'Magnesium': { male: [30, 75, 80, 130, 240, 410], female: [30, 75, 80, 130, 240, 360] },
+    'Vitamin C': { male: [40, 50, 15, 25, 45, 75], female: [40, 50, 15, 25, 45, 65] },
+    'Vitamin K': { male: [2, 2.5, 30, 55, 60, 75], female: [2, 2.5, 30, 55, 60, 75] },
+    'Vitamin B6': { male: [0.1, 0.3, 0.5, 0.6, 1, 1.3], female: [0.1, 0.3, 0.5, 0.6, 1, 1.2] },
+    'Iodine': { male: [110, 130, 90, 90, 120, 150], female: [110, 130, 90, 90, 120, 150] },
+    'Selenium': { male: [15, 20, 20, 30, 40, 55], female: [15, 20, 20, 30, 40, 55] },
+    'Potassium': { male: [400, 700, 3000, 3800, 4500, 4700], female: [400, 700, 3000, 3800, 4500, 4700] },
+    'Fiber': { male: [null, null, 19, 25, 26, 38], female: [null, null, 19, 25, 31, 26] },
+    'Vitamin E': { male: [4, 5, 6, 7, 11, 15], female: [4, 5, 6, 7, 11, 15] },
   };
 
   // 目标 → 营养素名称映射
   const GOAL_NUTRIENT_NAMES: Record<number, string[]> = {
-    1: ['DHA','Choline','Iron','Vitamin B12','Folate'],
-    2: ['Calcium','Vitamin D','Phosphorus','Protein','Magnesium'],
-    3: ['Fiber','Potassium','Magnesium'],
-    4: ['Protein','Iron','Zinc','Vitamin D','Potassium'],
-    5: ['Vitamin A','Vitamin C','Vitamin D','Zinc','Iron','Protein','Selenium'],
-    6: ['Fiber','Magnesium','Potassium'],
-    7: ['Vitamin A','Zinc','Vitamin E'],
-    8: ['Calcium','Vitamin D','Phosphorus','Vitamin C'],
+    1: ['DHA', 'Choline', 'Iron', 'Vitamin B12', 'Folate'],
+    2: ['Calcium', 'Vitamin D', 'Phosphorus', 'Protein', 'Magnesium'],
+    3: ['Fiber', 'Potassium', 'Magnesium'],
+    4: ['Protein', 'Iron', 'Zinc', 'Vitamin D', 'Potassium'],
+    5: ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Zinc', 'Iron', 'Protein', 'Selenium'],
+    6: ['Fiber', 'Magnesium', 'Potassium'],
+    7: ['Vitamin A', 'Zinc', 'Vitamin E'],
+    8: ['Calcium', 'Vitamin D', 'Phosphorus', 'Vitamin C'],
   };
 
   const TIER_WEIGHT: Record<string, number> = { core: 3, important: 2, supporting: 1 };
@@ -169,7 +169,7 @@ export async function scoreFood(input: ScoreInput) {
     if (n.value != null) nutrientValueMap[n.nutrient.name] = Number(n.value);
   }
   console.log('nutrientValueMap:', JSON.stringify(nutrientValueMap));
-  console.log('ageIdx:', ageIdx, 'gender:', genderKey); 
+  console.log('ageIdx:', ageIdx, 'gender:', genderKey);
   let weightedSum = 0;
   let weightTotal = 0;
 
@@ -202,7 +202,12 @@ export async function scoreFood(input: ScoreInput) {
 
   // Step B: NutriNorm（Nutri-Score 2014）
   // 需要 per 100g 数据，serving 数据近似处理
-  const servingSizeG = parseFloat(product.servingSize ?? '100') || 100;
+  const servingSizeG = (() => {
+    const m = (product.servingSize ?? '').match(/\(?\s*(\d+(?:\.\d+)?)\s*g\s*\)?/i);
+    if (m) return parseFloat(m[1]);
+    const fallback = parseFloat(product.servingSize ?? '100');
+    return fallback > 0 ? fallback : 100;
+  })();
   const per100 = (val: number | null) => val != null ? (val / servingSizeG) * 100 : 0;
 
   const energyKJ = per100(prodNutr.find((n: any) => n.nutrient.name === 'Energy')?.value ?? null) * 4.184; // kcal→kJ
@@ -214,15 +219,15 @@ export async function scoreFood(input: ScoreInput) {
 
   // Negative points
   const negEnergy = Math.min(10, Math.floor(energyKJ / 335));
-  const negSugar  = Math.min(15, Math.floor(sugarG100 / 4.5));
+  const negSugar = Math.min(15, Math.floor(sugarG100 / 4.5));
   const negSatFat = Math.min(10, Math.floor(satFatG100 / 1));
-  const negSalt   = Math.min(20, Math.floor(saltG100 / 0.2));
-  const negative  = negEnergy + negSugar + negSatFat + negSalt;
+  const negSalt = Math.min(20, Math.floor(saltG100 / 0.2));
+  const negative = negEnergy + negSugar + negSatFat + negSalt;
 
   // Positive points
-  const posFiber   = Math.min(5, Math.floor(fiberG100 / 0.9));
+  const posFiber = Math.min(5, Math.floor(fiberG100 / 0.9));
   const posProtein = Math.min(5, Math.floor(proteinG100 / 1.6));
-  const positive   = posFiber + posProtein; // 水果/蔬菜比例暂缺，设0
+  const positive = posFiber + posProtein; // 水果/蔬菜比例暂缺，设0
 
   const nutriNorm = Math.max(0, Math.min(1, (positive - negative + 55) / 72));
 
@@ -233,7 +238,7 @@ export async function scoreFood(input: ScoreInput) {
   console.log('NutriNorm:', nutriNorm.toFixed(3));
   console.log('FinalScore:', (100 * nutriNorm * (b + (1 - b) * devScore)).toFixed(1));
   console.log('negative:', negative, 'positive:', positive);
-    // 按年龄段的每日上限
+  // 按年龄段的每日上限
   const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25; // 0-6m/7-12m不建议，1-3y 12g，4+岁 25g
   const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5; // 触发警告的阈值
   const sodiumLimit = [200, 370, 800, 1200, 1500, 1500][ageIdx]; // mg/day by age group
@@ -295,14 +300,14 @@ export async function scoreFood(input: ScoreInput) {
   }
 
 
-  
+
   const SUPPORT_DV_THRESHOLD = 15; // 该目标映射营养素里，至少一项要达到每日推荐量的 15%
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
     if ((goalSupport[goalId] ?? 0) < SUPPORT_DV_THRESHOLD) return null;
-    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;  
+    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;
   };
-  
+
   const viewGoals = allGoals.map((g) => ({
     id: g.id,
     icon: g.icon,
@@ -330,35 +335,51 @@ export async function scoreFood(input: ScoreInput) {
 
   const watch = [
     // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
-    { code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
+    {
+      code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
       present: sugarG >= sugarThreshold && (product.novaScore ?? 4) >= 2,
       detail: sugarLimit === 0
         ? `~${sugarG}g sugar per serving — added sugar is not recommended for this age group.`
         : `~${sugarG}g sugar per serving — about ${Math.round((sugarG / sugarLimit) * 100)}% of daily limit (${sugarLimit}g).`,
       detailZh: sugarLimit === 0
         ? `每份含约${sugarG}克糖，该年龄段不建议摄入添加糖。`
-        : `每份含约${sugarG}克糖，约占每日上限(${sugarLimit}克)的${Math.round((sugarG / sugarLimit) * 100)}%。` },
-    { code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精', present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/),
+        : `每份含约${sugarG}克糖，约占每日上限(${sugarLimit}克)的${Math.round((sugarG / sugarLimit) * 100)}%。`
+    },
+    {
+      code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精', present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/),
       detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
-      detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。' },
-    { code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', present: hasAdd(/color|色素/) || hasIng(/color|色素/),
+      detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
+    },
+    {
+      code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', present: hasAdd(/color|色素/) || hasIng(/color|色素/),
       detail: 'Contains artificial colors. Some are linked to hyperactivity in sensitive children.',
-      detailZh: '含人工色素，部分色素与敏感儿童多动相关。' },
-    { code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/),
-      detail: 'Contains preservatives.', detailZh: '含防腐剂。' },
-    { code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-        present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
-        detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium — daily limit for this age is ${sodiumLimit}mg.`,
-        detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，该年龄段每日上限为${sodiumLimit}mg。` },
-      
-    { code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-        present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > satfatThreshold,
-        detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g saturated fat per serving.`,
-        detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g饱和脂肪。` },
-    { code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪', present: hasIng(/hydrogenated|氢化/),
-      detail: 'Contains hydrogenated oils.', detailZh: '含氢化油脂。' },
-    { code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
-      detail: 'Contains high fructose corn syrup.', detailZh: '含果葡糖浆。' },
+      detailZh: '含人工色素，部分色素与敏感儿童多动相关。'
+    },
+    {
+      code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/),
+      detail: 'Contains preservatives.', detailZh: '含防腐剂。'
+    },
+    {
+      code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
+      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
+      detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium — daily limit for this age is ${sodiumLimit}mg.`,
+      detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，该年龄段每日上限为${sodiumLimit}mg。`
+    },
+
+    {
+      code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
+      present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > satfatThreshold,
+      detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g saturated fat per serving.`,
+      detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g饱和脂肪。`
+    },
+    {
+      code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪', present: hasIng(/hydrogenated|氢化/),
+      detail: 'Contains hydrogenated oils.', detailZh: '含氢化油脂。'
+    },
+    {
+      code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
+      detail: 'Contains high fructose corn syrup.', detailZh: '含果葡糖浆。'
+    },
   ];
 
   const matchedAllergens = product.allergens
@@ -379,10 +400,10 @@ export async function scoreFood(input: ScoreInput) {
       whyTextZh: `针对该孩子综合评分 ${overall}/100。`,
       breakdown: {
         create: [
-          { dimension: 'devScore',   score: Math.round(devScore * 100),   weight: 0.7 },
-          { dimension: 'nutriNorm',  score: Math.round(nutriNorm * 100),  weight: 0.3 },
-          { dimension: 'negative',   score: negative,  weight: 0 },
-          { dimension: 'positive',   score: positive,  weight: 0 },
+          { dimension: 'devScore', score: Math.round(devScore * 100), weight: 0.7 },
+          { dimension: 'nutriNorm', score: Math.round(nutriNorm * 100), weight: 0.3 },
+          { dimension: 'negative', score: negative, weight: 0 },
+          { dimension: 'positive', score: positive, weight: 0 },
         ],
       },
       factors: { create: factors },
