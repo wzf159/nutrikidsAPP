@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from './LanguageSwitcher';
-import { AGE_GROUPS, bmiOf } from '../../data/growth';
+import {  bmiOf } from '../../data/growth';
 import { getChildren, getAllergens, type Child, type Allergen } from '../../services/api';
 import { useSession, signOut } from '../../lib/auth';
 
