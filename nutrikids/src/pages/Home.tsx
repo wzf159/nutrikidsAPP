@@ -13,14 +13,14 @@ export default function Home() {
       <div className="absolute w-[280px] h-[280px] rounded-full bg-[rgba(6,182,212,0.12)] blur-[80px] top-[40%] left-[60%] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl">
-        <div className="flex items-center gap-3 mb-6">
-          <img src="/images/logo2.png" alt="" className="h-20 w-auto" />
-          <div className="flex flex-col gap-1">
-            <img src="/images/logo4.png" alt="NutriKids" className="h-10 w-20" />
-            <span className="text-sm font-semibold text-gray-500" style={{ fontFamily: 'Nunito, sans-serif' }}>
-              {i18n.language === 'es' ? 'Nutrición inteligente para mentes en desarrollo' : isZh ? '为成长中的大脑提供智慧营养' : 'Smart nutrition for growing minds'}
-            </span>
-          </div>
+        <div className="flex flex-col items-center gap-0 mb-4">
+          <img src="/images/logoall.png" alt="" className="h-38 w-auto" />
+          <h1 className="text-[38px] sm:text-[42px] font-bold text-[#1a1040] leading-[1.25] tracking-tight mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>
+            {i18n.language === 'es' ? <>Nutrición inteligente para<br />tu niño en crecimiento.</> : isZh ? <>聪明的营养选择，<br />伴随孩子成长。</> : <>Smart nutrition for<br />your growing child.</>}
+          </h1>
+          <p className="text-[17px] font-semibold text-gray-500 leading-[1.6] mb-10" style={{ fontFamily: 'Nunito, sans-serif' }}>
+            {i18n.language === 'es' ? 'Entiende lo que realmente hay en su comida — y por qué importa.' : isZh ? '看懂食物里真正的成分——以及它为什么重要。' : "Understand what's really in their food — and why it matters."}
+          </p>
         </div>
 
         <button
