@@ -16,7 +16,7 @@ interface FeedbackAnswers {
 const ff = "'Nunito', 'Inter', sans-serif";
 const grad = 'linear-gradient(135deg,#893ce3,#ec4899)';
 const { t } = useTranslation();
-function RadioOption({ value, label, selected, onSelect }: { value: string; label: string; selected: boolean; onSelect: () => void }) {
+function RadioOption({ value: _value, label, selected, onSelect }: { value: string; label: string; selected: boolean; onSelect: () => void }) {
   return (
     <button
       onClick={onSelect}
@@ -69,7 +69,8 @@ function EmojiScale({ value, onSelect }: { value: string | null; onSelect: (v: s
   );
 }
 
-function CheckOption({ value, label, selected, onToggle }: { value: string; label: string; selected: boolean; onToggle: () => void }) {
+
+function CheckOption({ value: _value, label, selected, onToggle }: { value: string; label: string; selected: boolean; onToggle: () => void }) {
   return (
     <button onClick={onToggle} style={{
       display: 'flex', alignItems: 'center', gap: 10,
