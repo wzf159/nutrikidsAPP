@@ -24,6 +24,8 @@ async function main() {
     { id: 14, name: 'Potassium', nameZh: '钾', icon: '🍌', unit: 'mg' },
     { id: 15, name: 'Sugars', nameZh: '糖', icon: '🍬', unit: 'g' },
     { id: 16, name: 'Energy', nameZh: '能量', icon: '🔥', unit: 'kcal' },
+    { id: 22, name: 'Fiber', nameZh: '膳食纤维', icon: '🌿', unit: 'g' },
+    { id: 23, name: 'Magnesium', nameZh: '镁', icon: '💊', unit: 'mg' },
   ];
   for (const n of nutrients) await prisma.nutrient.upsert({ where: { id: n.id }, create: n, update: n });
 

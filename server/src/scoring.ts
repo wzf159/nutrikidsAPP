@@ -47,7 +47,7 @@ const WEIGHTS = {
 const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
   1: [3, 1, 2, 12, 4],         // 🧠 Brain: Omega-3/Iron/Zinc/B12/B族
   2: [5, 6, 7, 13],            // 🦴 Bone: 钙/维D/磷/蛋白质
-  3: [13, 1, 2, 14],           // 📏 Heart Growth: 蛋白质/Iron/Zinc/钾(Fiber/Omega-3未在nutrient字典中，用相近替代)
+  3: [22, 14, 23, 3],  // 📏 Heart Growth: Fiber(22)/Potassium(14)/Magnesium(23)/Omega-3(3)
   4: [13, 1, 2, 6, 14, 8],     // 💪 Muscle: 蛋白质/Iron/Zinc/维D/钾/复合碳水
   5: [11, 9, 6, 2, 1, 13, 10], // 🛡️ Immune: 维A/维C/维D/Zinc/Iron/蛋白质/硒
   6: [1, 3, 2, 12],            // 🦠 Gut: Iron/Omega-3/Zinc/B12

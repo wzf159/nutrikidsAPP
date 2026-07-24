@@ -28,6 +28,8 @@ const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; un
   { nutrientId: 19, offKey: 'fat_100g', factor: 1, unit: 'g', dvRef: 65 },
   { nutrientId: 20, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 28 },
   { nutrientId: 21, offKey: 'carbohydrates_100g', factor: 1, unit: 'g', dvRef: 275 },
+  { nutrientId: 22, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 25 },
+{ nutrientId: 23, offKey: 'magnesium_100g', factor: 1000, unit: 'mg', dvRef: 130 },
 ];
 
 const OFF_ALLERGEN_MAP: Record<string, string> = {
