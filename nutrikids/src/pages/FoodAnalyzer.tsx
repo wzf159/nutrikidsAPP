@@ -849,6 +849,16 @@ export default function FoodAnalyzer() {
                             <h3 className="text-[18px] font-extrabold text-[#1a1a3a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
                               {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
                             </h3>
+                            {!view.product.verified && (
+                              <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2 mb-4 flex items-center gap-2">
+                                <span>🤖</span>
+                                <p className="text-[12px] font-semibold text-amber-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  {isZh
+                                    ? 'NutriKids 数据库中暂无此产品，以下分析由 AI 生成，仅供参考。'
+                                    : "This product isn't in the NutriKids database. Analysis is AI-generated and for general guidance only."}
+                                </p>
+                              </div>
+                            )}
                             <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
                               {isZh ? levelMeta.summaryZh : isEs ? levelMeta.summaryEs : levelMeta.summary}
                             </p>

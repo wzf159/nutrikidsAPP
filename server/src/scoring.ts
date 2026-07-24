@@ -430,6 +430,8 @@ export async function scoreFood(input: ScoreInput) {
         imageUrl: product.imageUrl,
         novaScore: product.novaScore,
         servingSize: product.servingSize,
+        verified: product.verified, 
+   
       },
       child: { id: child.id, name: child.name, age: child.age },
       allergenSafe: matchedAllergens.length === 0,

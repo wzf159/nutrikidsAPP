@@ -45,6 +45,7 @@ export interface AnalysisView {
     id: number; name: string; nameZh: string | null; brand: string | null;
     category: string | null; categoryZh: string | null; imageUrl: string | null;
     novaScore: number | null; servingSize: string | null;
+    verified: boolean; 
   };
   child: { id: string; name: string; age: number | null };
   allergenSafe: boolean;

@@ -41,8 +41,8 @@ Priority order:
 Return ONLY this JSON, no markdown:
 {
   "isFood": true,
-  "nameEn": "EXACT brand + product name as printed (e.g. 'Stonyfield Organic Whole Milk Vanilla Yogurt')",
-  "nameZh": "中文名称",
+  "nameEn": "product name in English (must be English, e.g. 'Wangzai Milk')",
+  "nameZh": "中文名称（中文）",
   "brand": "brand name exactly as printed",
   "barcode": "all digits if barcode visible",
   "confidence": 0.95,
