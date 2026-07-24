@@ -264,7 +264,7 @@ export async function scoreFood(input: ScoreInput) {
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
   
-  const NEGATIVE_NUTRIENTS = new Set([17, 18, 19]); // Saturated Fat, Sodium, Fat
+  const NEGATIVE_NUTRIENTS = new Set([17, 18, 19, 21]);// Saturated Fat, Sodium, Fat
 
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
