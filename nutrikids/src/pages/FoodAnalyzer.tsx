@@ -44,7 +44,27 @@ function SectionBadge({ n }: { n: number }) {
   );
 }
 
+const LEVEL_META: Record<number, {
+  label: string; labelZh: string; labelEs: string;
+  summary: string; summaryZh: string; summaryEs: string;
+  color: string; bg: string; emoji: string;
+}> = {
+  5: { label: 'Strong Support', labelZh: '强力支持', labelEs: 'Apoyo Sólido', summary: "Strong overall alignment with children's developmental goals, with nutritional benefits clearly outweighing potential concerns.", summaryZh: '与儿童发育目标高度契合，营养益处明显优于潜在风险。', summaryEs: 'Fuerte alineación con los objetivos de desarrollo infantil.', color: '#16a34a', bg: 'rgba(22,163,74,0.08)', emoji: '💪' },
+  4: { label: 'Good Support', labelZh: '良好支持', labelEs: 'Buen Apoyo', summary: 'Good overall alignment, with nutritional benefits outweighing potential concerns.', summaryZh: '整体契合度良好，营养益处优于潜在风险。', summaryEs: 'Buena alineación general con los objetivos de desarrollo.', color: '#65a30d', bg: 'rgba(101,163,13,0.08)', emoji: '✅' },
+  3: { label: 'Moderate Support', labelZh: '适度支持', labelEs: 'Apoyo Moderado', summary: 'A balanced profile, with both nutritional benefits and potential concerns to consider.', summaryZh: '营养档案均衡，同时存在益处和需要关注的风险。', summaryEs: 'Un perfil equilibrado con beneficios y posibles preocupaciones.', color: '#d97706', bg: 'rgba(217,119,6,0.08)', emoji: '⚖️' },
+  2: { label: 'Limited Support', labelZh: '有限支持', labelEs: 'Apoyo Limitado', summary: 'Limited overall benefit, as potential concerns begin to outweigh the nutritional support for developmental goals.', summaryZh: '整体益处有限，潜在风险开始超过营养支持。', summaryEs: 'Beneficio general limitado, las preocupaciones comienzan a superar el apoyo nutricional.', color: '#ea580c', bg: 'rgba(234,88,12,0.08)', emoji: '⚠️' },
+  1: { label: 'Limited Benefit', labelZh: '益处有限', labelEs: 'Beneficio Limitado', summary: 'Limited overall benefit, as potential concerns outweigh the nutritional support for developmental goals.', summaryZh: '整体益处有限，潜在风险超过营养支持。', summaryEs: 'Beneficio general limitado, las preocupaciones superan el apoyo nutricional.', color: '#dc2626', bg: 'rgba(220,38,38,0.08)', emoji: '🚫' },
+};
 
+function scoreToLevel(score: number): number {
+  if (score >= 75) return 5;
+  if (score >= 58) return 4;
+  if (score >= 44) return 3;
+  if (score >= 37) return 2;
+  return 1;
+}
+
+const levelColors = ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a'];
 
 /* ------------------------------------------------------------------ */
 /* Sankey 布局（由接口数据驱动）                                       */
@@ -482,7 +502,11 @@ export default function FoodAnalyzer() {
   const toggleNutrient = (id: number) => { setSelectedGoal(null); setSelectedNutrient(p => (p === id ? null : id)); };
 
   const productTitle = view ? (isZh ? view.product.nameZh ?? view.product.name : view.product.name) : '';
-
+  const levelNum = scoreToLevel(result.overallScore);
+  const levelMeta = LEVEL_META[levelNum];
+  const isPositive = levelNum >= 3;
+  const hasAllergen = !view.allergenSafe && view.matchedAllergens.length > 0;
+  const hasBadAdditive = view.watch.some(w => w.present && (w.code === 'colors' || w.code === 'transfat'));
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
@@ -743,135 +767,152 @@ export default function FoodAnalyzer() {
         {view && result && grade && (
           <>
             {/* ① 食物评估 */}
-            <section key={`${view.product.id}-${result.overallScore}`} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-hidden">
+            <section
+              key={`${view.product.id}-${result.overallScore}`}
+              className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[22px] mb-5 animate-fade-in-up relative overflow-hidden"
+            >
               <div className="relative">
-                <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0 lg:gap-0">
-                  {/* 结论 */}
-                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
-                    <div className="flex items-center gap-2 mb-3">
-                      <SectionBadge n={1} />
-                      <h2 className="text-[19px] font-extrabold text-[#2d2a4a]" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.01em' }}>{isZh ? '食物评估' : isEs ? 'Evaluación de Alimentos' : 'Food Assessment'}</h2>
-                    </div>
-                    <div className="flex gap-[14px] items-center">
-                      <div className="flex-shrink-0">
-                        <div className="w-[90px] h-[90px] rounded-[12px] bg-gradient-to-br from-white/70 to-[rgba(200,240,254,0.5)] border border-[rgba(124,58,237,0.15)] flex items-center justify-center overflow-hidden">
-                          <ProductImage photoUrl={capturedPhotoUrl} networkUrl={view.product.imageUrl ?? null} alt={productTitle} />
-                        </div>
-                        <p className="text-[10px] font-bold text-gray-400 text-center mt-1.5 leading-tight max-w-[90px]">{productTitle}</p>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-[14px]">
-                          <div className="w-[64px] h-[64px] rounded-full flex flex-col items-center justify-center flex-shrink-0 shadow-[0_4px_16px_rgba(90,168,96,0.35)]" style={{ background: `linear-gradient(135deg,${grade.color},${grade.color})` }}>
-                            <span className="text-[22px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif' }}>{Math.round(result.overallScore)}</span>
+                <div className="flex items-center gap-2 mb-5">
+                  <SectionBadge n={1} />
+                  <h2 className="text-[19px] font-extrabold text-[#2d2a4a]" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                    {isZh ? '食物评估' : isEs ? 'Evaluación de Alimentos' : 'Food Assessment'}
+                  </h2>
+                  <span onClick={() => navigate('/about', { state: { tab: 'sources' } })} className="ml-2 text-[12px] font-semibold text-gray-400 cursor-pointer hover:text-[#893ce3] transition-colors">
+                    👆 {isZh ? '查看计算方法' : 'Report a review'}
+                  </span>
+                </div>
 
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="text-[26px] font-extrabold text-[#2d2a4a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif', letterSpacing: '-0.02em' }}>
-                              {result.overallScore >= 60
-                                ? (isZh ? `${view.child.name} 的好选择！🎉` : isEs ? `¡Buena elección para ${view.child.name}! 🎉` : `Nice Pick for ${view.child.name}! 🎉`)
-                                : (isZh ? `给 ${view.child.name} 要留意 🤔` : isEs ? `Ten cuidado con ${view.child.name} 🤔` : `Think twice for ${view.child.name} 🤔`)}
-                            </h3>
-                            <div className="flex flex-wrap gap-2.5 mt-1.5">
-                              {view.allergenSafe ? (
-                                <p className="text-[12px] font-semibold text-[#16a34a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  ✅ {isZh ? `未检测到 ${view.child.name} 的过敏原` : isEs ? `No se detectaron alérgenos para ${view.child.name}` : `No allergens detected for ${view.child.name}`}
-                                </p>
-                              ) : (
-                                <p className="text-[12px] font-semibold text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  ⚠️ {isZh
-                                    ? `含有 ${view.child.name} 的过敏原：${view.matchedAllergens.map(a => a.nameZh ?? a.name).join('、')}`
-                                    : isEs
-                                      ? `Contiene alérgenos para ${view.child.name}: ${view.matchedAllergens.map(a => a.name).join(', ')}`
-                                      : `Contains allergens for ${view.child.name}: ${view.matchedAllergens.map(a => a.name).join(', ')}`}
-                                </p>
-                              )}
-                              {topNutrients.length > 0 && (
-                                <p className="text-[12px] font-semibold text-[#16a34a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  ⭐ {isZh ? '富含' : 'Good source of'}{' '}
-                                  {topNutrients.map((n, i) => (
-                                    <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
-                                      {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
-                                    </span>
-                                  ))}
-                                </p>
-                              )}
-                            </div>
-                            <span
-                              onClick={() => navigate('/about', { state: { tab: 'sources' } })}
-                              className="text-[10px] font-semibold text-gray-400 flex items-center gap-1 cursor-pointer hover:text-[#893ce3] transition-colors mt-1.5"
-                            >
-                              👆 {isZh ? '点击查看具体计算过程' : isEs ? 'Toca para ver el cálculo' : 'Tap to see the calculations'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                <div className="flex gap-5 items-start mb-5">
+                  <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                    <div className="w-[120px] h-[120px] rounded-[14px] bg-gradient-to-br from-white/70 to-[rgba(200,240,254,0.5)] border border-[rgba(124,58,237,0.15)] flex items-center justify-center overflow-hidden shadow-[0_4px_16px_rgba(120,80,200,0.12)]">
+                      <ProductImage photoUrl={capturedPhotoUrl} networkUrl={view.product.imageUrl ?? null} alt={productTitle} />
                     </div>
+                    <p className="text-[11px] font-bold text-gray-500 text-center leading-tight max-w-[120px]">{productTitle}</p>
                   </div>
 
-                  {/* 益处小网格 */}
-                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
-                      <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
-                    </div>
-                    {tierCounts && (
-                      <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
-                        {isZh ? `支持 ${tierCounts.core + tierCounts.important + tierCounts.supporting} 项目标` : `Supports ${tierCounts.core + tierCounts.important + tierCounts.supporting} goals`} ·{' '}
-                        <span className="text-[#4c1d95] font-extrabold">{tierCounts.core} {isZh ? '核心' : 'Core'}</span> ·{' '}
-                        <span className="text-[#a21caf] font-extrabold">{tierCounts.important} {isZh ? '重要' : 'Important'}</span> ·{' '}
-                        <span className="text-[#db2777] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
-                      </p>
-                    )}
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {view.goals.map(g => (
-                        <button key={g.id} onClick={() => g.tier && toggleGoal(g.id)} className={`flex flex-col items-center gap-1 ${g.tier ? 'cursor-pointer' : 'cursor-default'}`}>
-                          <span
-                            className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all ${g.tier ? 'bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)]' : 'bg-[rgba(237,220,255,0.5)] opacity-32 grayscale border-2 border-[rgba(137,60,227,0.18)]'} ${selectedGoal === g.id ? 'scale-110' : ''}`}
-                            style={g.tier ? { border: `3px solid ${TIER_COLOR[g.tier]}` } : undefined}
-                          >
-                            {g.icon}
-                          </span>
-                          <span className={`text-[9px] font-bold text-center leading-tight ${g.tier ? 'text-[#5a1d8a]' : 'text-[#b0aabf]'}`} style={{ fontFamily: 'Nunito, sans-serif' }}>
-                            {isZh ? g.labelZh ?? g.label : g.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 留意成分摘要 */}
-                  <div className="px-[18px] py-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '需要留意' : 'THINGS TO WATCH'}</h4>
-                      <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
-                    </div>
-                    <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
-                      {isZh
-                        ? `${presentWatch.length} 项值得注意的成分${nova ? ` · NOVA ${view.product.novaScore} ${nova.zh}` : ''}`
-                        : isEs
-                          ? `${presentWatch.length} ingredientes que merecen atención${nova ? ` · NOVA ${view.product.novaScore} ${nova.es}` : ''}`
-                          : `${presentWatch.length} ingredients worth noting${nova ? ` · NOVA ${view.product.novaScore} ${nova.en}` : ''}`}
-                    </p>
-                    <div className="grid grid-cols-4 gap-1.5 mb-2.5">
-                      {presentWatch.map(w => (
-                        <button key={w.code} onClick={() => setSelectedWatch(p => (p === w.code ? null : w.code))} className="flex flex-col items-center gap-1 cursor-pointer">
-                          <span className={`w-[48px] h-[48px] rounded-full bg-[rgba(255,237,213,0.8)] border-2 border-[rgba(249,115,22,0.35)] flex items-center justify-center text-[22px] ${selectedWatch === w.code ? 'scale-110' : ''} transition-transform`}>
-                            {w.icon}
-                          </span>
-                          <span className="text-[10px] font-bold text-[#1a1a3a] text-center leading-tight" style={{ fontFamily: 'Nunito, sans-serif' }}>{isZh ? w.nameZh : w.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                    {nova && (
-                      <div className="bg-[rgba(249,115,22,0.08)] border-l-3 border-[#f97316] rounded-lg px-2.5 py-1.5 flex items-center gap-2">
-                        <span className="text-[18px]">🧀</span>
-                        <span className="text-[10px] font-bold text-[#9a3412] tracking-wide" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                          {isZh ? `等级 ${view.product.novaScore} · ${nova.zh}` : isEs ? `NIVEL ${view.product.novaScore} · ${nova.es}` : `LEVEL ${view.product.novaScore} · ${nova.en}`}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-4 mb-3">
+                      <div
+                        className="w-[84px] h-[84px] rounded-full flex-shrink-0 flex flex-col items-center justify-center shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
+                        style={{ background: `linear-gradient(135deg, ${levelMeta.color}, ${levelMeta.color}cc)` }}
+                      >
+                        <span className="text-[28px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          {Math.round(result.overallScore)}
                         </span>
+                        <span className="text-[10px] font-bold text-white/85 tracking-wider mt-0.5">LEVEL {levelNum}</span>
                       </div>
+                      <div className="flex-1">
+                        <h3 className="text-[22px] font-extrabold text-[#1a1a3a] leading-tight mb-1" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                          {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
+                        </h3>
+                        <p className="text-[13px] text-gray-500 leading-relaxed" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                          {isZh ? levelMeta.summaryZh : isEs ? levelMeta.summaryEs : levelMeta.summary}
+                        </p>
+                      </div>
+                    </div>
+                    {topNutrients.length > 0 && (
+                      <p className="text-[13px] font-semibold" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                        ⭐ <span className="text-[#16a34a] font-bold">{isZh ? '富含' : 'Good source of'}</span>{' '}
+                        {topNutrients.map((n, i) => (
+                          <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
+                            {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
+                          </span>
+                        ))}
+                      </p>
                     )}
                   </div>
                 </div>
+
+                {/* 5级进度条 */}
+                <div className="mb-5">
+                  <p className="text-[11px] font-extrabold uppercase tracking-wide text-gray-400 mb-2">
+                    {isZh ? 'NUTRISCORE FOR KIDS · 发育益处 vs. 风险' : 'NUTRISCORE FOR KIDS · DEV. BENEFIT VS. ADDITIVE RISK'}
+                  </p>
+                  <div className="flex gap-1.5">
+                    {[1, 2, 3, 4, 5].map(lv => (
+                      <div key={lv} className="flex-1 flex flex-col items-center gap-1">
+                        <div
+                          className="w-full h-[10px] rounded-full transition-all"
+                          style={{ background: levelColors[lv - 1], opacity: lv === levelNum ? 1 : 0.25, transform: lv === levelNum ? 'scaleY(1.4)' : 'scaleY(1)' }}
+                        />
+                        <span className="text-[10px] font-bold" style={{ color: lv === levelNum ? levelColors[lv - 1] : '#9ca3af', fontFamily: 'Nunito, sans-serif' }}>
+                          Level {lv}{lv === levelNum ? ' ✓' : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 过敏原警告 */}
+                {hasAllergen && (
+                  <div className="rounded-xl bg-red-50 border-l-4 border-red-500 px-4 py-3 mb-3 flex items-start gap-3">
+                    <span className="text-xl flex-shrink-0">🚨</span>
+                    <div>
+                      <p className="text-[13px] font-extrabold text-red-700 mb-0.5">
+                        {isZh ? '检测到过敏原 · 不适合食用' : 'Allergen Detected · Not Suitable'}
+                      </p>
+                      <p className="text-[12px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                        {isZh
+                          ? `该产品含有 ${view.child.name} 档案中记录的过敏原，不建议食用：${view.matchedAllergens.map(a => a.nameZh ?? a.name).join('、')}`
+                          : `This product contains allergen(s) identified in ${view.child.name}'s profile and is not recommended: ${view.matchedAllergens.map(a => a.name).join(', ')}`}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* 有害添加剂警告 */}
+                {hasBadAdditive && (
+                  <div className="rounded-xl bg-orange-50 border-l-4 border-orange-400 px-4 py-3 mb-3 flex items-start gap-3">
+                    <span className="text-xl flex-shrink-0">⚗️</span>
+                    <div>
+                      <p className="text-[13px] font-extrabold text-orange-700 mb-0.5">
+                        {isZh ? '检测到有害添加剂 · 存在潜在健康风险' : 'Harmful Additives Detected · Potential Health Concerns'}
+                      </p>
+                      <p className="text-[12px] text-orange-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                        {isZh
+                          ? '该产品含有与潜在健康风险相关的添加剂（基于公开科学证据），建议优先选择替代产品。'
+                          : 'This product contains additive(s) associated with potential health risks based on publicly available scientific evidence. Consider choosing alternatives when available.'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Summary Panel */}
+                {isPositive ? (
+                  <div className="rounded-[14px] border-[1.5px] p-4" style={{ background: levelMeta.bg, borderColor: `${levelMeta.color}44` }}>
+                    <p className="text-[12px] font-extrabold uppercase tracking-wide mb-2" style={{ color: levelMeta.color }}>
+                      {isZh ? '✨ 营养益处摘要' : '✨ Summary of Benefits'}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {view.goals.filter(g => g.tier).map(g => (
+                        <span key={g.id} className="flex items-center gap-1.5 text-[12px] font-bold px-3 py-1.5 rounded-full bg-white/70 border"
+                          style={{ color: TIER_COLOR[g.tier!], borderColor: `${TIER_COLOR[g.tier!]}44` }}>
+                          {g.icon} {isZh ? g.labelZh ?? g.label : g.label}
+                        </span>
+                      ))}
+                      {view.goals.filter(g => g.tier).length === 0 && (
+                        <p className="text-[12px] text-gray-400">{isZh ? '暂无明显的发育目标支持' : 'No significant development goal support detected'}</p>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-[14px] border-[1.5px] p-4" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.25)' }}>
+                    <p className="text-[12px] font-extrabold uppercase tracking-wide mb-2 text-red-600">
+                      {isZh ? '⚠️ 需要注意的问题' : '⚠️ Summary of Concerns'}
+                    </p>
+                    <div className="flex flex-col gap-1.5">
+                      {view.watch.filter(w => w.present).map(w => (
+                        <div key={w.code} className="flex items-center gap-2">
+                          <span className="text-[16px]">{w.icon}</span>
+                          <span className="text-[12px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>{isZh ? w.nameZh : w.name}</span>
+                        </div>
+                      ))}
+                      {view.watch.filter(w => w.present).length === 0 && (
+                        <p className="text-[12px] text-gray-400">{isZh ? '暂无具体成分警告' : 'No specific ingredient warnings'}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </section>
 
