@@ -340,7 +340,7 @@ export default function FoodAnalyzer() {
     } else {
       setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
       try {
-        const summary = await getAISummary(recognition.nameEn, childIdRef.current);
+        const summary = await getAISummary(recognition.nameEn, childIdRef.current as string);
         setPhase({ name: 'ai-result', productName: recognition.nameZh ?? recognition.nameEn, summary });
       } catch (e) {
         setPhase({ name: 'error', msg: (e as Error).message });
