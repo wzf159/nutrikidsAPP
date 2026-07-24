@@ -263,11 +263,15 @@ export async function scoreFood(input: ScoreInput) {
   if (sugarDV >= 10) factors.push({ kind: 'negative', label: 'Added Sugar' });
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
+  
+  const NEGATIVE_NUTRIENTS = new Set([17, 18, 19]); // Saturated Fat, Sodium, Fat
 
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
   const viewNutrients = prodNutr
-    .filter((n: { nutrientId: number }) => n.nutrientId !== SUGAR_NUTRIENT_ID && n.nutrientId !== ENERGY_NUTRIENT_ID)
+    .filter((n: { nutrientId: number }) => n.nutrientId !== SUGAR_NUTRIENT_ID 
+    && n.nutrientId !== ENERGY_NUTRIENT_ID 
+    && !NEGATIVE_NUTRIENTS.has(n.nutrientId) )
     .map((n) => ({
       id: n.nutrientId,
       name: n.nutrient.name,
