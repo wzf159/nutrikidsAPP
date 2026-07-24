@@ -502,11 +502,11 @@ export default function FoodAnalyzer() {
   const toggleNutrient = (id: number) => { setSelectedGoal(null); setSelectedNutrient(p => (p === id ? null : id)); };
 
   const productTitle = view ? (isZh ? view.product.nameZh ?? view.product.name : view.product.name) : '';
-  const levelNum = scoreToLevel(result.overallScore);
+  const levelNum = result ? scoreToLevel(result.overallScore) : 1;
   const levelMeta = LEVEL_META[levelNum];
   const isPositive = levelNum >= 3;
-  const hasAllergen = !view.allergenSafe && view.matchedAllergens.length > 0;
-  const hasBadAdditive = view.watch.some(w => w.present && (w.code === 'colors' || w.code === 'transfat'));
+  const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
+  const hasBadAdditive = view ? view.watch.some(w => w.present && (w.code === 'colors' || w.code === 'transfat')) : false;
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
