@@ -766,7 +766,7 @@ export default function FoodAnalyzer() {
 
         {view && result && grade && (
           <>
-            {/* ① 食物评估 */}
+
             {/* ① 食物评估 */}
             <section
               key={`${view.product.id}-${result.overallScore}`}
@@ -776,8 +776,136 @@ export default function FoodAnalyzer() {
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0">
 
                   {/* 左栏 — 新设计 */}
+                  {/* 左栏 */}
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
-                    {/* ... 你现有的左栏内容 ... */}
+
+                    {/* 产品图片 */}
+                    <div className="flex gap-4 items-start mb-4">
+                      <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                        <div className="w-[90px] h-[90px] rounded-[12px] bg-gradient-to-br from-white/70 to-[rgba(200,240,254,0.5)] border border-[rgba(124,58,237,0.15)] flex items-center justify-center overflow-hidden">
+                          <ProductImage photoUrl={capturedPhotoUrl} networkUrl={view.product.imageUrl ?? null} alt={productTitle} />
+                        </div>
+                        <p className="text-[10px] font-bold text-gray-400 text-center leading-tight max-w-[90px]">{productTitle}</p>
+                      </div>
+
+                      {/* 评分圆圈 + 标题 + 摘要 */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div
+                            className="w-[64px] h-[64px] rounded-full flex-shrink-0 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
+                            style={{ background: `linear-gradient(135deg, ${levelMeta.color}, ${levelMeta.color}cc)` }}
+                          >
+                            <span className="text-[20px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                              {Math.round(result.overallScore)}
+                            </span>
+                            <span className="text-[9px] font-bold text-white/85 tracking-wider mt-0.5">LEVEL {levelNum}</span>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-[18px] font-extrabold text-[#1a1a3a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
+                              {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
+                            </h3>
+                            <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                              {isZh ? levelMeta.summaryZh : isEs ? levelMeta.summaryEs : levelMeta.summary}
+                            </p>
+                          </div>
+                        </div>
+                        {topNutrients.length > 0 && (
+                          <p className="text-[12px] font-semibold mb-3" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                            ⭐ <span className="text-[#16a34a] font-bold">{isZh ? '富含' : 'Good source of'}</span>{' '}
+                            {topNutrients.map((n, i) => (
+                              <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
+                                {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
+                              </span>
+                            ))}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* 5级进度条 */}
+                    <div className="mb-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wide text-gray-400 mb-1.5">
+                        {isZh ? 'NUTRISCORE FOR KIDS · 发育益处 vs. 风险' : 'NUTRISCORE FOR KIDS · DEV. BENEFIT VS. ADDITIVE RISK'}
+                      </p>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map(lv => (
+                          <div key={lv} className="flex-1 flex flex-col items-center gap-0.5">
+                            <div
+                              className="w-full rounded-full"
+                              style={{
+                                background: levelColors[lv - 1],
+                                opacity: lv === levelNum ? 1 : 0.2,
+                                height: lv === levelNum ? '12px' : '8px',
+                              }}
+                            />
+                            <span className="text-[9px] font-bold" style={{
+                              color: lv === levelNum ? levelColors[lv - 1] : '#9ca3af',
+                              fontFamily: 'Nunito, sans-serif',
+                            }}>
+                              Level {lv}{lv === levelNum ? ' ✓' : ''}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* 过敏原警告 */}
+                    {hasAllergen && (
+                      <div className="rounded-lg bg-red-50 border-l-4 border-red-500 px-3 py-2 mb-2 flex items-start gap-2">
+                        <span className="text-base flex-shrink-0">🚨</span>
+                        <div>
+                          <p className="text-[12px] font-extrabold text-red-700">
+                            {isZh ? '检测到过敏原 · 不适合食用' : 'Allergen Detected · Not Suitable'}
+                          </p>
+                          <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                            {isZh
+                              ? `含有过敏原：${view.matchedAllergens.map(a => a.nameZh ?? a.name).join('、')}`
+                              : `Contains: ${view.matchedAllergens.map(a => a.name).join(', ')}`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Summary Panel */}
+                    {isPositive ? (
+                      <div className="rounded-[12px] border-[1.5px] p-3" style={{ background: levelMeta.bg, borderColor: `${levelMeta.color}44` }}>
+                        <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5" style={{ color: levelMeta.color }}>
+                          {isZh ? '✨ 营养益处摘要' : '✨ Summary of Benefits'}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {view.goals.filter(g => g.tier).map(g => (
+                            <span key={g.id} className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/70 border"
+                              style={{ color: TIER_COLOR[g.tier!], borderColor: `${TIER_COLOR[g.tier!]}44` }}>
+                              {g.icon} {isZh ? g.labelZh ?? g.label : g.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-[12px] border-[1.5px] p-3" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.25)' }}>
+                        <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5 text-red-600">
+                          {isZh ? '⚠️ 需要注意的问题' : '⚠️ Summary of Concerns'}
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          {view.watch.filter(w => w.present).map(w => (
+                            <div key={w.code} className="flex items-center gap-1.5">
+                              <span className="text-[14px]">{w.icon}</span>
+                              <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                {isZh ? w.nameZh : w.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <span
+                      onClick={() => navigate('/about', { state: { tab: 'sources' } })}
+                      className="mt-2 text-[10px] font-semibold text-gray-400 flex items-center gap-1 cursor-pointer hover:text-[#893ce3] transition-colors"
+                    >
+                      👆 {isZh ? '查看计算方法' : 'Report a review'}
+                    </span>
+
                   </div>
 
                   {/* 中栏 — BENEFITS */}
