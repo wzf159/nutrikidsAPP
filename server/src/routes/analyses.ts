@@ -2,6 +2,8 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { prisma } from '../prisma.js';
 import { scoreFood } from '../scoring.js';
+import OpenAI from 'openai';
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const scoreSchema = z.object({
   childId: z.string().uuid(),
@@ -32,7 +34,52 @@ export default async function analysisRoutes(app: FastifyInstance) {
       return reply.code(err.statusCode ?? 500).send({ error: err.message });
     }
   });
+  // AI 兜底分析（产品不在数据库时）
+  const aiSummarySchema = z.object({
+    productName: z.string().min(1),
+    childId: z.string().uuid(),
+  });
 
+  app.post('/analyses/ai-summary', async (req, reply) => {
+    const parsed = aiSummarySchema.safeParse(req.body);
+    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+    const { productName, childId } = parsed.data;
+
+    const child = await prisma.child.findUnique({ where: { id: childId } });
+    if (!child || child.userId !== req.user.sub)
+      return reply.code(403).send({ error: '无权访问' });
+
+    const ageLabel = child.age ? `${child.age}-year-old` : child.stageKey ?? 'young child';
+    const gender = child.gender === 'girl' ? 'girl' : 'boy';
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'system',
+        content: 'You are a children\'s nutrition expert. Always respond with valid JSON only, no markdown.',
+      }, {
+        role: 'user',
+        content: `Analyze "${productName}" for a ${ageLabel} ${gender}.
+Respond with this JSON:
+{
+  "recommended": "yes" | "no" | "caution",
+  "benefits": ["up to 3 short benefit strings"],
+  "concerns": ["up to 3 short concern strings"],
+  "summary": "one sentence summary of whether this food is appropriate for this child"
+}`,
+      }],
+      max_tokens: 300,
+      temperature: 0.3,
+    });
+
+    try {
+      const text = completion.choices[0].message.content ?? '{}';
+      const data = JSON.parse(text.replace(/```json|```/g, '').trim());
+      return reply.send(data);
+    } catch {
+      return reply.code(500).send({ error: 'AI response parsing failed' });
+    }
+  });
   // 历史列表
   app.get('/analyses', async (req) => {
     return prisma.analysis.findMany({

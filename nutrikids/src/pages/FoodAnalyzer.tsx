@@ -8,6 +8,7 @@ import {
   type AnalysisResult, type ProductMatch, type Recognition,
 } from '../services/api';
 import { flushSync } from 'react-dom';
+import { getAISummary, type AISummary } from '../services/api';
 /* ------------------------------------------------------------------ */
 /* 常量与小工具                                                        */
 /* ------------------------------------------------------------------ */
@@ -73,6 +74,7 @@ const levelColors = ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a'];
 const SK = { width: 1100, height: 750, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 16, gap: 30 };
 
 interface NodeLayout { id: number; y0: number; y1: number }
+
 
 function useSankeyLayout(view: AnalysisResult['view'] | null) {
   return useMemo(() => {
@@ -187,7 +189,8 @@ type Phase =
   | { name: 'idle' }
   | { name: 'busy'; msg: string }
   | { name: 'confirm'; recognition: Recognition; matches: ProductMatch[]; source?: 'local' | 'openfoodfacts' | 'ai' }
-  | { name: 'error'; msg: string };
+  | { name: 'error'; msg: string }
+  | { name: 'ai-result'; productName: string; summary: AISummary };
 
 export default function FoodAnalyzer() {
   const { t, i18n } = useTranslation();
@@ -335,17 +338,15 @@ export default function FoodAnalyzer() {
     if (matches.length >= 1) {
       setPhase({ name: 'confirm', recognition, matches, source });
     } else {
-      setPhase({
-        name: 'error',
-        msg: isZh
-          ? `识别为「${recognition.nameZh || recognition.nameEn}」，但食品库暂未收录该食品`
-          : isEs
-            ? `Reconocido como "${recognition.nameEn}" pero aún no está en la base de datos de alimentos`
-            : `Recognized "${recognition.nameEn}" but it is not in the food database yet`,
-      });
+      setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
+      try {
+        const summary = await getAISummary(recognition.nameEn, childIdRef.current);
+        setPhase({ name: 'ai-result', productName: recognition.nameZh ?? recognition.nameEn, summary });
+      } catch (e) {
+        setPhase({ name: 'error', msg: (e as Error).message });
+      }
     }
   }
-
   async function handleImage(file: File) {
     setResult(null);
     setCapturedPhotoUrl(null); // 清掉上次的
@@ -755,6 +756,50 @@ export default function FoodAnalyzer() {
           </div>
         )}
 
+        {phase.name === 'ai-result' && (
+          <div className="bg-white rounded-3xl shadow-sm p-6 mb-5">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">🤖</span>
+              <h3 className="font-extrabold text-gray-800 text-lg">{phase.productName}</h3>
+              <span className="ml-auto text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-600">AI Generated</span>
+            </div>
+            <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2.5 mb-4">
+              <p className="text-[12px] font-semibold text-amber-700">
+                {isZh
+                  ? 'NutriKids 数据库中暂无此产品。以下分析由 AI 生成，仅供参考。'
+                  : "This product isn't currently in the NutriKids database. The summary below is AI-generated and intended for general guidance only."}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 mb-3">
+              {phase.summary.recommended === 'yes' && <span className="text-[13px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">✅ {isZh ? '推荐' : 'Recommended'}</span>}
+              {phase.summary.recommended === 'caution' && <span className="text-[13px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">⚠️ {isZh ? '需谨慎' : 'Use with Caution'}</span>}
+              {phase.summary.recommended === 'no' && <span className="text-[13px] font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full">❌ {isZh ? '不推荐' : 'Not Recommended'}</span>}
+            </div>
+            <p className="text-[13px] text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'Nunito, sans-serif' }}>{phase.summary.summary}</p>
+            {phase.summary.benefits.length > 0 && (
+              <div className="mb-3">
+                <p className="text-[11px] font-extrabold text-green-600 uppercase tracking-wide mb-1.5">✨ {isZh ? '营养益处' : 'Benefits'}</p>
+                <div className="flex flex-col gap-1">
+                  {phase.summary.benefits.map((b, i) => <p key={i} className="text-[12px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>• {b}</p>)}
+                </div>
+              </div>
+            )}
+            {phase.summary.concerns.length > 0 && (
+              <div>
+                <p className="text-[11px] font-extrabold text-orange-600 uppercase tracking-wide mb-1.5">⚠️ {isZh ? '需要注意' : 'Concerns'}</p>
+                <div className="flex flex-col gap-1">
+                  {phase.summary.concerns.map((c, i) => <p key={i} className="text-[12px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>• {c}</p>)}
+                </div>
+              </div>
+            )}
+            <button
+              onClick={() => setPhase({ name: 'idle' })}
+              className="mt-5 w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
+            >
+              {isZh ? '重新搜索' : 'Search again'}
+            </button>
+          </div>
+        )}
         {/* 空状态引导 */}
         {!result && phase.name === 'idle' && (
           <div className="bg-white rounded-3xl shadow-sm p-10 text-center text-gray-500">
