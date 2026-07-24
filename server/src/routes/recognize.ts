@@ -10,14 +10,22 @@ async function buildRecognitionResponse(buf: Buffer, mimetype: string) {
   }
 
   const names = [
-    recognition.nameZh,
     recognition.nameEn,
-    ...(recognition.brand ? [`${recognition.brand}`] : []),
-    ...recognition.alternatives.flatMap((a) => [a.nameZh, a.nameEn]),
+    recognition.nameZh,
+    // 加一个简短版本：只取前3个词
+    recognition.nameEn?.split(' ').slice(0, 3).join(' '),
+    ...(recognition.brand ? [
+      recognition.brand,
+      `${recognition.brand} ${recognition.nameEn?.split(' ').slice(-2).join(' ')}`,
+    ] : []),
+    ...recognition.alternatives.flatMap(a => [a.nameEn, a.nameZh]),
   ].filter(Boolean);
 
-  const result = await findProduct({ barcode: recognition.barcode, names });
-
+  const result = await findProduct({ 
+    barcode: recognition.barcode ?? undefined, 
+    names 
+  });
+  console.log('Recognition result:', JSON.stringify(recognition));
   if (result) {
     return { recognition, matches: [result.product], source: result.source };
   }

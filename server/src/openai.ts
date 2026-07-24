@@ -8,7 +8,7 @@ export interface FoodRecognition {
   nameZh: string;
   brand?: string;
   barcode?: string;
-  confidence: number; 
+  confidence: number;
   alternatives: { nameEn: string; nameZh: string }[];
 }
 type NutrientInfo = { nutrientId: number; value: number; unit: string; dailyValue: number };
@@ -29,27 +29,30 @@ export async function recognizeFoodImage(buf: Buffer, mimetype: string): Promise
           },
           {
             type: 'text',
-            text: `You are a food recognition expert. Analyze this image carefully.
+            text: `You are a food product recognition expert specializing in packaged foods.
 
-If you see a food product with a label/package, extract the exact brand name and product name from the label.
-If you see fresh/unpackaged food, identify what it is.
-If it's not food at all, set isFood to false.
+Look carefully at ANY text visible on the packaging - brand name, product name, flavor, size.
 
-Return ONLY this JSON object, no markdown, no explanation:
+Priority order:
+1. Read the EXACT text printed on the package label
+2. Look for barcode numbers
+3. Identify the product type
+
+Return ONLY this JSON, no markdown:
 {
   "isFood": true,
-  "nameEn": "exact product name in English",
+  "nameEn": "EXACT brand + product name as printed (e.g. 'Stonyfield Organic Whole Milk Vanilla Yogurt')",
   "nameZh": "中文名称",
-  "brand": "brand name if visible, otherwise null",
-  "barcode": "barcode digits if clearly visible, otherwise null",
+  "brand": "brand name exactly as printed",
+  "barcode": "all digits if barcode visible",
   "confidence": 0.95,
   "alternatives": [
-    {"nameEn": "alternative name 1", "nameZh": "备选名称1"},
-    {"nameEn": "alternative name 2", "nameZh": "备选名称2"}
+    {"nameEn": "slightly different name variation", "nameZh": "备选1"},
+    {"nameEn": "generic category name", "nameZh": "备选2"}
   ]
 }
 
-Be as specific as possible with product names (e.g. "Lay's Classic Potato Chips" not just "chips").`,
+If not food: {"isFood": false, "nameEn": "", "nameZh": "", "confidence": 0, "alternatives": []}`,
           },
         ],
       },
@@ -116,7 +119,7 @@ export async function generateProductNutrition(nameEn: string, nameZh: string): 
 
   try {
     const res = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4o',
       messages: [{
         role: 'user',
         content: `Estimate nutritional content per 100g for: ${nameEn} ${nameZh}
@@ -167,7 +170,7 @@ export async function generateProductNutrition(nameEn: string, nameZh: string): 
         return { nutrientId, value, unit, dailyValue };
       })
       .filter((n: NutrientInfo | null): n is NutrientInfo => n !== null);
-      //.filter((n): n is { nutrientId: number; value: number; unit: string; dailyValue: number } => n !== null);
+    //.filter((n): n is { nutrientId: number; value: number; unit: string; dailyValue: number } => n !== null);
 
     const allergens = Array.isArray(j.allergens) ? j.allergens.map((a: unknown) => String(a).toLowerCase()) : [];
     const novaScore = typeof j.nova_score === 'number' ? j.nova_score : null;
