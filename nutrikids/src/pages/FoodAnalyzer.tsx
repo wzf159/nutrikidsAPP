@@ -307,6 +307,12 @@ export default function FoodAnalyzer() {
     setSelectedGoal(null);
     setSelectedNutrient(null);
     setSelectedWatch(null);
+    setResult(null);
+
+    // 非photo来源时清空图片
+    if (source !== 'photo') {
+      setCapturedPhotoUrl(null);
+    }
 
     try {
       const r = await analyzeProduct(activeChildId, productId, source);
