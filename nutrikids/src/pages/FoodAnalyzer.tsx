@@ -866,7 +866,38 @@ export default function FoodAnalyzer() {
                       </div>
                     )}
 
-                    
+                    {/* Summary Panel */}
+                    {isPositive ? (
+                      <div className="rounded-[12px] border-[1.5px] p-3" style={{ background: levelMeta.bg, borderColor: `${levelMeta.color}44` }}>
+                        <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5" style={{ color: levelMeta.color }}>
+                          {isZh ? '✨ 营养益处摘要' : '✨ Summary of Benefits'}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {view.goals.filter(g => g.tier).map(g => (
+                            <span key={g.id} className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-white/70 border"
+                              style={{ color: TIER_COLOR[g.tier!], borderColor: `${TIER_COLOR[g.tier!]}44` }}>
+                              {g.icon} {isZh ? g.labelZh ?? g.label : g.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-[12px] border-[1.5px] p-3" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.25)' }}>
+                        <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5 text-red-600">
+                          {isZh ? '⚠️ 需要注意的问题' : '⚠️ Summary of Concerns'}
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          {view.watch.filter(w => w.present).map(w => (
+                            <div key={w.code} className="flex items-center gap-1.5">
+                              <span className="text-[14px]">{w.icon}</span>
+                              <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                {isZh ? w.nameZh : w.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <span
                       onClick={() => navigate('/about', { state: { tab: 'sources' } })}
