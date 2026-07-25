@@ -24,6 +24,11 @@ async function main() {
     { id: 14, name: 'Potassium', nameZh: '钾', icon: '🍌', unit: 'mg' },
     { id: 15, name: 'Sugars', nameZh: '糖', icon: '🍬', unit: 'g' },
     { id: 16, name: 'Energy', nameZh: '能量', icon: '🔥', unit: 'kcal' },
+    { id: 17, name: 'Saturated Fat', nameZh: '饱和脂肪', icon: '🥩', unit: 'g' },
+    { id: 18, name: 'Sodium', nameZh: '钠', icon: '🧂', unit: 'mg' },
+    { id: 19, name: 'Fat', nameZh: '脂肪', icon: '🫙', unit: 'g' },
+    { id: 20, name: 'Fiber', nameZh: '膳食纤维', icon: '🌿', unit: 'g' },
+    { id: 21, name: 'Carbohydrates', nameZh: '碳水化合物', icon: '🌾', unit: 'g' },
     { id: 22, name: 'Fiber', nameZh: '膳食纤维', icon: '🌿', unit: 'g' },
     { id: 23, name: 'Magnesium', nameZh: '镁', icon: '💊', unit: 'mg' },
   ];
@@ -46,14 +51,14 @@ async function main() {
 
   // ---------- 字典：发育目标 ----------
   const goals = [
-    { id: 1, icon: '🧠', label: 'Brain Development',  labelZh: '大脑发育'  },
-    { id: 2, icon: '🦴', label: 'Bone Development',   labelZh: '骨骼发育'  },
-    { id: 3, icon: '❤️', label: 'Heart Development',       labelZh: '心脏发育'  },
-    { id: 4, icon: '💪', label: 'Muscle Development', labelZh: '肌肉发育'  },
-    { id: 5, icon: '🛡️', label: 'Immune Development', labelZh: '免疫发育'  },
-    { id: 6, icon: '🦠', label: 'Gut Development',    labelZh: '肠道发育'  },
-    { id: 7, icon: '👀', label: 'Visual Development', labelZh: '视力发育'  },
-    { id: 8, icon: '🦷', label: 'Dental Development', labelZh: '牙齿发育'  },
+    { id: 1, icon: '🧠', label: 'Brain Development', labelZh: '大脑发育' },
+    { id: 2, icon: '🦴', label: 'Bone Development', labelZh: '骨骼发育' },
+    { id: 3, icon: '❤️', label: 'Heart Development', labelZh: '心脏发育' },
+    { id: 4, icon: '💪', label: 'Muscle Development', labelZh: '肌肉发育' },
+    { id: 5, icon: '🛡️', label: 'Immune Development', labelZh: '免疫发育' },
+    { id: 6, icon: '🦠', label: 'Gut Development', labelZh: '肠道发育' },
+    { id: 7, icon: '👀', label: 'Visual Development', labelZh: '视力发育' },
+    { id: 8, icon: '🦷', label: 'Dental Development', labelZh: '牙齿发育' },
   ];
   for (const g of goals) await prisma.developmentGoal.upsert({ where: { id: g.id }, create: g, update: g });
 
