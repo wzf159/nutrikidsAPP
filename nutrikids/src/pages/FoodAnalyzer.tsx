@@ -951,7 +951,7 @@ export default function FoodAnalyzer() {
                       onClick={() => navigate('/about', { state: { tab: 'sources' } })}
                       className="mt-2 text-[10px] font-semibold text-gray-400 flex items-center gap-1 cursor-pointer hover:text-[#893ce3] transition-colors"
                     >
-                      👆 {isZh ? '查看计算方法' : 'Report a review'}
+                      👆 {isZh ? '查看计算方法' : 'View calculation details'}
                     </span>
 
                   </div>

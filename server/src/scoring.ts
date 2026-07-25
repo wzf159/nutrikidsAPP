@@ -95,6 +95,7 @@ export async function scoreFood(input: ScoreInput) {
   if (!child) throw Object.assign(new Error('孩子不存在'), { statusCode: 404 });
 
   const prodNutr = product.nutrients;
+  console.log('additivesJson:', product.additivesJson); 
   const sugarDV = prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0;
   const sugarG = prodNutr.find((n: { nutrientId: number; value: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? 0;
 
@@ -445,12 +446,17 @@ export async function scoreFood(input: ScoreInput) {
       nutrients: viewNutrients,
       flows,
       watch,
-      additiveTags: product.additives.map(a => ({
-        code: a.additive.name,
-        name: a.additive.name,
-        nameZh: a.additive.nameZh ?? a.additive.name,
-        type: a.additive.type ?? 'unknown',
-      })),
+      additiveTags: (() => {
+        try {
+          const tags: string[] = product.additivesJson ? JSON.parse(product.additivesJson) : [];
+          return tags.map(tag => {
+            const code = tag.replace('en:', '').toUpperCase();
+            return { code, name: code, nameZh: code, type: 'additive' };
+          });
+        } catch {
+          return [];
+        }
+      })(),
     },
   };
 }
