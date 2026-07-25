@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import { ADDITIVE_DICT, RISK_COLOR, WATCH_ADDITIVE_TYPES } from '../data/additives';
 import {
   analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,
   type AnalysisResult, type ProductMatch, type Recognition,
@@ -1248,26 +1249,32 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {selectedWatchData?.present && (
-                    <div className="rounded-2xl bg-orange-50/70 border border-orange-200 px-4 py-3 mb-4 text-sm text-gray-700 animate-fade-in-up">
-                      <p className="font-bold text-orange-700 mb-1">{selectedWatchData.icon} {isZh ? selectedWatchData.nameZh : selectedWatchData.name}</p>
-                      <p>{isZh ? selectedWatchData.detailZh : selectedWatchData.detail}</p>
-                    </div>
-                  )}
-                  {view.additiveTags.filter(a => a.type !== 'beneficial').length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <p className="text-[11px] font-extrabold text-[#5b21b6] uppercase tracking-wide mb-2">
-                        {isZh ? '检测到的添加剂' : 'Detected Additives'}
-                      </p>
-                      <div className="flex flex-col gap-1.5">
-                        {view.additiveTags.filter(a => a.type !== 'beneficial').map(a => (
-                          <div key={a.code} className="flex items-center justify-between text-[11px]">
-                            <span className="font-semibold text-gray-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                              {isZh ? a.nameZh : a.name}
-                            </span>
-                            <span className="text-[10px] text-gray-400">{a.type}</span>
+                    <div className="rounded-2xl bg-orange-50/70 border border-orange-200 px-4 py-3 mb-4 animate-fade-in-up">
+                      <p className="font-bold text-orange-700 mb-1 text-sm">{selectedWatchData.icon} {isZh ? selectedWatchData.nameZh : selectedWatchData.name}</p>
+                      <p className="text-sm text-gray-700 mb-2">{isZh ? selectedWatchData.detailZh : selectedWatchData.detail}</p>
+
+                      {/* 对应的具体添加剂 */}
+                      {view.additiveTags.filter(a => {
+                        const info = ADDITIVE_DICT[a.code];
+                        return info && WATCH_ADDITIVE_TYPES[selectedWatchData.code]?.includes(info.type);
+                      }).map(a => {
+                        const info = ADDITIVE_DICT[a.code]!;
+                        const risk = RISK_COLOR[info.risk];
+                        return (
+                          <div key={a.code} className="mt-2 rounded-lg p-2.5 border" style={{ background: risk.bg, borderColor: risk.border }}>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-[11px] font-extrabold" style={{ color: risk.text }}>{a.code}</span>
+                              <span className="text-[12px] font-bold text-gray-800">{isZh ? info.nameZh : info.name}</span>
+                              <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: risk.border, color: risk.text }}>
+                                {isZh ? risk.labelZh : risk.label}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                              {isZh ? info.descZh : info.desc}
+                            </p>
                           </div>
-                        ))}
-                      </div>
+                        );
+                      })}
                     </div>
                   )}
                   {nova && (
