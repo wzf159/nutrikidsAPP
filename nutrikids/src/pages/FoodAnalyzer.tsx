@@ -702,7 +702,6 @@ export default function FoodAnalyzer() {
                   </p>
                 </div>
               </div>
-
             </div>
 
             <p className="text-sm text-gray-600 mb-4">
@@ -719,8 +718,7 @@ export default function FoodAnalyzer() {
                     : 'border-gray-200 bg-gray-50/50 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                 >
-                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${idx === 0 ? 'bg-purple-100' : 'bg-gray-100'
-                    }`}>
+                  <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-xl ${idx === 0 ? 'bg-purple-100' : 'bg-gray-100'}`}>
                     {m.imageUrl ? <img src={m.imageUrl} alt="" className="w-full h-full object-cover rounded-lg" /> : '🍽️'}
                   </div>
                   <div className="flex-1 text-left">
@@ -736,9 +734,18 @@ export default function FoodAnalyzer() {
               ))}
             </div>
 
+            {/* 条形码纠正 */}
+            <button
+              onClick={() => setShowScan(true)}
+              className="mt-3 w-full py-3 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.2)] text-sm font-bold text-[#893ce3] flex items-center justify-center gap-2 hover:bg-purple-50 transition"
+              style={{ fontFamily: 'Nunito, sans-serif' }}
+            >
+              📊 {isZh ? '识别结果不对？扫条形码纠正' : isEs ? '¿No es correcto? Escanea el código de barras' : 'Not right? Scan barcode to correct'}
+            </button>
+
             <button
               onClick={() => setPhase({ name: 'idle' })}
-              className="mt-4 w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
+              className="mt-2 w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
             >
               {isZh ? '取消，重新识别' : isEs ? 'Cancelar, reconoce de nuevo' : 'Cancel, recognize again'}
             </button>
@@ -1345,5 +1352,5 @@ export default function FoodAnalyzer() {
       {showScan && <BarcodeScanModal isZh={isZh} onClose={() => setShowScan(false)} onCode={handleBarcode} />}
     </div>
   );
-   
+
 }
