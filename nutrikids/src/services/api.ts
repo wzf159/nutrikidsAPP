@@ -214,3 +214,12 @@ export async function fetchFoodFact() {
   const res = await fetch('/mock/foodfact.json');
   return res.json();
 }
+
+export async function createProductByNameEn(nameEn: string, nameZh: string, brand: string): Promise<{ id: number }> {
+  const res = await authedFetch('/products/create-by-ai', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nameEn, nameZh, brand }),
+  });
+  return asJson<{ id: number }>(res);
+}

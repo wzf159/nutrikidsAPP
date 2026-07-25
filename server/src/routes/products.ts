@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { prisma } from '../prisma.js';
-import { findProduct } from '../productFinder.js';
+import { findProduct,createProductByAI } from '../productFinder.js';
 
 export default async function productRoutes(app: FastifyInstance) {
   app.get('/products/search', async (req, reply) => {
@@ -66,5 +66,19 @@ export default async function productRoutes(app: FastifyInstance) {
       }
     }
     return product;
+  });
+  
+  // 通过 AI 创建产品
+  app.post('/products/create-by-ai', async (req, reply) => {
+    const { nameEn, nameZh, brand } = req.body as { nameEn: string; nameZh?: string; brand?: string };
+    if (!nameEn) return reply.code(400).send({ error: 'nameEn required' });
+    
+    const result = await findProduct({ names: [nameEn, nameZh ?? ''].filter(Boolean) });
+    if (result) return { id: result.product.id };
+  
+    const product = await createProductByAI(nameEn, nameZh ?? '', brand ?? null);
+    if (!product) return reply.code(500).send({ error: 'Failed to create product' });
+    
+    return { id: product.id };
   });
 }

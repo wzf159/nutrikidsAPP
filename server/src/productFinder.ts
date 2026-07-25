@@ -136,7 +136,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
   }
 }
 
-async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResult['product'] | null> {
+export async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResult['product'] | null> {
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`,

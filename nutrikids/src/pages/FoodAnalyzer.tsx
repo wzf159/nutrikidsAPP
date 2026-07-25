@@ -5,7 +5,7 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { ADDITIVE_DICT, RISK_COLOR, WATCH_ADDITIVE_TYPES } from '../data/additives';
 import {
-  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,
+  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,createProductByNameEn ,
   type AnalysisResult, type ProductMatch, type Recognition,
 } from '../services/api';
 import { flushSync } from 'react-dom';
@@ -347,8 +347,12 @@ export default function FoodAnalyzer() {
     } else {
       setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
       try {
-        const summary = await getAISummary(recognition.nameEn, childIdRef.current as string);
-        setPhase({ name: 'ai-result', productName: recognition.nameZh ?? recognition.nameEn, summary });
+        const p = await createProductByNameEn(
+          recognition.nameEn,
+          recognition.nameZh ?? '',
+          recognition.brand ?? ''
+        );
+        await runAnalysis(p.id, 'photo');
       } catch (e) {
         setPhase({ name: 'error', msg: (e as Error).message });
       }
@@ -749,8 +753,12 @@ export default function FoodAnalyzer() {
                 if (phase.name !== 'confirm') return;
                 setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
                 try {
-                  const summary = await getAISummary(phase.recognition.nameEn, childIdRef.current as string);
-                  setPhase({ name: 'ai-result', productName: phase.recognition.nameZh ?? phase.recognition.nameEn, summary });
+                  const p = await createProductByNameEn(
+                    phase.recognition.nameEn,
+                    phase.recognition.nameZh ?? '',
+                    phase.recognition.brand ?? ''
+                  );
+                  await runAnalysis(p.id, 'photo');
                 } catch (e) {
                   setPhase({ name: 'error', msg: (e as Error).message });
                 }
