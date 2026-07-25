@@ -68,4 +68,5 @@ export const WATCH_ADDITIVE_TYPES: Record<string, string[]> = {
   preservatives: ['Preservative'],
   flavors:       ['Flavor Enhancer'],
   hfcs:          ['Sweetener'],
+  sodium:        ['Acidity Regulator'], 
 };
