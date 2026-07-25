@@ -337,7 +337,12 @@ export async function scoreFood(input: ScoreInput) {
   const hasIng = (re: RegExp) => ingNames.some((n: string) => re.test(n));
   const addNames = product.additives.map((a: { additive: { name: string; nameZh: string | null; type: string | null } }) => `${a.additive.name} ${a.additive.nameZh ?? ''} ${a.additive.type ?? ''}`.toLowerCase());
   const hasAdd = (re: RegExp) => addNames.some((n: string) => re.test(n));
-
+  const rawAdditives: string[] = (() => {
+    try { return product.additivesJson ? JSON.parse(product.additivesJson) : []; }
+    catch { return []; }
+  })();
+  const hasRawAdditive = (codes: string[]) => 
+    codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
   const watch = [
     // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
     {
@@ -356,12 +361,14 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
     },
     {
-      code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', present: hasAdd(/color|色素/) || hasIng(/color|色素/),
+      code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', 
+      present: hasAdd(/color|色素/) || hasIng(/color|色素/) || hasRawAdditive(['e102','e110','e122','e124','e129','e133','e150d','e151','e160']),
       detail: 'Contains artificial colors. Some are linked to hyperactivity in sensitive children.',
       detailZh: '含人工色素，部分色素与敏感儿童多动相关。'
     },
     {
-      code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/),
+      code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', 
+      present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/) || hasRawAdditive(['e200','e202','e210','e211','e212','e213','e220','e249','e250','e251','e252']),
       detail: 'Contains preservatives.', detailZh: '含防腐剂。'
     },
     {
