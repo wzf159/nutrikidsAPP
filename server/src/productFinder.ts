@@ -87,7 +87,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
     };
     if (data.status !== 1 || !data.product?.product_name) return null;
     const p = data.product;
-
+    console.log('OFF barcode result:', barcode, '-> name:', p.product_name, '| nameZh:', p.product_name_zh);
     let brandId: number | undefined;
     const brandName = p.brands?.split(',')[0]?.trim();
     if (brandName) {
