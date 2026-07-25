@@ -495,6 +495,7 @@ export default function FoodAnalyzer() {
     important: view.goals.filter(g => g.tier === 'important').length,
     supporting: view.goals.filter(g => g.tier === 'supporting').length,
   } : null;
+
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
@@ -513,7 +514,7 @@ export default function FoodAnalyzer() {
   const levelMeta = LEVEL_META[levelNum];
   const isPositive = levelNum >= 3;
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
-
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
@@ -554,18 +555,12 @@ export default function FoodAnalyzer() {
               placeholder={isZh ? '搜索食品名称，或拖入图片…' : isEs ? 'Busca alimentos, o arrastra una imagen…' : 'Search a food, or drop an image…'}
               className="flex-1 min-w-40 bg-transparent outline-none text-[#0f0f1a] text-[16px] placeholder-gray-400 font-[Nunito,sans-serif]"
             />
-            <button onClick={() => cameraInputRef.current?.click()} className="px-4 py-2 rounded-full bg-white/90 border border-[rgba(100,120,160,0.15)] text-sm font-bold text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.06)] transition whitespace-nowrap" style={{ fontFamily: 'Nunito, sans-serif' }}>
-              📷 {isZh ? '拍照识别' : isEs ? 'Tomar Foto' : 'Snap Photo'}
-            </button>
             <button
-              onClick={() => setShowScan(true)}
-              onDragOver={(e) => { e.preventDefault(); }}
-              onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files?.[0]; if (file && file.type.startsWith('image/')) decodeBarcodeFromFile(file); }}
-              className="px-4 py-2 rounded-full bg-white/90 border border-[rgba(100,120,160,0.15)] text-sm font-bold text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.06)] transition whitespace-nowrap"
+              onClick={() => setShowPhotoMenu(true)}
+              className="px-4 py-2 rounded-full bg-white/90 border border-[rgba(100,120,160,0.15)] text-sm font-bold text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.06)] transition"
               style={{ fontFamily: 'Nunito, sans-serif' }}
-              title={isZh ? '点击扫描或拖拽条形码图片到此处' : isEs ? 'Haga clic para escanear o arrastre una imagen de código de barras aquí' : 'Click to scan or drag barcode image here'}
             >
-              📊 {isZh ? '扫条形码' : isEs ? 'Escanear Código' : 'Scan Barcode'}
+              📷 {isZh ? '添加食品' : 'Add Food'}
             </button>
             <button onClick={() => {
               if (query.trim() && suggestions.length > 0) {
@@ -647,39 +642,38 @@ export default function FoodAnalyzer() {
               )}
             </div>
 
-            {/* 第二行：三个按钮三等分 */}
+            {/* 第二行：两个按钮 */}
             <div className="bg-white/52 backdrop-blur-xl saturate-180 rounded-full px-2 py-2 flex items-center gap-1.5" style={{ border: '1px solid rgba(255,255,255,0.8)' }}>
-              <button onClick={() => cameraInputRef.current?.click()} className="flex-1 min-w-0 px-2 py-2 rounded-full bg-white/90 border border-[rgba(100,120,160,0.15)] text-xs font-bold text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.06)] transition truncate" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                📷 {isZh ? '拍照' : isEs ? 'Foto' : 'Snap'}
-              </button>
               <button
-                onClick={() => setShowScan(true)}
+                onClick={() => setShowPhotoMenu(true)}
                 className="flex-1 min-w-0 px-2 py-2 rounded-full bg-white/90 border border-[rgba(100,120,160,0.15)] text-xs font-bold text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.06)] transition truncate"
                 style={{ fontFamily: 'Nunito, sans-serif' }}
               >
-                📊 {isZh ? '条码' : isEs ? 'Código' : 'Scan'}
+                📷 {isZh ? '添加食品' : isEs ? 'Añadir' : 'Add Food'}
               </button>
-              <button onClick={() => {
-                if (query.trim() && suggestions.length > 0) {
-                  setQuery('');
-                  setSuggestions([]);
-                  runAnalysis(suggestions[0].id, 'search');
-                } else if (query.trim()) {
-                  searchProducts(query).then(matches => {
-                    if (matches.length > 0) {
-                      setQuery('');
-                      setSuggestions([]);
-                      runAnalysis(matches[0].id, 'search');
-                    } else {
-                      setPhase({ name: 'error', msg: isZh ? '未找到匹配的食品' : isEs ? 'No se encontraron alimentos coincidentes' : 'No matching foods found' });
-                    }
-                  }).catch(() => {
-                    setPhase({ name: 'error', msg: isZh ? '搜索失败，请重试' : isEs ? 'Error en la búsqueda, intenta de nuevo' : 'Search failed, please try again' });
-                  });
-                } else {
-                  uploadInputRef.current?.click();
-                }
-              }} className="flex-1 min-w-0 px-2 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-xs font-bold shadow-[0_2px_12px_rgba(236,72,153,0.3)] hover:scale-[1.04] transition truncate" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              <button
+                onClick={() => {
+                  if (query.trim() && suggestions.length > 0) {
+                    setQuery('');
+                    setSuggestions([]);
+                    runAnalysis(suggestions[0].id, 'search');
+                  } else if (query.trim()) {
+                    searchProducts(query).then(matches => {
+                      if (matches.length > 0) {
+                        setQuery('');
+                        setSuggestions([]);
+                        runAnalysis(matches[0].id, 'search');
+                      } else {
+                        setPhase({ name: 'error', msg: isZh ? '未找到匹配的食品' : isEs ? 'No se encontraron alimentos coincidentes' : 'No matching foods found' });
+                      }
+                    }).catch(() => {
+                      setPhase({ name: 'error', msg: isZh ? '搜索失败，请重试' : isEs ? 'Error en la búsqueda, intenta de nuevo' : 'Search failed, please try again' });
+                    });
+                  }
+                }}
+                className="flex-1 min-w-0 px-2 py-2 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-xs font-bold shadow-[0_2px_12px_rgba(236,72,153,0.3)] hover:scale-[1.04] transition truncate"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
                 🔮 {isZh ? '分析' : isEs ? 'Analizar' : 'Analyze'}
               </button>
             </div>
@@ -1297,8 +1291,70 @@ export default function FoodAnalyzer() {
           </>
         )}
       </div>
+      {showPhotoMenu && (
+        <div
+          className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center"
+          onClick={() => setShowPhotoMenu(false)}
+        >
+          <div
+            className="bg-white w-full max-w-lg rounded-t-[24px] p-6 pb-10"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
+            <h3 className="text-[16px] font-extrabold text-[#1a1040] mb-5" style={{ fontFamily: 'Poppins, sans-serif' }}>
+              {isZh ? '添加食品' : 'Add Food'}
+            </h3>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => { setShowPhotoMenu(false); cameraInputRef.current?.click(); }}
+                className="flex items-center gap-4 p-4 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.15)] hover:bg-purple-50 transition text-left"
+              >
+                <span className="text-3xl">📷</span>
+                <div>
+                  <p className="text-[14px] font-bold text-[#1a1040]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '拍照识别' : 'Take Photo'}
+                  </p>
+                  <p className="text-[12px] text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '拍摄包装正面，AI 自动识别并提取条形码' : 'Snap the front of the package — AI will identify it'}
+                  </p>
+                </div>
+              </button>
 
+              <button
+                onClick={() => { setShowPhotoMenu(false); setShowScan(true); }}
+                className="flex items-center gap-4 p-4 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.15)] hover:bg-purple-50 transition text-left"
+              >
+                <span className="text-3xl">📊</span>
+                <div>
+                  <p className="text-[14px] font-bold text-[#1a1040]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '扫条形码' : 'Scan Barcode'}
+                  </p>
+                  <p className="text-[12px] text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '对准条形码，即时查询数据库' : 'Point at the barcode for instant lookup'}
+                  </p>
+                </div>
+              </button>
+
+              <button
+                onClick={() => { setShowPhotoMenu(false); uploadInputRef.current?.click(); }}
+                className="flex items-center gap-4 p-4 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.15)] hover:bg-purple-50 transition text-left"
+              >
+                <span className="text-3xl">🖼️</span>
+                <div>
+                  <p className="text-[14px] font-bold text-[#1a1040]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '从相册选择' : 'Upload from Library'}
+                  </p>
+                  <p className="text-[12px] text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '从手机相册选择已有照片' : 'Choose an existing photo from your library'}
+                  </p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {showScan && <BarcodeScanModal isZh={isZh} onClose={() => setShowScan(false)} onCode={handleBarcode} />}
     </div>
   );
+   
 }
