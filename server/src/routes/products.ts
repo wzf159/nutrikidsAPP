@@ -7,6 +7,14 @@ export default async function productRoutes(app: FastifyInstance) {
     const { q } = req.query as { q?: string };
     if (!q) return [];
 
+    // 纯数字 → 优先当条形码查（走 OFF 真实数据）
+    if (/^\d{6,14}$/.test(q.trim())) {
+      const result = await findProduct({ barcode: q.trim() });
+      if (result) return [result.product];
+      return [];
+    }
+
+    // 先查本地数据库
     const localResults = await prisma.product.findMany({
       where: {
         OR: [
@@ -22,11 +30,9 @@ export default async function productRoutes(app: FastifyInstance) {
       return localResults;
     }
 
+    // 本地没有 → 走名字搜索
     const result = await findProduct({ names: [q] });
-
-    if (result) {
-      return [result.product];
-    }
+    if (result) return [result.product];
 
     return [];
   });
