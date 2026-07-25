@@ -9,7 +9,7 @@ import {
   type AnalysisResult, type ProductMatch, type Recognition,
 } from '../services/api';
 import { flushSync } from 'react-dom';
-import { getAISummary, type AISummary } from '../services/api';
+import {  type AISummary } from '../services/api';
 /* ------------------------------------------------------------------ */
 /* 常量与小工具                                                        */
 /* ------------------------------------------------------------------ */
