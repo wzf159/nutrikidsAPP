@@ -746,7 +746,7 @@ export default function FoodAnalyzer() {
             {/* AI 兜底 */}
             <button
               onClick={async () => {
-                if (phase.name !== 'confirm') return; 
+                if (phase.name !== 'confirm') return;
                 setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
                 try {
                   const summary = await getAISummary(phase.recognition.nameEn, childIdRef.current as string);
@@ -862,15 +862,11 @@ export default function FoodAnalyzer() {
                             <h3 className="text-[18px] font-extrabold text-[#1a1a3a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
                               {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
                             </h3>
-                            {!view.product.verified && (
-                              <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2 mb-2 flex items-center gap-2">
-                                <span>{view.product.isAiGenerated ? '🤖' : '🌐'}</span>
-                                <p className="text-[12px] font-semibold text-amber-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  {view.product.isAiGenerated
-                                    ? (isZh ? 'NutriKids 数据库中暂无此产品，以下分析由 AI 生成，仅供参考。' : "This product isn't in the NutriKids database. Analysis is AI-generated and for general guidance only.")
-                                    : (isZh ? '数据来源：OpenFoodFacts 社区数据库，营养信息仅供参考。' : 'Data sourced from OpenFoodFacts community database. Nutritional info is for reference only.')}
-                                </p>
-                              </div>
+                            {/* AI 生成时只显示小标注，不强调 */}
+                            {!view.product.verified && view.product.isAiGenerated && (
+                              <p className="text-[10px] text-gray-400 mt-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                🤖 {isZh ? 'AI 估算数据，仅供参考' : 'AI-estimated data, for reference only'}
+                              </p>
                             )}
                             <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
                               {isZh ? levelMeta.summaryZh : isEs ? levelMeta.summaryEs : levelMeta.summary}
