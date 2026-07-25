@@ -435,6 +435,7 @@ export async function scoreFood(input: ScoreInput) {
         novaScore: product.novaScore,
         servingSize: product.servingSize,
         verified: product.verified, 
+        isAiGenerated: !product.verified && !product.barcode, 
    
       },
       child: { id: child.id, name: child.name, age: child.age },

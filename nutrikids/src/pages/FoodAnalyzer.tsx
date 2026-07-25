@@ -846,12 +846,12 @@ export default function FoodAnalyzer() {
                               {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
                             </h3>
                             {!view.product.verified && (
-                              <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2 mb-4 flex items-center gap-2">
-                                <span>🤖</span>
+                              <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2 mb-2 flex items-center gap-2">
+                                <span>{view.product.isAiGenerated ? '🤖' : '🌐'}</span>
                                 <p className="text-[12px] font-semibold text-amber-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  {isZh
-                                    ? 'NutriKids 数据库中暂无此产品，以下分析由 AI 生成，仅供参考。'
-                                    : "This product isn't in the NutriKids database. Analysis is AI-generated and for general guidance only."}
+                                  {view.product.isAiGenerated
+                                    ? (isZh ? 'NutriKids 数据库中暂无此产品，以下分析由 AI 生成，仅供参考。' : "This product isn't in the NutriKids database. Analysis is AI-generated and for general guidance only.")
+                                    : (isZh ? '数据来源：OpenFoodFacts 社区数据库，营养信息仅供参考。' : 'Data sourced from OpenFoodFacts community database. Nutritional info is for reference only.')}
                                 </p>
                               </div>
                             )}
@@ -872,10 +872,31 @@ export default function FoodAnalyzer() {
                             </p>
                           )
                         ) : (
-                          <p className="text-[12px] font-semibold text-orange-600 mb-3" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                            ⚠️ {presentWatch.length} {isZh ? '项值得注意的成分' : 'ingredients worth noting'}
-                            {nova ? ` · NOVA ${view.product.novaScore} ${isZh ? nova.zh : nova.en}` : ''}
-                          </p>
+                          <div className="rounded-[12px] border-[1.5px] p-3 mb-3" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.25)' }}>
+                            <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5 text-red-600">
+                              {isZh ? '⚠️ 需要注意的问题' : '⚠️ Summary of Concerns'}
+                            </p>
+                            <div className="flex flex-col gap-1">
+                              {presentWatch.length > 0 ? presentWatch.map(w => (
+                                <div key={w.code} className="flex items-center gap-1.5">
+                                  <span className="text-[14px]">{w.icon}</span>
+                                  <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                    {isZh ? w.nameZh : w.name}
+                                  </span>
+                                </div>
+                              )) : (
+                                <p className="text-[11px] text-gray-400">{isZh ? '暂无具体成分警告' : 'No specific ingredient warnings'}</p>
+                              )}
+                              {nova && (
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span className="text-[14px]">🧀</span>
+                                  <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                    NOVA {view.product.novaScore} · {isZh ? nova.zh : nova.en}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         )}
                       </div>
                     </div>
