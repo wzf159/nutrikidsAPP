@@ -356,13 +356,16 @@ export async function scoreFood(input: ScoreInput) {
         : `每份含约${sugarG}克糖，约占每日上限(${sugarLimit}克)的${Math.round((sugarG / sugarLimit) * 100)}%。`
     },
     {
-      code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精', present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/),
+      code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
+      present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/) ||
+               hasRawAdditive(['e620','e621','e622','e623','e624','e625','e635']),
       detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
     },
     {
       code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', 
-      present: hasAdd(/color|色素/) || hasIng(/color|色素/) || hasRawAdditive(['e102','e110','e122','e124','e129','e133','e150d','e151','e160']),
+      present: hasAdd(/color|色素/) || hasIng(/color|色素/) || 
+         hasRawAdditive(['e102','e110','e122','e124','e129','e133','e150a','e150b','e150c','e150d','e151','e160']),
       detail: 'Contains artificial colors. Some are linked to hyperactivity in sensitive children.',
       detailZh: '含人工色素，部分色素与敏感儿童多动相关。'
     },
@@ -373,7 +376,8 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
+      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold
+        || hasRawAdditive(['e338', 'e339', 'e340', 'e341']),  // 磷酸及磷酸盐
       detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium — daily limit for this age is ${sodiumLimit}mg.`,
       detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，该年龄段每日上限为${sodiumLimit}mg。`
     },
@@ -385,8 +389,10 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g饱和脂肪。`
     },
     {
-      code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪', present: hasIng(/hydrogenated|氢化/),
-      detail: 'Contains hydrogenated oils.', detailZh: '含氢化油脂。'
+      code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
+      present: hasIng(/hydrogenated|氢化/) || hasRawAdditive(['e471','e472']),
+      detail: 'Contains hydrogenated oils.',
+      detailZh: '含氢化油脂。'
     },
     {
       code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
