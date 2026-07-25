@@ -415,18 +415,7 @@ export default function FoodAnalyzer() {
     }
   }, [isZh, isEs]);
 
-  async function decodeBarcodeFromFile(file: File) {
-    setPhase({ name: 'busy', msg: isZh ? '正在从图片识别条形码…' : isEs ? 'Reconociendo código de barras de la imagen…' : 'Recognizing barcode from image…' });
-    try {
-      const reader = new BrowserMultiFormatReader();
-      const imageUrl = URL.createObjectURL(file);
-      const result = await reader.decodeFromImageUrl(imageUrl);
-      URL.revokeObjectURL(imageUrl);
-      await handleBarcode(result.getText());
-    } catch (e) {
-      setPhase({ name: 'error', msg: isZh ? '无法从图片识别条形码，请确保图片清晰并包含完整的条形码' : isEs ? 'No se pudo reconocer el código de barras de la imagen, asegúrese de que la imagen sea clara y contenga el código de barras completo' : 'Could not recognize barcode from image, please ensure the image is clear and contains a complete barcode' });
-    }
-  }
+
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
