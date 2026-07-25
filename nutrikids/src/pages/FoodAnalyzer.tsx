@@ -743,7 +743,23 @@ export default function FoodAnalyzer() {
             >
               📊 {isZh ? '识别结果不对？扫条形码纠正' : isEs ? '¿No es correcto? Escanea el código de barras' : 'Not right? Scan barcode to correct'}
             </button>
-
+            {/* AI 兜底 */}
+            <button
+              onClick={async () => {
+                if (phase.name !== 'confirm') return; 
+                setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
+                try {
+                  const summary = await getAISummary(phase.recognition.nameEn, childIdRef.current as string);
+                  setPhase({ name: 'ai-result', productName: phase.recognition.nameZh ?? phase.recognition.nameEn, summary });
+                } catch (e) {
+                  setPhase({ name: 'error', msg: (e as Error).message });
+                }
+              }}
+              className="w-full py-3 mb-2 text-sm font-semibold text-gray-500 hover:text-[#893ce3] transition"
+              style={{ fontFamily: 'Nunito, sans-serif' }}
+            >
+              🤖 {isZh ? '不是这个？用 AI 直接分析' : isEs ? '¿No es esto? Analizar con IA' : "None of these? Analyze with AI"}
+            </button>
             <button
               onClick={() => setPhase({ name: 'idle' })}
               className="mt-2 w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
