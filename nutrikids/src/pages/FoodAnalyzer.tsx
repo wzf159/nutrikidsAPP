@@ -1253,7 +1253,23 @@ export default function FoodAnalyzer() {
                       <p>{isZh ? selectedWatchData.detailZh : selectedWatchData.detail}</p>
                     </div>
                   )}
-
+                  {view.additiveTags.filter(a => a.type !== 'beneficial').length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <p className="text-[11px] font-extrabold text-[#5b21b6] uppercase tracking-wide mb-2">
+                        {isZh ? '检测到的添加剂' : 'Detected Additives'}
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {view.additiveTags.filter(a => a.type !== 'beneficial').map(a => (
+                          <div key={a.code} className="flex items-center justify-between text-[11px]">
+                            <span className="font-semibold text-gray-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                              {isZh ? a.nameZh : a.name}
+                            </span>
+                            <span className="text-[10px] text-gray-400">{a.type}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {nova && (
                     <div className="border-t border-[rgba(200,160,100,0.25)] pt-4 mt-3">
                       <h4 className="font-extrabold text-[#a07040] tracking-wide mb-2">{isZh ? '加工程度' : 'PROCESSING'}</h4>

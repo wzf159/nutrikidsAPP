@@ -54,6 +54,7 @@ export interface AnalysisView {
   nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; unit: string | null; dailyValue: number; level: 'High' | 'Moderate' | 'Low' }[];
   flows: { goalId: number; nutrientId: number; value: number }[];
   watch: { code: string; icon: string; name: string; nameZh: string; present: boolean; detail: string; detailZh: string }[];
+  additiveTags: { code: string; name: string; nameZh: string; type: string }[];  
 }
 
 export interface AnalysisResult {

@@ -274,6 +274,7 @@ model Product {
   waterL         Float?   @map("water_l")
   landM2         Float?   @map("land_m2")
   verified       Boolean  @default(false)
+  additivesJson   String?  @map("additives_json")  
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

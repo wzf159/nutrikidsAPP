@@ -72,7 +72,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
-        '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,quantity,serving_size,nutriments,allergens_tags',
+'?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,quantity,serving_size,nutriments,allergens_tags,additives_tags',
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -83,6 +83,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         image_front_url?: string; nova_group?: number; nutriscore_grade?: string;
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        additives_tags?: string[];
       };
     };
     if (data.status !== 1 || !data.product?.product_name) return null;
@@ -126,6 +127,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         verified: false,
         nutrients: { create: nutrients },
         allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
+        additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });
@@ -148,6 +150,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         image_front_url?: string; nova_group?: number; nutriscore_grade?: string;
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        additives_tags?: string[];
       }>;
     };
     if (!data.products || data.products.length === 0) return null;
@@ -195,6 +198,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         verified: false,
         nutrients: { create: nutrients },
         allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
+        additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });

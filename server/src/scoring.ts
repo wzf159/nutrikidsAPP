@@ -445,6 +445,12 @@ export async function scoreFood(input: ScoreInput) {
       nutrients: viewNutrients,
       flows,
       watch,
+      additiveTags: product.additives.map(a => ({
+        code: a.additive.name,
+        name: a.additive.name,
+        nameZh: a.additive.nameZh ?? a.additive.name,
+        type: a.additive.type ?? 'unknown',
+      })),
     },
   };
 }
