@@ -510,6 +510,14 @@ export default function FoodAnalyzer() {
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
+  const TIER_CONFIG: Record<'core' | 'important' | 'supporting', {
+    color: string; labelZh: string; labelEs: string; label: string;
+  }> = {
+    core:       { color: '#4c1d95', label: 'Core',       labelZh: '核心', labelEs: 'Esencial' },
+    important:  { color: '#a21caf', label: 'Important',  labelZh: '重要', labelEs: 'Importante' },
+    supporting: { color: '#db2777', label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario' },
+  };
+
   const NOVA_ICON: Record<number, string> = {
     1: '🍎',  // 未加工/天然食物
     2: '🧂',  // 加工烹饪食材
