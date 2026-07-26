@@ -349,11 +349,11 @@ export async function scoreFood(input: ScoreInput) {
       code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
       present: sugarG >= sugarThreshold && (product.novaScore ?? 4) >= 2,
       detail: sugarLimit === 0
-        ? `~${sugarG}g sugar per serving — added sugar is not recommended for this age group.`
-        : `~${sugarG}g sugar per serving — about ${Math.round((sugarG / sugarLimit) * 100)}% of daily limit (${sugarLimit}g).`,
+        ? `${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}% DV sugar per serving — added sugar is not recommended for this age group.`
+        : `${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}% of daily sugar limit per serving (limit: ${sugarLimit}g).`,
       detailZh: sugarLimit === 0
-        ? `每份含约${sugarG}克糖，该年龄段不建议摄入添加糖。`
-        : `每份含约${sugarG}克糖，约占每日上限(${sugarLimit}克)的${Math.round((sugarG / sugarLimit) * 100)}%。`
+        ? `每份糖分占每日参考值的${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段不建议摄入添加糖。`
+        : `每份糖分占每日上限的${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}%（上限：${sugarLimit}g）。`,
     },
     {
       code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
@@ -376,11 +376,11 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold
-        || hasRawAdditive(['e338', 'e339', 'e340', 'e341']),  // 磷酸及磷酸盐
-      detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg sodium — daily limit for this age is ${sodiumLimit}mg.`,
-      detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0}mg钠，该年龄段每日上限为${sodiumLimit}mg。`
+      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
+      detail: `${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
+      detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
     },
+    
 
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
