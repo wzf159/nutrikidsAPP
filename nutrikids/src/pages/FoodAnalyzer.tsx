@@ -510,6 +510,13 @@ export default function FoodAnalyzer() {
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
+  const NOVA_ICON: Record<number, string> = {
+    1: '🍎',  // 未加工/天然食物
+    2: '🧂',  // 加工烹饪食材
+    3: '🧀',  // 加工食品
+    4: '🍭',  // 超加工食品
+  };
+
 
   const growthBenefitsRef = useRef<HTMLElement>(null);
   const thingsToWatchRef = useRef<HTMLElement>(null);
@@ -889,42 +896,64 @@ export default function FoodAnalyzer() {
                           </div>
                         </div>
                         {isPositive ? (
+                          /* Level 3-5 绿色框 */
                           topNutrients.length > 0 && (
-                            <p className="text-[12px] font-semibold mb-3" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                              ⭐ <span className="text-[#16a34a] font-bold">{isZh ? '富含' : 'Good source of'}</span>{' '}
-                              {topNutrients.map((n, i) => (
-                                <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
-                                  {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
-                                </span>
-                              ))}
-                            </p>
+                            <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
+                              <span>⭐</span>
+                              <p className="text-[12px] font-semibold text-green-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                <span className="font-bold">{isZh ? '富含 ' : 'Good source of '}</span>
+                                {topNutrients.map((n, i) => (
+                                  <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
+                                    {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
+                                  </span>
+                                ))}
+                              </p>
+                            </div>
                           )
                         ) : (
-                          <div className="rounded-[12px] border-[1.5px] p-3 mb-3" style={{ background: 'rgba(239,68,68,0.05)', borderColor: 'rgba(239,68,68,0.25)' }}>
-                            <p className="text-[11px] font-extrabold uppercase tracking-wide mb-1.5 text-red-600">
-                              {isZh ? '⚠️ 需要注意的问题' : '⚠️ Summary of Concerns'}
-                            </p>
-                            <div className="flex flex-col gap-1">
-                              {presentWatch.length > 0 ? presentWatch.map(w => (
-                                <div key={w.code} className="flex items-center gap-1.5">
-                                  <span className="text-[14px]">{w.icon}</span>
-                                  <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                          <>
+                            {/* 过敏原 */}
+                            {hasAllergen && (
+                              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                                <span className="text-base">🚨</span>
+                                <div>
+                                  <p className="text-[12px] font-extrabold text-red-700">{isZh ? '检测到过敏原' : 'Allergen Detected'}</p>
+                                  <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                    {view.matchedAllergens.map(a => isZh ? a.nameZh ?? a.name : a.name).join(', ')}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 有害添加剂 */}
+                            {view.additiveTags.filter(a => {
+                              const info = ADDITIVE_DICT[a.code];
+                              return info && info.risk === 'high';
+                            }).length > 0 && (
+                                <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                                  <span className="text-base">⚗️</span>
+                                  <div>
+                                    <p className="text-[12px] font-extrabold text-orange-700">{isZh ? '检测到有害添加剂' : 'Harmful Additives Detected'}</p>
+                                    <p className="text-[11px] text-orange-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                      {view.additiveTags.filter(a => ADDITIVE_DICT[a.code]?.risk === 'high').map(a => ADDITIVE_DICT[a.code]?.name ?? a.code).join(', ')}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                            {/* Watch 项 */}
+                            {presentWatch.length > 0 && !hasAllergen && (
+                              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 mb-2 flex items-center gap-2 flex-wrap">
+                                <span className="text-base">⚠️</span>
+                                <span className="text-[12px] font-extrabold text-amber-700">{isZh ? '注意：' : 'Watch:'}</span>
+                                {presentWatch.slice(0, 3).map(w => (
+                                  <span key={w.code} className="text-[11px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
                                     {isZh ? w.nameZh : w.name}
                                   </span>
-                                </div>
-                              )) : (
-                                <p className="text-[11px] text-gray-400">{isZh ? '暂无具体成分警告' : 'No specific ingredient warnings'}</p>
-                              )}
-                              {nova && (
-                                <div className="flex items-center gap-1.5 mt-1">
-                                  <span className="text-[14px]">🧀</span>
-                                  <span className="text-[11px] font-semibold text-red-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                    NOVA {view.product.novaScore} · {isZh ? nova.zh : nova.en}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                     </div>
@@ -956,24 +985,6 @@ export default function FoodAnalyzer() {
                       </div>
                     </div>
 
-                    {/* 过敏原警告 */}
-                    {hasAllergen && (
-                      <div className="rounded-lg bg-red-50 border-l-4 border-red-500 px-3 py-2 mb-2 flex items-start gap-2">
-                        <span className="text-base flex-shrink-0">🚨</span>
-                        <div>
-                          <p className="text-[12px] font-extrabold text-red-700">
-                            {isZh ? '检测到过敏原 · 不适合食用' : 'Allergen Detected · Not Suitable'}
-                          </p>
-                          <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                            {isZh
-                              ? `含有过敏原：${view.matchedAllergens.map(a => a.nameZh ?? a.name).join('、')}`
-                              : `Contains: ${view.matchedAllergens.map(a => a.name).join(', ')}`}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-
 
                     <span
                       onClick={() => navigate('/about', { state: { tab: 'sources' } })}
@@ -1003,21 +1014,64 @@ export default function FoodAnalyzer() {
                         <span className="text-[#db2777] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
                       </p>
                     )}
-                    <div className="grid grid-cols-4 gap-1.5">
-                      {view.goals.map(g => (
-                        <button key={g.id} onClick={() => g.tier && toggleGoal(g.id)} className={`flex flex-col items-center gap-1 ${g.tier ? 'cursor-pointer' : 'cursor-default'}`}>
-                          <span
-                            className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all ${g.tier ? 'bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)]' : 'bg-[rgba(237,220,255,0.5)] opacity-32 grayscale border-2 border-[rgba(137,60,227,0.18)]'} ${selectedGoal === g.id ? 'scale-110' : ''}`}
-                            style={g.tier ? { border: `3px solid ${TIER_COLOR[g.tier]}` } : undefined}
-                          >
-                            {g.icon}
-                          </span>
-                          <span className={`text-[9px] font-bold text-center leading-tight ${g.tier ? 'text-[#5a1d8a]' : 'text-[#b0aabf]'}`} style={{ fontFamily: 'Nunito, sans-serif' }}>
-                            {isZh ? g.labelZh ?? g.label : g.label}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
+
+                    {/* 按 tier 分组 */}
+                    {(['core', 'important', 'supporting'] as const).map(tier => {
+                      const goalsInTier = view.goals.filter(g => g.tier === tier);
+                      if (goalsInTier.length === 0) return null;
+                      const tc = TIER_CONFIG[tier];
+                      return (
+                        <div key={tier} className="mb-2.5">
+                          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1 mb-1.5 border-b"
+                            style={{ color: tc.color, borderColor: `${tc.color}33` }}>
+                            <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: tc.color }} />
+                            {isZh ? `${tc.labelZh}目标` : isEs ? `${tc.labelEs}` : `${tc.label} Goals`}
+                          </p>
+                          <div className="flex flex-wrap gap-1.5">
+                            {goalsInTier.map(g => (
+                              <button key={g.id} onClick={() => toggleGoal(g.id)} className="flex flex-col items-center gap-1 cursor-pointer">
+                                <span
+                                  className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)] ${selectedGoal === g.id ? 'scale-110' : ''}`}
+                                  style={{ border: `3px solid ${tc.color}` }}
+                                >
+                                  {g.icon}
+                                </span>
+                                <span className="text-[9px] font-bold text-center leading-tight text-[#5a1d8a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  {isZh ? g.labelZh ?? g.label : g.label}
+                                </span>
+                              </button>
+                            ))}
+                            {/* 该 tier 下没激活的 goal 显示灰色 */}
+                            {view.goals.filter(g => !g.tier).slice(0, tier === 'supporting' ? undefined : 0).map(g => (
+                              <button key={g.id} className="flex flex-col items-center gap-1 cursor-default">
+                                <span className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] bg-[rgba(237,220,255,0.5)] opacity-40 grayscale border-2 border-[rgba(137,60,227,0.18)]">
+                                  {g.icon}
+                                </span>
+                                <span className="text-[9px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  {isZh ? g.labelZh ?? g.label : g.label}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* 没有激活的 goal 统一显示在底部 */}
+                    {view.goals.filter(g => !g.tier).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mt-1 opacity-40">
+                        {view.goals.filter(g => !g.tier).map(g => (
+                          <button key={g.id} className="flex flex-col items-center gap-1 cursor-default">
+                            <span className="w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] bg-[rgba(237,220,255,0.5)] grayscale border-2 border-[rgba(137,60,227,0.18)]">
+                              {g.icon}
+                            </span>
+                            <span className="text-[8px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                              {isZh ? g.labelZh ?? g.label : g.label}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* 右栏 — THINGS TO WATCH */}
@@ -1340,7 +1394,9 @@ export default function FoodAnalyzer() {
                       </div>
 
                       <div className="relative rounded-[10px] border-[2.5px] border-[#f97316] bg-[rgba(249,115,22,0.12)] px-3 py-2.5 flex gap-2.5 items-start">
-                        <span className="text-[22px] flex-shrink-0 mt-0.5">🧀</span>
+                        <span className="text-[22px] flex-shrink-0 mt-0.5">
+                          {NOVA_ICON[view.product.novaScore ?? 4] ?? '🍭'}
+                        </span>
                         <div className="flex-1">
                           <p className="text-[11px] font-bold text-[#9a3412] tracking-wide" style={{ fontFamily: 'Nunito, sans-serif' }}>
                             {isZh ? `等级 ${view.product.novaScore} · ${nova.zh}` : `LEVEL ${view.product.novaScore} · ${nova.en}`}
