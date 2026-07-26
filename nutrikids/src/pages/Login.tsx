@@ -25,19 +25,47 @@ export default function Login() {
       setLoading(false);
     }
   };
-  const isWebView = /wv|WebView/.test(navigator.userAgent) || 
-  (navigator.userAgent.includes('Android') && /Version\/\d+\.\d+/.test(navigator.userAgent));
+  const isWebView = /wv|WebView/.test(navigator.userAgent) ||
+    (navigator.userAgent.includes('Android') && /Version\/\d+\.\d+/.test(navigator.userAgent));
 
   if (isWebView) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
         <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
-          <img src="/images/logoall.png" alt="" className="h-60 w-auto mx-auto" />
+          <div className="flex items-center gap-4 mb-2">
+            <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+            <div className="flex flex-col gap-1">
+              <span
+                style={{
+                  fontFamily: "'Fredoka One', cursive",
+                  fontSize: '42px',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  lineHeight: 1.1,
+                }}
+              >
+                Growtrition
+              </span>
+              <span
+                style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#6b7280',
+                }}
+              >
+                Smart nutrition for growing minds.
+              </span>
+            </div>
+          </div>
           <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
           <p className="text-sm text-gray-600 text-center">
             {isZh ? '请在系统浏览器（Safari/Chrome）中打开此页面登录' : 'Please open this page in your system browser (Safari/Chrome) to sign in'}
           </p>
-          <a 
+          <a
             href="https://nutrikids.sense-institute.org"
             target="_blank"
             rel="noopener noreferrer"
@@ -53,7 +81,35 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
-        <img src="/images/logoall.png" alt="" className="h-60 w-auto mx-auto" />
+        <div className="flex items-center gap-4 mb-2">
+          <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+          <div className="flex flex-col gap-1">
+            <span
+              style={{
+                fontFamily: "'Fredoka One', cursive",
+                fontSize: '42px',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                lineHeight: 1.1,
+              }}
+            >
+              Growtrition
+            </span>
+            <span
+              style={{
+                fontFamily: 'Nunito, sans-serif',
+                fontSize: '14px',
+                fontWeight: 600,
+                color: '#6b7280',
+              }}
+            >
+              Smart nutrition for growing minds.
+            </span>
+          </div>
+        </div>
         <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
         <p className="text-sm text-gray-500 text-center">
           {isZh ? '追踪孩子的营养，科学喂养每一天' : isEs ? 'Rastrea la nutrición de tu hijo, alimentación inteligente cada día' : 'Track your childs nutrition, smart feeding every day'}

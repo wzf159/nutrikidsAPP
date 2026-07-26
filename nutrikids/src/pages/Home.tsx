@@ -14,7 +14,35 @@ export default function Home() {
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto">
         <div className="flex flex-col items-center gap-0 mb-2">
-          <img src="/images/logoall.png" alt="" className="h-60 w-auto" />
+          <div className="flex items-center gap-4 mb-2">
+            <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+            <div className="flex flex-col gap-1">
+              <span
+                style={{
+                  fontFamily: "'Fredoka One', cursive",
+                  fontSize: '42px',
+                  fontWeight: 800,
+                  background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  lineHeight: 1.1,
+                }}
+              >
+                Growtrition
+              </span>
+              <span
+                style={{
+                  fontFamily: 'Nunito, sans-serif',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: '#6b7280',
+                }}
+              >
+                Smart nutrition for growing minds.
+              </span>
+            </div>
+          </div>
         </div>
         <button
           onClick={() => navigate('/onboarding')}
@@ -34,7 +62,7 @@ export default function Home() {
         </button>
       </div>
 
-      
+
     </div>
   );
 }

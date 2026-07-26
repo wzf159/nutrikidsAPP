@@ -845,6 +845,7 @@ export default function FoodAnalyzer() {
                   {/* 左栏 */}
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <SectionBadge n={1} />
+                    <h2 className="text-xl font-extrabold text-gray-900">{isZh ? '食品评估' : isEs ? 'Evaluación alimentaria' : 'Food Assessment'}</h2>
                     {/* 产品图片 */}
                     <div className="flex gap-4 items-start mb-4">
                       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
