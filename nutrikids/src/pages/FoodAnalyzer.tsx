@@ -1154,7 +1154,7 @@ export default function FoodAnalyzer() {
               </div>
             </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''} ">
               {/* ② 成长益处 */}
               <section
                 ref={growthBenefitsRef}
