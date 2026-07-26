@@ -1065,21 +1065,7 @@ export default function FoodAnalyzer() {
                       );
                     })}
 
-                    {/* 没有激活的 goal 统一显示在底部 */}
-                    {view.goals.filter(g => !g.tier).length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 mt-1 opacity-40">
-                        {view.goals.filter(g => !g.tier).map(g => (
-                          <button key={g.id} className="flex flex-col items-center gap-1 cursor-default">
-                            <span className="w-[40px] h-[40px] rounded-full flex items-center justify-center text-[14px] bg-[rgba(237,220,255,0.5)] grayscale border-2 border-[rgba(137,60,227,0.18)]">
-                              {g.icon}
-                            </span>
-                            <span className="text-[8px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                              {isZh ? g.labelZh ?? g.label : g.label}
-                            </span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
+                    
                   </div>
 
                   {/* 右栏 — THINGS TO WATCH */}
