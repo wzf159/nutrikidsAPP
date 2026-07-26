@@ -5,11 +5,11 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { ADDITIVE_DICT, RISK_COLOR, WATCH_ADDITIVE_TYPES } from '../data/additives';
 import {
-  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts,createProductByNameEn ,
+  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts, createProductByNameEn,
   type AnalysisResult, type ProductMatch, type Recognition,
 } from '../services/api';
 import { flushSync } from 'react-dom';
-import {  type AISummary } from '../services/api';
+import { type AISummary } from '../services/api';
 /* ------------------------------------------------------------------ */
 /* 常量与小工具                                                        */
 /* ------------------------------------------------------------------ */
@@ -844,7 +844,7 @@ export default function FoodAnalyzer() {
                   {/* 左栏 — 新设计 */}
                   {/* 左栏 */}
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
-
+                    <SectionBadge n={1} />
                     {/* 产品图片 */}
                     <div className="flex gap-4 items-start mb-4">
                       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
@@ -1353,11 +1353,11 @@ export default function FoodAnalyzer() {
       </div>
       {showPhotoMenu && (
         <div
-          className="fixed inset-0 z-50 bg-black/40 flex items-end justify-center"
+          className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center px-4"
           onClick={() => setShowPhotoMenu(false)}
         >
           <div
-            className="bg-white w-full max-w-lg rounded-t-[24px] p-6 pb-10"
+            className="bg-white w-full max-w-lg rounded-[24px] p-6 pb-8"
             onClick={e => e.stopPropagation()}
           >
             <div className="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-6" />
@@ -1365,20 +1365,6 @@ export default function FoodAnalyzer() {
               {isZh ? '添加食品' : 'Add Food'}
             </h3>
             <div className="flex flex-col gap-3">
-              <button
-                onClick={() => { setShowPhotoMenu(false); cameraInputRef.current?.click(); }}
-                className="flex items-center gap-4 p-4 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.15)] hover:bg-purple-50 transition text-left"
-              >
-                <span className="text-3xl">📷</span>
-                <div>
-                  <p className="text-[14px] font-bold text-[#1a1040]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                    {isZh ? '拍照识别' : 'Take Photo'}
-                  </p>
-                  <p className="text-[12px] text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                    {isZh ? '拍摄包装正面，AI 自动识别并提取条形码' : 'Snap the front of the package — AI will identify it'}
-                  </p>
-                </div>
-              </button>
 
               <button
                 onClick={() => { setShowPhotoMenu(false); setShowScan(true); }}
@@ -1394,6 +1380,22 @@ export default function FoodAnalyzer() {
                   </p>
                 </div>
               </button>
+
+              <button
+                onClick={() => { setShowPhotoMenu(false); cameraInputRef.current?.click(); }}
+                className="flex items-center gap-4 p-4 rounded-2xl border-[1.5px] border-[rgba(124,58,237,0.15)] hover:bg-purple-50 transition text-left"
+              >
+                <span className="text-3xl">📷</span>
+                <div>
+                  <p className="text-[14px] font-bold text-[#1a1040]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '拍照识别' : 'Take Photo'}
+                  </p>
+                  <p className="text-[12px] text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                    {isZh ? '拍摄包装正面，AI 自动识别并提取条形码' : 'Snap the front of the package — AI will identify it'}
+                  </p>
+                </div>
+              </button>
+
 
               <button
                 onClick={() => { setShowPhotoMenu(false); uploadInputRef.current?.click(); }}

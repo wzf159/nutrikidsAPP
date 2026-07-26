@@ -147,7 +147,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
 async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResult['product'] | null> {
   try {
     const res = await fetch(
-      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=1`,
+      `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(name)}&search_simple=1&action=process&json=1&page_size=5`,
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -162,7 +162,15 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       }>;
     };
     if (!data.products || data.products.length === 0) return null;
-    const p = data.products[0];
+    // 选名字最匹配的，而不是直接取第一个
+    const searchWords = name.toLowerCase().split(' ').filter(w => w.length > 2);
+    const best = data.products.find(p => {
+      const pName = p.product_name?.toLowerCase() ?? '';
+      return searchWords.some(w => pName.includes(w));
+    }) ?? data.products[0];
+
+    if (!best?.product_name) return null;
+    const p = best;
     console.log('OFF search result:', name, '->', p.product_name, 'nutrients:', Object.keys(p.nutriments ?? {}));
     if (!p.product_name) return null;
 

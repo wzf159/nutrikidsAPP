@@ -18,7 +18,7 @@ export async function recognizeFoodImage(buf: Buffer, mimetype: string): Promise
   const dataUrl = `data:${mimetype};base64,${base64}`;
 
   const res = await client.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4o',
     messages: [
       {
         role: 'user',
@@ -45,7 +45,7 @@ Return ONLY this JSON, no markdown:
   "nameZh": "中文名称（中文）",
   "brand": "brand name exactly as printed",
   "barcode": "all digits if barcode visible",
-  "confidence": 0.95,
+  "confidence": <0.0-1.0, your actual confidence level>,
   "alternatives": [
     {"nameEn": "slightly different name variation", "nameZh": "备选1"},
     {"nameEn": "generic category name", "nameZh": "备选2"}

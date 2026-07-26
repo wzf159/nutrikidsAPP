@@ -90,7 +90,18 @@ export default function TopNav() {
     <header className="relative sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-3 sm:px-7 flex items-center gap-2 sm:gap-5">
       <NavLink to="/" className="flex items-center gap-1.5 shrink-0">
         <img src="/images/logo21.png" alt="" className="h-9 w-auto" />
-        <img src="/images/logo4.png" alt="NutriKids" className="h-6 w-auto hidden sm:block" />
+        <span
+          className="hidden sm:block text-[22px] font-extrabold"
+          style={{
+            fontFamily: "'Fredoka One', cursive",
+            background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >
+          Growtrition
+        </span>
       </NavLink>
 
       {/* 导航标签：文字始终显示，窄屏横向可滑动 */}
@@ -227,8 +238,8 @@ export default function TopNav() {
                           key={c.id}
                           onClick={() => switchChild(c.id)}
                           className={`w-full flex items-center gap-2.5 px-2 py-2 rounded-xl text-left transition-colors ${c.id === child.id
-                              ? 'bg-purple-600/10 text-[#893ce3]'
-                              : 'hover:bg-purple-600/5 text-[#1a1040]'
+                            ? 'bg-purple-600/10 text-[#893ce3]'
+                            : 'hover:bg-purple-600/5 text-[#1a1040]'
                             }`}
                         >
                           <span className="w-8 h-8 rounded-full bg-gradient-to-br from-[#893ce3] to-[#ec4899] flex items-center justify-center text-[15px] flex-shrink-0">

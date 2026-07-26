@@ -1,7 +1,7 @@
 {
   "nav": {
     "home": "Home",
-    "foodAnalyzer": "Smart Label",
+    "foodAnalyzer": "Label Profile",
     "foodFact": "Food Facts",
     "scienceInsights": "Healthy Growth",
     "growthProfile": "Growth Profile",
@@ -192,7 +192,7 @@
     "q7": {
       "label": "Which feature did you find most useful?",
       "sub": "Select all that apply",
-      "1": "🏷️ Smart Label",
+      "1": "🏷️ Label Profile",
       "2": "🌱 Healthy Growth"
     },
     "q8": {

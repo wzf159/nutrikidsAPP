@@ -73,8 +73,8 @@ export default function Login() {
         </button>
 
         <div className="flex gap-4 text-xs text-gray-400">
-          <button onClick={() => i18n.changeLanguage('zh')} className={isZh ? 'text-[#893ce3] font-bold' : ''}>中文</button>
           <button onClick={() => i18n.changeLanguage('en')} className={!isZh && !isEs ? 'text-[#893ce3] font-bold' : ''}>EN</button>
+          <button onClick={() => i18n.changeLanguage('zh')} className={isZh ? 'text-[#893ce3] font-bold' : ''}>中文</button>
           <button onClick={() => i18n.changeLanguage('es')} className={isEs ? 'text-[#893ce3] font-bold' : ''}>ES</button>
         </div>
       </div>
