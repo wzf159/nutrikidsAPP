@@ -519,7 +519,7 @@ export default function FoodAnalyzer() {
   };
 
   const [goalPopup, setGoalPopup] = useState<number | null>(null);
-  const isCritical = !isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high'));
+  const isCritical = !isPositive && (hasAllergen || (view?.additiveTags ?? []).some(a => ADDITIVE_DICT[a.code]?.risk === 'high'));
   const NOVA_ICON: Record<number, string> = {
     1: '🍎',  // 未加工/天然食物
     2: '🧂',  // 加工烹饪食材
