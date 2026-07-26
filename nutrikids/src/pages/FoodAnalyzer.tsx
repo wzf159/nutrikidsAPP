@@ -1156,7 +1156,9 @@ export default function FoodAnalyzer() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
               {/* ② 成长益处 */}
-              <section ref={growthBenefitsRef} className={"bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
+              <section 
+              ref={growthBenefitsRef} 
+              className={'bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === "high")) ? "opacity-40 pointer-events-none" : ""}'}>
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={2} />
@@ -1341,7 +1343,9 @@ export default function FoodAnalyzer() {
               </section>
 
               {/* ③ 家长须知 */}
-              <section ref={thingsToWatchRef} className= {"bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
+              <section 
+              ref={thingsToWatchRef} 
+              className= {'bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === "high")) ? "opacity-40 pointer-events-none" : ""}'}>
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
