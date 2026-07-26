@@ -51,8 +51,11 @@ async function main() {
     { id: 13, code: 'lupin', name: 'Lupin', nameZh: '羽扇豆', icon: '🌼' },
     { id: 14, code: 'molluscs', name: 'Molluscs', nameZh: '软体动物', icon: '🦑' },
   ];
-  for (const a of allergens) await prisma.allergen.upsert({ where: { code: a.code }, create: a, update: a });
-  //for (const a of allergens) await prisma.allergen.upsert({ where: { id: a.id }, create: a, update: a });
+  for (const a of allergens) await prisma.allergen.upsert({
+    where: { code: a.code },
+    create: { code: a.code, name: a.name, nameZh: a.nameZh, icon: a.icon },
+    update: { name: a.name, nameZh: a.nameZh, icon: a.icon },
+  });
 
   // ---------- 字典：发育目标 ----------
   const goals = [
