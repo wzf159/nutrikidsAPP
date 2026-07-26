@@ -518,6 +518,8 @@ export default function FoodAnalyzer() {
     supporting: { color: '#db2777', label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario' },
   };
 
+  const [goalPopup, setGoalPopup] = useState<number | null>(null);
+
   const NOVA_ICON: Record<number, string> = {
     1: '🍎',  // 未加工/天然食物
     2: '🧂',  // 加工烹饪食材
@@ -859,8 +861,6 @@ export default function FoodAnalyzer() {
             >
               <div className="relative">
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0">
-
-                  {/* 左栏 — 新设计 */}
                   {/* 左栏 */}
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <div className="flex items-center gap-2 mb-3">
@@ -1004,7 +1004,7 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {/* 中栏 — BENEFITS */}
-                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
+                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
                       <span
@@ -1038,7 +1038,7 @@ export default function FoodAnalyzer() {
                           </p>
                           <div className="grid grid-cols-3 gap-2">
                             {goalsInTier.map(g => (
-                              <button key={g.id} onClick={() => toggleGoal(g.id)} className="flex flex-col items-center gap-1 cursor-pointer">
+                              <button key={g.id} onClick={() => g.tier && setGoalPopup(goalPopup === g.id ? null : g.id)} className="flex flex-col items-center gap-1 cursor-pointer">
                                 <span
                                   className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)] ${selectedGoal === g.id ? 'scale-110' : ''}`}
                                   style={{ border: `3px solid ${tc.color}` }}
@@ -1061,15 +1061,59 @@ export default function FoodAnalyzer() {
                               </button>
                             ))}
                           </div>
+                          {goalPopup !== null && (() => {
+                            const g = view.goals.find(g => g.id === goalPopup);
+                            const nutrients = view.flows
+                              .filter(f => f.goalId === goalPopup)
+                              .map(f => view.nutrients.find(n => n.id === f.nutrientId))
+                              .filter(Boolean);
+                            if (!g) return null;
+                            return (
+                              <div className="fixed inset-0 z-40" onClick={() => setGoalPopup(null)}>
+                                <div
+                                  className="absolute bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[280px]"
+                                  style={{ top: '40%', left: '50%', transform: 'translateX(-50%)' }}
+                                  onClick={e => e.stopPropagation()}
+                                >
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                      <span className="text-3xl">{g.icon}</span>
+                                      <div>
+                                        <h3 className="text-[17px] font-extrabold text-[#1a1040]">
+                                          {isZh ? g.labelZh ?? g.label : g.label}
+                                        </h3>
+                                        <p className="text-[12px] text-gray-400">{isZh ? '每份贡献营养素' : 'Contributing nutrients per serving'}</p>
+                                      </div>
+                                    </div>
+                                    <button onClick={() => setGoalPopup(null)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-black/5">✕</button>
+                                  </div>
+                                  <div className="flex flex-col gap-0">
+                                    {nutrients.map(n => n && (
+                                      <div key={n.id} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
+                                        <div className="flex items-center gap-2">
+                                          <span className="w-2 h-2 rounded-full bg-[#893ce3]" />
+                                          <span className="text-[14px] font-semibold text-[#1a1040]">{isZh ? n.nameZh ?? n.name : n.name}</span>
+                                        </div>
+                                        <span className="text-[14px] font-bold text-[#893ce3]">
+                                          {n.value != null ? `${n.value}${n.unit ?? ''}` : `${n.dailyValue}% DV`}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                  <p className="mt-3 text-[11px] text-gray-400">{isZh ? '来源：' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份` : `Per ${view.product.servingSize ?? '100g'} serving`}</p>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })}
 
-                    
+
                   </div>
 
                   {/* 右栏 — THINGS TO WATCH */}
-                  <div className="px-[18px] py-0">
+                  <div className="px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '需要留意' : 'THINGS TO WATCH'}</h4>
                       <span
@@ -1110,9 +1154,9 @@ export default function FoodAnalyzer() {
               </div>
             </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
               {/* ② 成长益处 */}
-              <section ref={growthBenefitsRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden">
+              <section ref={growthBenefitsRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={2} />
@@ -1297,7 +1341,7 @@ export default function FoodAnalyzer() {
               </section>
 
               {/* ③ 家长须知 */}
-              <section ref={thingsToWatchRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden">
+              <section ref={thingsToWatchRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
