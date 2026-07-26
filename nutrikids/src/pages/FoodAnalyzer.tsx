@@ -513,8 +513,8 @@ export default function FoodAnalyzer() {
   const TIER_CONFIG: Record<'core' | 'important' | 'supporting', {
     color: string; labelZh: string; labelEs: string; label: string;
   }> = {
-    core:       { color: '#4c1d95', label: 'Core',       labelZh: '核心', labelEs: 'Esencial' },
-    important:  { color: '#a21caf', label: 'Important',  labelZh: '重要', labelEs: 'Importante' },
+    core: { color: '#4c1d95', label: 'Core', labelZh: '核心', labelEs: 'Esencial' },
+    important: { color: '#a21caf', label: 'Important', labelZh: '重要', labelEs: 'Importante' },
     supporting: { color: '#db2777', label: 'Supporting', labelZh: '辅助', labelEs: 'Complementario' },
   };
 
@@ -1026,16 +1026,17 @@ export default function FoodAnalyzer() {
                     {/* 按 tier 分组 */}
                     {(['core', 'important', 'supporting'] as const).map(tier => {
                       const goalsInTier = view.goals.filter(g => g.tier === tier);
-                      if (goalsInTier.length === 0) return null;
+                      const inactiveGoals = tier === 'supporting' ? view.goals.filter(g => !g.tier) : [];
+                      if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
                       const tc = TIER_CONFIG[tier];
                       return (
-                        <div key={tier} className="mb-2.5">
-                          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1 mb-1.5 border-b"
+                        <div key={tier} className="mb-3">
+                          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1.5 mb-3 border-b"
                             style={{ color: tc.color, borderColor: `${tc.color}33` }}>
                             <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: tc.color }} />
-                            {isZh ? `${tc.labelZh}目标` : isEs ? `${tc.labelEs}` : `${tc.label} Goals`}
+                            {isZh ? `${tc.labelZh}目标` : `${tc.label} Goals`}
                           </p>
-                          <div className="flex flex-wrap gap-1.5">
+                          <div className="grid grid-cols-3 gap-2">
                             {goalsInTier.map(g => (
                               <button key={g.id} onClick={() => toggleGoal(g.id)} className="flex flex-col items-center gap-1 cursor-pointer">
                                 <span
@@ -1049,10 +1050,9 @@ export default function FoodAnalyzer() {
                                 </span>
                               </button>
                             ))}
-                            {/* 该 tier 下没激活的 goal 显示灰色 */}
-                            {view.goals.filter(g => !g.tier).slice(0, tier === 'supporting' ? undefined : 0).map(g => (
-                              <button key={g.id} className="flex flex-col items-center gap-1 cursor-default">
-                                <span className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] bg-[rgba(237,220,255,0.5)] opacity-40 grayscale border-2 border-[rgba(137,60,227,0.18)]">
+                            {inactiveGoals.map(g => (
+                              <button key={g.id} className="flex flex-col items-center gap-1 cursor-default opacity-40">
+                                <span className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] bg-[rgba(237,220,255,0.5)] grayscale border-2 border-[rgba(137,60,227,0.18)]">
                                   {g.icon}
                                 </span>
                                 <span className="text-[9px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
@@ -1110,7 +1110,9 @@ export default function FoodAnalyzer() {
                     </div>
                     {nova && (
                       <div className="bg-[rgba(249,115,22,0.08)] border-l-3 border-[#f97316] rounded-lg px-2.5 py-1.5 flex items-center gap-2">
-                        <span className="text-[18px]">🧀</span>
+                        <span className="text-[22px] flex-shrink-0 mt-0.5">
+                          {NOVA_ICON[view.product.novaScore ?? 4] ?? '🍭'}
+                        </span>
                         <span className="text-[10px] font-bold text-[#9a3412] tracking-wide" style={{ fontFamily: 'Nunito, sans-serif' }}>
                           {isZh ? `等级 ${view.product.novaScore} · ${nova.zh}` : `LEVEL ${view.product.novaScore} · ${nova.en}`}
                         </span>
