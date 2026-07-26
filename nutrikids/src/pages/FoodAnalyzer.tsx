@@ -1004,7 +1004,7 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {/* 中栏 — BENEFITS */}
-                  <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
+                  <div className={"pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
                       <span
@@ -1071,8 +1071,8 @@ export default function FoodAnalyzer() {
                             return (
                               <div className="fixed inset-0 z-40" onClick={() => setGoalPopup(null)}>
                                 <div
-                                  className="absolute bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[280px]"
-                                  style={{ top: '40%', left: '50%', transform: 'translateX(-50%)' }}
+                                  className="absolute bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[280px] max-h-[80vh] overflow-y-auto"
+                                  style={{ top: '30%', left: '50%', transform: 'translateX(-50%)' }}
                                   onClick={e => e.stopPropagation()}
                                 >
                                   <div className="flex items-center justify-between mb-4">
@@ -1113,7 +1113,7 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {/* 右栏 — THINGS TO WATCH */}
-                  <div className="px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
+                  <div className={"px-[18px] py-0 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '需要留意' : 'THINGS TO WATCH'}</h4>
                       <span
@@ -1156,7 +1156,7 @@ export default function FoodAnalyzer() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 ">
               {/* ② 成长益处 */}
-              <section ref={growthBenefitsRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
+              <section ref={growthBenefitsRef} className={"bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={2} />
@@ -1341,7 +1341,7 @@ export default function FoodAnalyzer() {
               </section>
 
               {/* ③ 家长须知 */}
-              <section ref={thingsToWatchRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}">
+              <section ref={thingsToWatchRef} className= {"bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}"}>
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
