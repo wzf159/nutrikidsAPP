@@ -509,6 +509,10 @@ export default function FoodAnalyzer() {
   const isPositive = levelNum >= 3;
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+
+
+  const growthBenefitsRef = useRef<HTMLElement>(null);
+  const thingsToWatchRef = useRef<HTMLElement>(null);
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
@@ -844,8 +848,10 @@ export default function FoodAnalyzer() {
                   {/* 左栏 — 新设计 */}
                   {/* 左栏 */}
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
-                    <SectionBadge n={1} />
-                    <h2 className="text-xl font-extrabold text-gray-900">{isZh ? '食品评估' : isEs ? 'Evaluación alimentaria' : 'Food Assessment'}</h2>
+                    <div className="flex items-center gap-2 mb-3">
+                      <SectionBadge n={1} />
+                      <h2 className="text-xl font-extrabold text-gray-900">{isZh ? '食品评估' : isEs ? 'Evaluación alimentaria' : 'Food Assessment'}</h2>
+                    </div>
                     {/* 产品图片 */}
                     <div className="flex gap-4 items-start mb-4">
                       <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
@@ -982,7 +988,12 @@ export default function FoodAnalyzer() {
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
-                      <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
+                      <span
+                        onClick={() => growthBenefitsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        className="text-[10px] font-semibold text-[#893ce3] flex items-center gap-1 cursor-pointer hover:underline"
+                      >
+                        👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                      </span>
                     </div>
                     {tierCounts && (
                       <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
@@ -1013,7 +1024,12 @@ export default function FoodAnalyzer() {
                   <div className="px-[18px] py-0">
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '需要留意' : 'THINGS TO WATCH'}</h4>
-                      <span className="text-[10px] font-semibold text-gray-400 flex items-center gap-1">👆 {isZh ? '点击了解更多' : 'Tap to know more'}</span>
+                      <span
+                        onClick={() => thingsToWatchRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                        className="text-[10px] font-semibold text-[#893ce3] flex items-center gap-1 cursor-pointer hover:underline"
+                      >
+                        👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                      </span>
                     </div>
                     <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
@@ -1046,7 +1062,7 @@ export default function FoodAnalyzer() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {/* ② 成长益处 */}
-              <section className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden">
+              <section ref={growthBenefitsRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden">
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={2} />
@@ -1231,7 +1247,7 @@ export default function FoodAnalyzer() {
               </section>
 
               {/* ③ 家长须知 */}
-              <section className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden">
+              <section ref={thingsToWatchRef} className="bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden">
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />

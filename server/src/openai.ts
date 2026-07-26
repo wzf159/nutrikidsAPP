@@ -51,7 +51,7 @@ Return ONLY this JSON, no markdown:
     {"nameEn": "generic category name", "nameZh": "备选2"}
   ]
 }
-
+IMPORTANT: Set "confidence" to your ACTUAL confidence level (0.0-1.0), not 0.95. Be honest - if the image is blurry or the text is hard to read, use a lower value like 0.4-0.6.
 If not food: {"isFood": false, "nameEn": "", "nameZh": "", "confidence": 0, "alternatives": []}`,
           },
         ],
