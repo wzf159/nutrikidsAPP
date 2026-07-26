@@ -36,15 +36,20 @@ async function main() {
 
   // ---------- 字典：过敏原 ----------
   const allergens = [
-    { id: 1, code: 'milk', name: 'Milk', nameZh: '牛奶', icon: '🥛' },
-    { id: 2, code: 'tree-nuts', name: 'Tree Nuts', nameZh: '坚果', icon: '🌰' },
-    { id: 3, code: 'egg', name: 'Egg', nameZh: '鸡蛋', icon: '🥚' },
-    { id: 4, code: 'soy', name: 'Soy', nameZh: '大豆', icon: '🫛' },
-    { id: 5, code: 'wheat', name: 'Wheat', nameZh: '小麦', icon: '🌾' },
-    { id: 6, code: 'peanuts', name: 'Peanuts', nameZh: '花生', icon: '🥜' },
-    { id: 7, code: 'fish', name: 'Fish', nameZh: '鱼类', icon: '🐟' },
-    { id: 8, code: 'shellfish', name: 'Shellfish', nameZh: '贝类/甲壳类', icon: '🦐' },
-    { id: 9, code: 'sesame', name: 'Sesame', nameZh: '芝麻', icon: '🫙' },
+    { id: 1, code: 'gluten', name: 'Gluten', nameZh: '麸质', icon: '🌾' },
+    { id: 2, code: 'crustaceans', name: 'Crustaceans', nameZh: '甲壳类', icon: '🦐' },
+    { id: 3, code: 'eggs', name: 'Eggs', nameZh: '鸡蛋', icon: '🥚' },
+    { id: 4, code: 'fish', name: 'Fish', nameZh: '鱼类', icon: '🐟' },
+    { id: 5, code: 'peanuts', name: 'Peanuts', nameZh: '花生', icon: '🥜' },
+    { id: 6, code: 'soybeans', name: 'Soybeans', nameZh: '大豆', icon: '🫛' },
+    { id: 7, code: 'milk', name: 'Milk', nameZh: '牛奶', icon: '🥛' },
+    { id: 8, code: 'nuts', name: 'Tree Nuts', nameZh: '坚果', icon: '🌰' },
+    { id: 9, code: 'celery', name: 'Celery', nameZh: '芹菜', icon: '🥬' },
+    { id: 10, code: 'mustard', name: 'Mustard', nameZh: '芥末', icon: '🌭' },
+    { id: 11, code: 'sesame-seeds', name: 'Sesame', nameZh: '芝麻', icon: '🌱' },
+    { id: 12, code: 'sulphur-dioxide-and-sulphites', name: 'Sulphites', nameZh: '亚硫酸盐', icon: '🧪' },
+    { id: 13, code: 'lupin', name: 'Lupin', nameZh: '羽扇豆', icon: '🌼' },
+    { id: 14, code: 'molluscs', name: 'Molluscs', nameZh: '软体动物', icon: '🦑' },
   ];
   for (const a of allergens) await prisma.allergen.upsert({ where: { id: a.id }, create: a, update: a });
   //for (const a of allergens) await prisma.allergen.upsert({ where: { id: a.id }, create: a, update: a });

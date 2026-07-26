@@ -33,12 +33,20 @@ const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; un
 ];
 
 const OFF_ALLERGEN_MAP: Record<string, string> = {
-  'en:milk': 'milk',
-  'en:eggs': 'egg',
-  'en:soybeans': 'soy',
-  'en:gluten': 'wheat',
-  'en:nuts': 'tree-nuts',
+  'en:gluten': 'gluten',
+  'en:crustaceans': 'crustaceans',
+  'en:eggs': 'eggs',
+  'en:fish': 'fish',
   'en:peanuts': 'peanuts',
+  'en:soybeans': 'soybeans',
+  'en:milk': 'milk',
+  'en:nuts': 'nuts',
+  'en:celery': 'celery',
+  'en:mustard': 'mustard',
+  'en:sesame-seeds': 'sesame-seeds',
+  'en:sulphur-dioxide-and-sulphites': 'sulphur-dioxide-and-sulphites',
+  'en:lupin': 'lupin',
+  'en:molluscs': 'molluscs',
 };
 
 async function findLocalByBarcode(barcode: string): Promise<ProductFindResult['product'] | null> {

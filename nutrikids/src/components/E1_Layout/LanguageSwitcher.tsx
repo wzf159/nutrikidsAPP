@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
 
-type LangCode = 'zh' | 'en' | 'es';
+type LangCode = 'en' | 'zh' | 'es';
 
 const LANGUAGES: { code: LangCode; label: string }[] = [
-  { code: 'zh', label: '中文' },
   { code: 'en', label: 'EN' },
+  { code: 'zh', label: '中文' },
   { code: 'es', label: 'ES' },
 ];
 

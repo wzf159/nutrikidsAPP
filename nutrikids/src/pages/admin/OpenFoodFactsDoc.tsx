@@ -195,18 +195,20 @@ export default function OpenFoodFactsDoc() {
         <SampleTable
           cols={['OFF 标签', 'NutriKids 代码', '中文名称']}
           rows={[
-            ['en:milk',         'milk',        '牛奶'],
-            ['en:eggs',         'egg',         '鸡蛋'],
-            ['en:soybeans',     'soy',         '大豆'],
-            ['en:gluten',       'wheat',       '小麦/麸质'],
-            ['en:nuts',         'tree-nuts',   '坚果'],
-            ['en:peanuts',      'peanuts',     '花生'],
-            ['en:fish',         'fish',        '鱼类'],
-            ['en:shellfish',    'shellfish',   '甲壳类'],
-            ['en:sesame-seeds', 'sesame',      '芝麻'],
-            ['en:celery',       'celery',      '芹菜'],
-            ['en:mustard',      'mustard',     '芥末'],
-            ['en:lupin',        'lupin',       '羽扇豆'],
+            ['en:gluten', 'gluten', '麸质'],
+            ['en:crustaceans', 'crustaceans', '甲壳类'],
+            ['en:eggs', 'eggs', '鸡蛋'],
+            ['en:fish', 'fish', '鱼类'],
+            ['en:peanuts', 'peanuts', '花生'],
+            ['en:soybeans', 'soybeans', '大豆'],
+            ['en:milk', 'milk', '牛奶'],
+            ['en:nuts', 'nuts', '坚果'],
+            ['en:celery', 'celery', '芹菜'],
+            ['en:mustard', 'mustard', '芥末'],
+            ['en:sesame-seeds', 'sesame-seeds', '芝麻'],
+            ['en:sulphur-dioxide-and-sulphites', 'sulphur-dioxide-and-sulphites', '二氧化硫和亚硫酸盐'],
+            ['en:lupin', 'lupin', '羽扇豆'],
+            ['en:molluscs', 'molluscs', '软体动物'],
           ]}
         />
       </Section>
