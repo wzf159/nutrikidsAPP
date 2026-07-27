@@ -1,4 +1,6 @@
 import { prisma } from './prisma.js';
+import { computeDevScoreV2 } from './scoring/devScoreV2.js';
+import { OFF_NUTRIENT_MAP } from './productFinder.js';
 
 // nutrients 字典中 "Sugars" 的 id（见 seed.ts）
 const ENERGY_NUTRIENT_ID = 16;
@@ -123,87 +125,38 @@ export async function scoreFood(input: ScoreInput) {
   const stageMatch = clamp(Math.round((matched / Math.max(childNutrIds.size, 1)) * 10), 0, 10);
 
 
-  // ── DRI 推荐量表（per day，按[0-6m, 7-12m, 1-3y, 4-8y, 9-13y, 14-18y]）──
-  // nutrientId 与 seed.ts 对应
-  const DRI_TABLE: Record<string, { male: (number | null)[]; female: (number | null)[] }> = {
-    'DHA': { male: [100, 100, null, null, 250, 250], female: [100, 100, null, null, 250, 250] },
-    'Choline': { male: [125, 150, 200, 250, 375, 550], female: [125, 150, 200, 250, 375, 400] },
-    'Iron': { male: [0.27, 11, 7, 10, 8, 11], female: [0.27, 11, 7, 10, 8, 15] },
-    'Vitamin B12': { male: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4], female: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4] },
-    'Folate': { male: [65, 80, 150, 200, 300, 400], female: [65, 80, 150, 200, 300, 400] },
-    'Calcium': { male: [200, 260, 700, 1000, 1300, 1300], female: [200, 260, 700, 1000, 1300, 1300] },
-    'Vitamin D': { male: [10, 10, 15, 15, 15, 15], female: [10, 10, 15, 15, 15, 15] },
-    'Phosphorus': { male: [100, 275, 460, 500, 1250, 1250], female: [100, 275, 460, 500, 1250, 1250] },
-    'Vitamin A': { male: [400, 500, 300, 400, 600, 900], female: [400, 500, 300, 400, 600, 700] },
-    'Zinc': { male: [2, 3, 3, 5, 8, 11], female: [2, 3, 3, 5, 8, 9] },
-    'Protein': { male: [9.1, 13.5, 13, 19, 34, 52], female: [9.1, 13.5, 13, 19, 34, 46] },
-    'Fluoride': { male: [0.01, 0.5, 0.7, 1, 2, 3], female: [0.01, 0.5, 0.7, 1, 2, 3] },
-    'Magnesium': { male: [30, 75, 80, 130, 240, 410], female: [30, 75, 80, 130, 240, 360] },
-    'Vitamin C': { male: [40, 50, 15, 25, 45, 75], female: [40, 50, 15, 25, 45, 65] },
-    'Vitamin K': { male: [2, 2.5, 30, 55, 60, 75], female: [2, 2.5, 30, 55, 60, 75] },
-    'Vitamin B6': { male: [0.1, 0.3, 0.5, 0.6, 1, 1.3], female: [0.1, 0.3, 0.5, 0.6, 1, 1.2] },
-    'Iodine': { male: [110, 130, 90, 90, 120, 150], female: [110, 130, 90, 90, 120, 150] },
-    'Selenium': { male: [15, 20, 20, 30, 40, 55], female: [15, 20, 20, 30, 40, 55] },
-    'Potassium': { male: [400, 700, 3000, 3800, 4500, 4700], female: [400, 700, 3000, 3800, 4500, 4700] },
-    'Fiber': { male: [null, null, 19, 25, 26, 38], female: [null, null, 19, 25, 31, 26] },
-    'Vitamin E': { male: [4, 5, 6, 7, 11, 15], female: [4, 5, 6, 7, 11, 15] },
-  };
-
-  // 目标 → 营养素名称映射
-  const GOAL_NUTRIENT_NAMES: Record<number, string[]> = {
-    1: ['DHA', 'Choline', 'Iron', 'Vitamin B12', 'Folate'],
-    2: ['Calcium', 'Vitamin D', 'Phosphorus', 'Protein', 'Magnesium'],
-    3: ['Fiber', 'Potassium', 'Magnesium'],
-    4: ['Protein', 'Iron', 'Zinc', 'Vitamin D', 'Potassium'],
-    5: ['Vitamin A', 'Vitamin C', 'Vitamin D', 'Zinc', 'Iron', 'Protein', 'Selenium'],
-    6: ['Fiber', 'Magnesium', 'Potassium'],
-    7: ['Vitamin A', 'Zinc', 'Vitamin E'],
-    8: ['Calcium', 'Vitamin D', 'Phosphorus', 'Vitamin C'],
-  };
-
-  const TIER_WEIGHT: Record<string, number> = { core: 3, important: 2, supporting: 1 };
-
-  // Step A: DevScore
+  // Step A: DevScore (v2 — 分类层级爬树版本)
   const genderKey = child.gender === 'girl' ? 'female' : 'male';
   const ageIdx = stageIdx(child.stageKey);
 
-
-  // 产品营养素 name→value map
-  const nutrientValueMap: Record<string, number> = {};
-  for (const n of prodNutr) {
-    if (n.value != null) nutrientValueMap[n.nutrient.name] = Number(n.value);
-  }
-  console.log('nutrientValueMap:', JSON.stringify(nutrientValueMap));
-  console.log('ageIdx:', ageIdx, 'gender:', genderKey);
-  let weightedSum = 0;
-  let weightTotal = 0;
-
-  for (const goal of allGoals) {
-    const tier = DEV_TIERS[goal.id]?.[ageIdx]?.[genderKey] ?? null;
-    const w = tier ? TIER_WEIGHT[tier] : 0;
-    if (w === 0) continue;
-
-    const nutrients = GOAL_NUTRIENT_NAMES[goal.id] ?? [];
-    let goalScore = 0;
-    let nutrientCount = 0;
-    for (const nName of nutrients) {
-      const dri = DRI_TABLE[nName];
-      if (!dri) continue;
-      const rec = dri[genderKey][ageIdx];
-      if (!rec) continue;
-      const actual = nutrientValueMap[nName] ?? 0;
-      if (actual === 0) continue;  // ← 跳过产品没有数据的营养素
-      const sj = Math.min(1, actual / rec);
-      goalScore += sj;
-      nutrientCount++;
-    }
-    // 用有数据的营养素数量做归一化
-    goalScore = nutrientCount > 0 ? Math.min(1, goalScore / nutrientCount) : 0;
-    weightedSum += goalScore * w;
-    weightTotal += w;
+  // nutrientId -> OFF nutrient_tag 反查表(从 OFF_NUTRIENT_MAP 派生,单一数据源,不会跟入库逻辑走偏)
+  const nutrientIdToTag: Record<number, string> = {};
+  for (const m of OFF_NUTRIENT_MAP) {
+    nutrientIdToTag[m.nutrientId] = m.offKey.replace(/_100g$/, '');
   }
 
-  const devScore = weightTotal > 0 ? weightedSum / weightTotal : 0;
+  // 产品营养素 nutrient_tag → 每100g原始值 map(DevScore 用,单位口径跟 category_nutrition_stats.json 一致)
+  const nutrientValuesByTag: Record<string, number> = {};
+  for (const n of prodNutr as any[]) {
+    const tag = nutrientIdToTag[n.nutrientId];
+    if (tag && n.value100g != null) nutrientValuesByTag[tag] = Number(n.value100g);
+  }
+
+  // 产品的 OFF 分类数组(旧数据没有 categoriesTagsJson 时当空数组处理 →
+  // DevScore 会因为爬不到任何分类而对每个营养素都跳过,goalScore 记为 0,不会报错)
+  let categoriesTags: string[] = [];
+  try {
+    categoriesTags = product.categoriesTagsJson ? JSON.parse(product.categoriesTagsJson) : [];
+  } catch {
+    categoriesTags = [];
+  }
+
+  const devScoreDebug: string[] = [];
+  const devScore = computeDevScoreV2(
+    { categoriesTags, nutrientValuesByTag, ageIdx, genderKey },
+    devScoreDebug
+  );
+  console.log(devScoreDebug.join('\n'));
 
   // Step B: NutriNorm（Nutri-Score 2014）
   // 需要 per 100g 数据，serving 数据近似处理

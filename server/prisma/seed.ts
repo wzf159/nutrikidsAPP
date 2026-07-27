@@ -31,6 +31,17 @@ async function main() {
     { id: 21, name: 'Carbohydrates', nameZh: '碳水化合物', icon: '🌾', unit: 'g' },
     { id: 22, name: 'Fiber', nameZh: '膳食纤维', icon: '🌿', unit: 'g' },
     { id: 23, name: 'Magnesium', nameZh: '镁', icon: '💊', unit: 'mg' },
+    // ↓↓↓ 新增: DevScore 用到、之前字典里没有的营养素 ↓↓↓
+    { id: 24, name: 'DHA', nameZh: 'DHA', icon: '🐟', unit: 'g' },
+    { id: 25, name: 'Choline', nameZh: '胆碱', icon: '🥚', unit: 'mg' },
+    { id: 26, name: 'Creatine', nameZh: '肌酸', icon: '⚡', unit: 'mg' },
+    { id: 27, name: 'Fluoride', nameZh: '氟', icon: '🦷', unit: 'mg' },
+    { id: 28, name: 'Folate', nameZh: '叶酸', icon: '🥬', unit: 'μg' },
+    { id: 29, name: 'Iodine', nameZh: '碘', icon: '🌊', unit: 'μg' },
+    { id: 30, name: 'Lutein', nameZh: '叶黄素', icon: '👁️', unit: 'mg' },
+    { id: 31, name: 'Vitamin B6', nameZh: '维生素B6', icon: '🅱️', unit: 'mg' },
+    { id: 32, name: 'Vitamin E', nameZh: '维生素E', icon: '🌰', unit: 'mg' },
+    { id: 33, name: 'Vitamin K', nameZh: '维生素K', icon: '🥦', unit: 'μg' },
   ];
   for (const n of nutrients) await prisma.nutrient.upsert({ where: { id: n.id }, create: n, update: n });
 

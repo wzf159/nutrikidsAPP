@@ -12,6 +12,9 @@ import analysisRoutes from './routes/analyses.js';
 import feedbackRoutes from './routes/feedback.js';
 import adminRoutes from './routes/admin.js';
 import recognizeRoutes from './routes/recognize.js';
+import { registerFoodScoringRoutes } from "./scoring/food-scoring-routes";
+
+
 
 const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 });
 
@@ -90,6 +93,8 @@ await app.register(feedbackRoutes, { prefix: '/api' });
 await app.register(adminRoutes, { prefix: '/api' });
 await app.register(recognizeRoutes, { prefix: '/api' });
 await app.register(authRoutes, { prefix: '/api' });
+
+registerFoodScoringRoutes(app);
 
 const port = Number(process.env.PORT ?? 8787);
 app.listen({ port, host: '0.0.0.0' }).then(() => {

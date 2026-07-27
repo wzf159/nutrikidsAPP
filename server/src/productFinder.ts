@@ -11,7 +11,7 @@ export interface ProductFindInput {
   names?: string[];
 }
 
-const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; unit: string; dvRef: number }[] = [
+export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; unit: string; dvRef: number }[] = [
   { nutrientId: 13, offKey: 'proteins_100g', factor: 1, unit: 'g', dvRef: 30 },
   { nutrientId: 15, offKey: 'sugars_100g', factor: 1, unit: 'g', dvRef: 25 },
   { nutrientId: 16, offKey: 'energy-kcal_100g', factor: 1, unit: 'kcal', dvRef: 1600 },
@@ -30,6 +30,17 @@ const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; un
   { nutrientId: 21, offKey: 'carbohydrates_100g', factor: 1, unit: 'g', dvRef: 275 },
   { nutrientId: 22, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 25 },
 { nutrientId: 23, offKey: 'magnesium_100g', factor: 1000, unit: 'mg', dvRef: 130 },
+  // ↓↓↓ 新增: 对应 seed.ts 里新加的 24~33 号营养素 ↓↓↓
+  { nutrientId: 24, offKey: 'docosahexaenoic-acid_100g', factor: 1, unit: 'g', dvRef: 0.25 },
+  { nutrientId: 25, offKey: 'choline_100g', factor: 1000, unit: 'mg', dvRef: 550 },
+  { nutrientId: 26, offKey: 'creatine_100g', factor: 1000, unit: 'mg', dvRef: 1000 },
+  { nutrientId: 27, offKey: 'fluoride_100g', factor: 1000, unit: 'mg', dvRef: 3 },
+  { nutrientId: 28, offKey: 'vitamin-b9_100g', factor: 1e6, unit: 'μg', dvRef: 400 },
+  { nutrientId: 29, offKey: 'iodine_100g', factor: 1e6, unit: 'μg', dvRef: 150 },
+  { nutrientId: 30, offKey: 'en-lutein_100g', factor: 1000, unit: 'mg', dvRef: 6 },
+  { nutrientId: 31, offKey: 'vitamin-b6_100g', factor: 1000, unit: 'mg', dvRef: 1.7 },
+  { nutrientId: 32, offKey: 'vitamin-e_100g', factor: 1000, unit: 'mg', dvRef: 15 },
+  { nutrientId: 33, offKey: 'vitamin-k_100g', factor: 1e6, unit: 'μg', dvRef: 120 },
 ];
 
 const OFF_ALLERGEN_MAP: Record<string, string> = {
@@ -80,7 +91,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
-'?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,quantity,serving_size,nutriments,allergens_tags,additives_tags',
+'?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,additives_tags',
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -89,6 +100,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       product?: {
         product_name?: string; product_name_zh?: string; brands?: string;
         image_front_url?: string; nova_group?: number; nutriscore_grade?: string;
+        nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
         additives_tags?: string[];
@@ -118,6 +130,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         return {
           nutrientId: m.nutrientId,
           value,
+          value100g: Math.round(valuePer100g * 100) / 100,  // 每100g原始值,DevScore专用
           unit: m.unit,
           dailyValue: Math.round((value / m.dvRef) * 100),
         };
@@ -139,10 +152,12 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         servingSize: p.serving_size ?? '100g',
         novaScore: p.nova_group ?? null,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
+        nutriScore: typeof p.nutriscore_score === 'number' ? p.nutriscore_score : null,
         verified: false,
         nutrients: { create: nutrients },
         allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
         additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
+        categoriesTagsJson: p.categories_tags?.length ? JSON.stringify(p.categories_tags) : null,
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });
@@ -163,6 +178,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       products?: Array<{
         code?: string; product_name?: string; product_name_zh?: string; brands?: string;
         image_front_url?: string; nova_group?: number; nutriscore_grade?: string;
+        nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
         additives_tags?: string[];
@@ -202,6 +218,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         return {
           nutrientId: m.nutrientId,
           value,
+          value100g: Math.round(valuePer100g * 100) / 100,  // 每100g原始值,DevScore专用
           unit: m.unit,
           dailyValue: Math.round((value / m.dvRef) * 100),
         };
@@ -224,10 +241,12 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         servingSize: p.serving_size ?? '100g',
         novaScore: p.nova_group ?? null,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
+        nutriScore: typeof p.nutriscore_score === 'number' ? p.nutriscore_score : null,
         verified: false,
         nutrients: { create: nutrients },
         allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
         additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
+        categoriesTagsJson: p.categories_tags?.length ? JSON.stringify(p.categories_tags) : null,
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });

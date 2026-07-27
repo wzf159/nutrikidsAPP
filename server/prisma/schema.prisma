@@ -277,7 +277,7 @@ model Product {
   additivesJson   String?  @map("additives_json")  
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
-
+  categoriesTagsJson String? @map("categories_tags_json") 
   brand        Brand?        @relation(fields: [brandId], references: [id])
   manufacturer Manufacturer? @relation(fields: [manufacturerId], references: [id])
   category     Category?     @relation(fields: [categoryId], references: [id])
@@ -296,6 +296,7 @@ model ProductNutrient {
   productId  Int    @map("product_id")
   nutrientId Int    @map("nutrient_id")
   value      Float?
+  value100g  Float?  @map("value_100g")
   unit       String?
   dailyValue Float? @map("daily_value")
   product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
