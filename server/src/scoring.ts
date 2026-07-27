@@ -211,13 +211,19 @@ export async function scoreFood(input: ScoreInput) {
   })();
   const per100 = (val: number | null) => val != null ? (val / servingSizeG) * 100 : 0;
 
-  const energyKJ = per100(prodNutr.find((n: any) => n.nutrient.name === 'Energy')?.value ?? null) * 4.184; // kcal→kJ
-  const sugarG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Sugars')?.value ?? null);
-  const satFatG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? null);
-  const saltG100 = (per100(prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? null) * 2.5) / 1000;
-  const fiberG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Fiber')?.value ?? null);
-  const proteinG100 = per100(prodNutr.find((n: any) => n.nutrient.name === 'Protein')?.value ?? null);
-
+  const ENERGY_NUTRIENT_ID = 16;
+  const SUGAR_NUTRIENT_ID = 15;
+  const SATFAT_NUTRIENT_ID = 17;
+  const SODIUM_NUTRIENT_ID = 18;
+  const FIBER_NUTRIENT_ID = 20;
+  const PROTEIN_NUTRIENT_ID = 13;
+  
+  const energyKJ = per100(prodNutr.find((n: any) => n.nutrientId === ENERGY_NUTRIENT_ID)?.value ?? null) * 4.184;
+  const sugarG100 = per100(prodNutr.find((n: any) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? null);
+  const satFatG100 = per100(prodNutr.find((n: any) => n.nutrientId === SATFAT_NUTRIENT_ID)?.value ?? null);
+  const saltG100 = (per100(prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.value ?? null) * 2.5) / 1000;
+  const fiberG100 = per100(prodNutr.find((n: any) => n.nutrientId === FIBER_NUTRIENT_ID)?.value ?? null);
+  const proteinG100 = per100(prodNutr.find((n: any) => n.nutrientId === PROTEIN_NUTRIENT_ID)?.value ?? null);
   // Negative points
   const negEnergy = Math.min(10, Math.floor(energyKJ / 335));
   const negSugar = Math.min(15, Math.floor(sugarG100 / 4.5));
@@ -376,17 +382,17 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: (prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value ?? 0) > sodiumThreshold,
-      detail: `${prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
+      present: (prodNutr.find((n: any) => n.nutrientId === 18)?.value ?? 0) > sodiumThreshold,
+      detail: `${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
       detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
     },
     
 
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-      present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > satfatThreshold,
-      detail: `${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.dailyValue ?? 0}% DV saturated fat per serving.`,
-      detailZh: `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.dailyValue ?? 0}%。`
+      present: (prodNutr.find((n: any) => n.nutrientId === 17)?.value ?? 0) > satfatThreshold,
+      detail: `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving.`,
+      detailZh: `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%。`
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
@@ -399,7 +405,7 @@ export async function scoreFood(input: ScoreInput) {
       detail: 'Contains high fructose corn syrup.', detailZh: '含果葡糖浆。'
     },
   ];
-
+  console.log('Sodium value:', prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value);
   const matchedAllergens = product.allergens
     .filter((a) => a.present && childAllergIds.has(a.allergenId))
     .map((a) => ({ code: a.allergen.code, name: a.allergen.name, nameZh: a.allergen.nameZh, icon: a.allergen.icon }));
