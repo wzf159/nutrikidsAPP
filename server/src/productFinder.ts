@@ -104,13 +104,20 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       brandId = brand.id;
     }
 
+    const servingFactor = (() => {
+      const s = p.serving_size ?? '100g';
+      const match = s.match(/(\d+\.?\d*)/);
+      return match ? parseFloat(match[1]) / 100 : 1;
+    })();
+    
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
       .map((m) => {
-        const value = p.nutriments![m.offKey] * m.factor;
+        const valuePer100g = p.nutriments![m.offKey] * m.factor;
+        const value = Math.round(valuePer100g * servingFactor * 100) / 100;  // ← 乘以份量比例
         return {
           nutrientId: m.nutrientId,
-          value: Math.round(value * 100) / 100,
+          value,
           unit: m.unit,
           dailyValue: Math.round((value / m.dvRef) * 100),
         };
