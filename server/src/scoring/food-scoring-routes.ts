@@ -12,9 +12,14 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { FastifyInstance } from "fastify";
 import { NutriKidsScorer, type ReferenceData } from "./nutriKidsScorer";
 import { searchProducts, getProductByBarcode } from "./openFoodFactsClient";
+
+// ESM 里没有 __dirname,用 import.meta.url 换算出等价的目录路径
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const REFERENCE_DATA_DIR = path.join(__dirname, "data"); // 按需改成你项目里的实际路径
 
@@ -73,8 +78,7 @@ export function registerFoodScoringRoutes(app: FastifyInstance) {
       gender,
       alpha ? Number(alpha) : 0.5
     );
-    // debug 字段是给你调试用的详细计算过程日志，正式返回给前端时建议去掉:
-    // const { debug, ...publicResult } = result; return publicResult;
+    
     return result;
   });
 }

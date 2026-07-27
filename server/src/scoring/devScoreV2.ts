@@ -9,16 +9,22 @@
  * 目标/权重结构(每个发育目标下的营养素加权求和、按 tier 权重合计)保持不变,
  * 只是数据来源从硬编码表换成 nutrient_goal_mapping.json + age_gender_weight_summary.json。
  *
- * 依赖的5个参考数据文件(放在 ./data/ 下):
+ * 依赖的5个参考数据文件:
  *   - category_nutrition_stats.json
  *   - nutrient_goal_mapping.json
  *   - age_gender_weight_summary.json
  *   - categories_parents.json
  */
 
+
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { CategoryTaxonomy } from './categoryTaxonomy.js';
+
+// ESM 里没有 __dirname,用 import.meta.url 换算出等价的目录路径
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const DATA_DIR = path.join(__dirname, 'data');
 
@@ -161,6 +167,7 @@ export function computeDevScoreV2(input: DevScoreInput, debug: string[] = []): n
         sj = Math.min(1, Math.max(0, (xj - L) / (U - L)));
       }
       sList.push(sj);
+      debug.push(`    ${row.nutrient_tag}: x=${xj} L(p10)=${L} U(p90)=${U} -> sj=${sj.toFixed(3)}`);
     }
 
     const goalScore = sList.length > 0 ? Math.min(1, sList.reduce((a, b) => a + b, 0)) : 0;
