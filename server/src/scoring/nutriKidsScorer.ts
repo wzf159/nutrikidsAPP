@@ -11,7 +11,7 @@
  * 常驻内存(见本目录 loadReferenceData.ts 的示例)，不要每个请求都读盘。
  */
 
-import { CategoryTaxonomy } from "./categoryTaxonomy";
+import { CategoryTaxonomy } from "./categoryTaxonomy.js";
 
 // 跟 Python 版 gen_category_nutrition_stats.py 里的 MIN_N 保持一致即可,
 // 这里只是双重保险,不是主要过滤点(category_nutrition_stats.json 生成阶段
@@ -114,7 +114,7 @@ export class NutriKidsScorer {
     for (const leaf of leaves) {
       const matchedCat = this.taxonomy.nearestAncestorWithData(
         leaf,
-        (c) => this.statsIfReliable(c, nutrientTag) !== null
+        (c: string) => this.statsIfReliable(c, nutrientTag) !== null
       );
       if (matchedCat === null) {
         log(`    - 叶子 ${leaf}: 一路爬到根都没有 n>=${MIN_N} 的可靠统计，此分支跳过`);

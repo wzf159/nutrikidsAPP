@@ -8,7 +8,7 @@
  * 被反复打分时重复打 OFF API。
  */
 
-import type { NutrientEntry, Product } from "./nutriKidsScorer";
+import type { NutrientEntry, Product } from "./nutriKidsScorer.js";
 
 const BASE_URL = "https://world.openfoodfacts.org";
 
