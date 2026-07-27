@@ -12,7 +12,7 @@ import analysisRoutes from './routes/analyses.js';
 import feedbackRoutes from './routes/feedback.js';
 import adminRoutes from './routes/admin.js';
 import recognizeRoutes from './routes/recognize.js';
-import { registerFoodScoringRoutes } from "./scoring/food-scoring-routes";
+import { registerFoodScoringRoutes } from "./scoring/food-scoring-routes.js";
 
 
 
