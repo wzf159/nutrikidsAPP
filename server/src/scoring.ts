@@ -7,7 +7,7 @@ const ENERGY_NUTRIENT_ID = 16;
 const SUGAR_NUTRIENT_ID = 15;
 const SATFAT_NUTRIENT_ID = 17;
 const SODIUM_NUTRIENT_ID = 18;
-const FIBER_NUTRIENT_ID = 20;
+const FIBER_NUTRIENT_ID = 22;
 const PROTEIN_NUTRIENT_ID = 13;
 
 
@@ -46,19 +46,41 @@ const WEIGHTS = {
 } as const;
 
 // 发育目标 ↔ 营养素 静态映射（营养学常识，后续可由营养师校准/入库）
-// nutrientId 参照 seed.ts:
-// 1=Iron 2=Zinc 3=Omega-3 4=B Vitamins 5=Calcium 6=Vit D
-// 7=Phosphorus 8=Complex Carbs 9=Vit C 10=Selenium
-// 11=Vit A 12=Vit B12 13=Protein 14=Potassium
-const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
-  1: [3, 1, 2, 12, 4],         // 🧠 Brain: Omega-3/Iron/Zinc/B12/B族
-  2: [5, 6, 7, 13],            // 🦴 Bone: 钙/维D/磷/蛋白质
-  3: [22, 14, 23, 3],  // 📏 Heart Growth: Fiber(22)/Potassium(14)/Magnesium(23)/Omega-3(3)
-  4: [13, 1, 2, 6, 14, 8],     // 💪 Muscle: 蛋白质/Iron/Zinc/维D/钾/复合碳水
-  5: [11, 9, 6, 2, 1, 13, 10], // 🛡️ Immune: 维A/维C/维D/Zinc/Iron/蛋白质/硒
-  6: [1, 3, 2, 12],            // 🦠 Gut: Iron/Omega-3/Zinc/B12
-  7: [11, 2, 6],               // 👀 Vision: VitA(11) / Zinc(2) / VitD(6)
-  8: [5, 6, 9, 13],            // 🦷 Dental: Calcium(5) / VitD(6) / VitC(9) / Protein(13)
+export const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
+  // 🧠 Brain
+  // DHA / Choline / Iron / Folate / B12 / B6 / Zinc / Iodine
+  1: [24, 25, 1, 28, 12, 31, 2, 29],
+
+  // 🦴 Bone
+  // Calcium / Vitamin D / Phosphorus / Magnesium / Protein / Vitamin K / Zinc
+  2: [5, 6, 7, 23, 13, 33, 2],
+
+  // ❤️ Heart Growth
+  // Fiber / Potassium / Magnesium / DHA
+  3: [22, 14, 23, 24],
+
+  // 💪 Muscle
+  // Protein / Iron / Zinc / Vitamin D / Magnesium /
+  // Carbohydrates / Potassium / Creatine
+  4: [13, 1, 2, 6, 23, 21, 14, 26],
+
+  // 🛡️ Immune
+  // Vitamin A / Vitamin C / Vitamin D / Zinc /
+  // Iron / Protein / Selenium / DHA
+  5: [11, 9, 6, 2, 1, 13, 10, 24],
+
+  // 🦠 Gut
+  // Fiber / Magnesium / Potassium / Carbohydrates / Vitamin D / Zinc
+  6: [22, 23, 14, 21, 6, 2],
+
+  // 👀 Vision
+  // Vitamin A / DHA / Zinc / Vitamin E / Lutein
+  7: [11, 24, 2, 32, 30],
+
+  // 🦷 Dental
+  // Calcium / Vitamin D / Phosphorus / Vitamin C /
+  // Magnesium / Fluoride
+  8: [5, 6, 7, 9, 23, 27],
 };
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
