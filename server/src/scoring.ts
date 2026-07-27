@@ -1,8 +1,12 @@
 import { prisma } from './prisma.js';
 
 // nutrients 字典中 "Sugars" 的 id（见 seed.ts）
-const SUGAR_NUTRIENT_ID = 15;
 const ENERGY_NUTRIENT_ID = 16;
+const SUGAR_NUTRIENT_ID = 15;
+const SATFAT_NUTRIENT_ID = 17;
+const SODIUM_NUTRIENT_ID = 18;
+const FIBER_NUTRIENT_ID = 20;
+const PROTEIN_NUTRIENT_ID = 13;
 
 
 type DevTier = 'core' | 'important' | 'supporting';
@@ -211,12 +215,7 @@ export async function scoreFood(input: ScoreInput) {
   })();
   const per100 = (val: number | null) => val != null ? (val / servingSizeG) * 100 : 0;
 
-  const ENERGY_NUTRIENT_ID = 16;
-  const SUGAR_NUTRIENT_ID = 15;
-  const SATFAT_NUTRIENT_ID = 17;
-  const SODIUM_NUTRIENT_ID = 18;
-  const FIBER_NUTRIENT_ID = 20;
-  const PROTEIN_NUTRIENT_ID = 13;
+
   
   const energyKJ = per100(prodNutr.find((n: any) => n.nutrientId === ENERGY_NUTRIENT_ID)?.value ?? null) * 4.184;
   const sugarG100 = per100(prodNutr.find((n: any) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? null);
