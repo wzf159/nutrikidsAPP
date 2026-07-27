@@ -244,13 +244,19 @@ export async function scoreFood(input: ScoreInput) {
   console.log('NutriNorm:', nutriNorm.toFixed(3));
   console.log('FinalScore:', (100 * nutriNorm * (b + (1 - b) * devScore)).toFixed(1));
   console.log('negative:', negative, 'positive:', positive);
-  // 按年龄段的每日上限
-  const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25; // 0-6m/7-12m不建议，1-3y 12g，4+岁 25g
-  const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5; // 触发警告的阈值
-  const sodiumLimit = [200, 370, 800, 1200, 1500, 1500][ageIdx]; // mg/day by age group
-  const sodiumThreshold = [100, 150, 300, 400, 500, 500][ageIdx];
-  const satfatLimit = [null, null, 10, 12, 15, 20][ageIdx]; // g/day
-  const satfatThreshold = [1, 1, 2, 3, 4, 5][ageIdx];
+  // 每日上限
+  const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25;
+  const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5;
+
+  // Sodium: WHO/CDC 建议
+  const sodiumLimit = [200, 370, 800, 1200, 1500, 1800][ageIdx];
+  const sodiumThreshold = [50, 100, 200, 300, 400, 500][ageIdx];
+  // 0-6m: 50mg  7-12m: 100mg  1-3y: 200mg  4-8y: 300mg  9-13y: 400mg  14-18y: 500mg
+
+  // Saturated Fat: 占每日热量 <10%，按年龄热量需求换算
+  const satfatLimit = [null, null, 8, 10, 13, 16][ageIdx];
+  const satfatThreshold = [1, 1, 2, 2.5, 3, 4][ageIdx];
+  // 更严格，尤其婴幼儿
 
   const overall = Math.round(100 * nutriNorm * (b + (1 - b) * devScore));
   const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
@@ -385,13 +391,15 @@ export async function scoreFood(input: ScoreInput) {
       detail: `${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
       detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
     },
-    
-
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
       present: (prodNutr.find((n: any) => n.nutrientId === 17)?.value ?? 0) > satfatThreshold,
-      detail: `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving.`,
-      detailZh: `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%。`
+      detail: satfatLimit === null
+        ? `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
+        : `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
+      detailZh: satfatLimit === null
+        ? `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
+        : `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
