@@ -893,7 +893,7 @@ export default function FoodAnalyzer() {
                               {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
                             </h3>
                             {/* AI 生成时只显示小标注，不强调 */}
-                            {!view.product.verified && view.product.isAiGenerated && (
+                            {!view.product.verified && (
                               <p className="text-[10px] text-gray-400 mt-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                 🤖 {isZh ? 'AI 估算数据，仅供参考' : 'AI-estimated data, for reference only'}
                               </p>

@@ -385,8 +385,8 @@ export async function scoreFood(input: ScoreInput) {
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
       present: (prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0) > satfatThreshold,
-      detail: `Contains ${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g saturated fat per serving.`,
-      detailZh: `每份含${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.value ?? 0}g饱和脂肪。`
+      detail: `${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.dailyValue ?? 0}% DV saturated fat per serving.`,
+      detailZh: `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrient.name === 'Saturated Fat')?.dailyValue ?? 0}%。`
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
@@ -449,7 +449,7 @@ export async function scoreFood(input: ScoreInput) {
         novaScore: product.novaScore,
         servingSize: product.servingSize,
         verified: product.verified, 
-        isAiGenerated: !product.verified && !product.barcode, 
+        isAiGenerated: !product.verified && product.barcode === null,
    
       },
       child: { id: child.id, name: child.name, age: child.age },
