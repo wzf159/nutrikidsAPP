@@ -68,6 +68,25 @@ function scoreToLevel(score: number): number {
 
 const levelColors = ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a'];
 
+const SOURCE_BADGES = [
+  'WHO',
+  'AAP',
+  'AHA',
+  'BioRxiv',
+  'CDC',
+  'Front. Nutr.',
+  'IJORO',
+  'MMPE',
+  'NCBI',
+  'NIH ODS',
+  'PMC + NCBI',
+  'Karger',
+  'ScienceDirect',
+  'NDC',
+  'USPSTF',
+  'Open Food Facts',
+] as const;
+
 /* ------------------------------------------------------------------ */
 /* Sankey 布局（由接口数据驱动）                                       */
 /* ------------------------------------------------------------------ */
@@ -529,6 +548,43 @@ export default function FoodAnalyzer() {
     4: '🍭',  // 超加工食品
   };
 
+  const NUTRIENT_WATCH_CODES = new Set([
+    'added_sugar',
+    'sodium',
+    'satfat',
+    'transfat',
+  ]);
+
+  const watchLevel = (code: string, present: boolean) => {
+    if (!present) {
+      return {
+        label: isZh ? '低' : isEs ? 'BAJO' : 'LOW',
+        color: '#a7a7b7',
+        bg: 'rgba(255,255,255,0.38)',
+      };
+    }
+
+    if (code === 'satfat') {
+      return {
+        label: isZh ? '中等' : isEs ? 'MODERADO' : 'MODERATE',
+        color: '#d97706',
+        bg: 'rgba(255,247,237,0.82)',
+      };
+    }
+
+    return {
+      label: isZh ? '高' : isEs ? 'ALTO' : 'HIGH',
+      color: '#dc2626',
+      bg: 'rgba(255,237,213,0.82)',
+    };
+  };
+
+  const ingredientStatus = (present: boolean) => ({
+    label: present
+      ? (isZh ? '存在' : isEs ? 'PRESENTE' : 'PRESENT')
+      : (isZh ? '未检出' : isEs ? 'NO DETECTADO' : 'NOT DETECTED'),
+    color: present ? '#dc2626' : '#b3b3c3',
+  });
 
   const growthBenefitsRef = useRef<HTMLElement>(null);
   const thingsToWatchRef = useRef<HTMLElement>(null);
@@ -1169,6 +1225,33 @@ export default function FoodAnalyzer() {
 
                 </div>
               </div>
+              <div className="mt-5 pt-4 border-t border-[rgba(160,120,210,0.20)]">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wide text-gray-400 mr-1">
+                    {isZh ? '参考来源：' : 'Sources:'}
+                  </span>
+
+                  {SOURCE_BADGES.map(source => (
+                    <button
+                      key={source}
+                      type="button"
+                      onClick={() => navigate('/about', { state: { tab: 'sources', source } })}
+                      className="px-2.5 py-1 rounded-full border border-[rgba(137,60,227,0.22)] bg-[rgba(244,232,255,0.62)] text-[10px] font-bold text-[#893ce3] hover:bg-[rgba(137,60,227,0.10)] hover:border-[rgba(137,60,227,0.38)] transition-colors"
+                      style={{ fontFamily: 'Nunito, sans-serif' }}
+                    >
+                      {source}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => navigate('/about', { state: { tab: 'sources' } })}
+                  className="mt-2 text-[10px] font-semibold text-gray-400 flex items-center gap-1 hover:text-[#893ce3] transition-colors"
+                >
+                  👆 {isZh ? '点击查看完整参考文献与评分依据' : 'Tap to view full references and scoring sources'}
+                </button>
+              </div>
             </section>
 
             <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''} `}>
@@ -1380,56 +1463,255 @@ export default function FoodAnalyzer() {
                     </span>
                   </div>
 
-                  <h4 className="font-extrabold text-[#5b21b6] tracking-wide mb-1">{isZh ? '需要了解' : 'THINGS TO KNOW'}</h4>
-                  <p className="text-sm text-gray-400 mb-3">👆 {isZh ? '点击高亮图标查看详情' : 'Tap highlighted icons to see details'}</p>
+                  {(() => {
+                    // 只展示真正需要注意 / 实际检测到的项目。
+                    const nutrientWatch = view.watch.filter(
+                      w => NUTRIENT_WATCH_CODES.has(w.code) && w.present
+                    );
+                    const ingredientWatch = view.watch.filter(
+                      w => !NUTRIENT_WATCH_CODES.has(w.code) && w.present
+                    );
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
-                    {view.watch.map(w => (
-                      <button
-                        key={w.code}
-                        onClick={() => w.present && setSelectedWatch(p => (p === w.code ? null : w.code))}
-                        className={`rounded-xl p-3 flex flex-col items-center gap-1.5 border transition-all ${w.present
-                          ? `bg-[rgba(255,237,213,0.6)] backdrop-blur-sm border-[rgba(255,220,180,0.8)] cursor-pointer hover:scale-106 shadow-[inset_0_1.5px_0_rgba(255,255,255,0.9),0_4px_16px_rgba(249,115,22,0.18)] ${selectedWatch === w.code ? 'border-orange-400 ring-2 ring-orange-200' : ''}`
-                          : 'bg-white/35 backdrop-blur-sm border-white/65 opacity-70 cursor-default'
-                          }`}
-                      >
-                        <span className={`text-[28px] ${w.present ? '' : 'grayscale-[0.6] opacity-75'}`}>{w.icon}</span>
-                        <span className={`text-[10px] font-bold text-center leading-tight ${w.present ? 'text-[#2a2a4a]' : 'text-gray-400'}`} style={{ fontFamily: 'Nunito, sans-serif' }}>
-                          {isZh ? w.nameZh : w.name}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {selectedWatchData?.present && (
-                    <div className="rounded-2xl bg-orange-50/70 border border-orange-200 px-4 py-3 mb-4 animate-fade-in-up">
-                      <p className="font-bold text-orange-700 mb-1 text-sm">{selectedWatchData.icon} {isZh ? selectedWatchData.nameZh : selectedWatchData.name}</p>
-                      <p className="text-sm text-gray-700 mb-2">{isZh ? selectedWatchData.detailZh : selectedWatchData.detail}</p>
-
-                      {/* 对应的具体添加剂 */}
-                      {view.additiveTags.filter(a => {
-                        const info = ADDITIVE_DICT[a.code];
-                        return info && WATCH_ADDITIVE_TYPES[selectedWatchData.code]?.includes(info.type);
-                      }).map(a => {
-                        const info = ADDITIVE_DICT[a.code]!;
-                        const risk = RISK_COLOR[info.risk];
-                        return (
-                          <div key={a.code} className="mt-2 rounded-lg p-2.5 border" style={{ background: risk.bg, borderColor: risk.border }}>
-                            <div className="flex items-center gap-2 mb-0.5">
-                              <span className="text-[11px] font-extrabold" style={{ color: risk.text }}>{a.code}</span>
-                              <span className="text-[12px] font-bold text-gray-800">{isZh ? info.nameZh : info.name}</span>
-                              <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: risk.border, color: risk.text }}>
-                                {isZh ? risk.labelZh : risk.label}
-                              </span>
+                    return (
+                      <>
+                        {/* ① Nutrients to Watch */}
+                        {nutrientWatch.length > 0 && (
+                        <div className="mb-7">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
+                                ① {isZh ? '需要留意的营养素' : 'NUTRIENTS TO WATCH'}
+                              </h4>
+                              <p className="text-[12px] text-gray-400 mt-1">
+                                {isZh
+                                  ? '建议控制这些营养素的摄入；反式脂肪应尽量避免'
+                                  : 'Limit intake of these nutrients — Trans Fat should be avoided entirely'}
+                              </p>
                             </div>
-                            <p className="text-[11px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                              {isZh ? info.descZh : info.desc}
+                            <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+                              👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {nutrientWatch.map(w => {
+                              const level = watchLevel(w.code, w.present);
+                              return (
+                                <button
+                                  key={w.code}
+                                  onClick={() => setSelectedWatch(w.code)}
+                                  className={`min-h-[150px] rounded-[18px] px-3 py-4 flex flex-col items-center justify-center gap-2 border transition-all
+                                    ${w.present
+                                      ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
+                                      : 'cursor-pointer opacity-75 hover:opacity-100'
+                                    }
+                                    ${selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                                  style={{
+                                    background: level.bg,
+                                    borderColor: w.present
+                                      ? 'rgba(251,146,60,0.42)'
+                                      : 'rgba(255,255,255,0.65)',
+                                  }}
+                                >
+                                  <span
+                                    className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
+                                      ${w.present ? '' : 'grayscale opacity-65'}`}
+                                    style={{
+                                      background: w.present
+                                        ? 'rgba(255,247,237,0.88)'
+                                        : 'rgba(255,255,255,0.45)',
+                                      borderColor: w.present
+                                        ? 'rgba(251,146,60,0.38)'
+                                        : 'rgba(230,225,235,0.55)',
+                                    }}
+                                  >
+                                    {w.icon}
+                                  </span>
+
+                                  <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
+                                    {isZh ? w.nameZh : w.name}
+                                  </span>
+
+                                  <span
+                                    className="text-[11px] font-extrabold tracking-wide"
+                                    style={{ color: level.color }}
+                                  >
+                                    {level.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        )}
+
+                        {/* ② Ingredients to Be Aware Of */}
+                        {ingredientWatch.length > 0 && (
+                        <div className="mb-7">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
+                                ② {isZh ? '需要注意的配料' : 'INGREDIENTS TO BE AWARE OF'}
+                              </h4>
+                              <p className="text-[12px] text-gray-400 mt-1">
+                                {isZh ? '在可以选择时，建议尽量避免' : 'Best avoided when possible'}
+                              </p>
+                            </div>
+                            <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+                              👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            {ingredientWatch.map(w => {
+                              const status = ingredientStatus(w.present);
+                              return (
+                                <button
+                                  key={w.code}
+                                  onClick={() => setSelectedWatch(w.code)}
+                                  className={`min-h-[148px] rounded-[18px] px-3 py-4 flex flex-col items-center justify-center gap-2 border transition-all
+                                    ${w.present
+                                      ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
+                                      : 'bg-white/35 border-white/65 cursor-pointer opacity-70 hover:opacity-100'
+                                    }
+                                    ${selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                                >
+                                  <span className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'}`}>
+                                    {w.icon}
+                                  </span>
+
+                                  <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
+                                    {isZh ? w.nameZh : w.name}
+                                  </span>
+
+                                  <span
+                                    className="text-[11px] font-extrabold tracking-wide"
+                                    style={{ color: status.color }}
+                                  >
+                                    {status.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                        )}
+
+                        {nutrientWatch.length === 0 && ingredientWatch.length === 0 && (
+                          <div className="rounded-[18px] bg-white/45 border border-white/70 px-4 py-5 mb-6">
+                            <p className="text-[13px] font-bold text-[#6b6b8a]">
+                              {isZh
+                                ? '未检测到需要特别注意的营养素或配料。'
+                                : 'No nutrients or ingredients requiring special attention were detected.'}
                             </p>
                           </div>
-                        );
-                      })}
+                        )}
+                      </>
+                    );
+                  })()}
+
+                  {/* 点击图标后的详情弹窗 */}
+                  {selectedWatchData && (
+                    <div
+                      className="fixed inset-0 z-50 bg-[#2b1745]/20 backdrop-blur-[2px] flex items-center justify-center p-4"
+                      onClick={() => setSelectedWatch(null)}
+                    >
+                      <div
+                        className="w-full max-w-[430px] max-h-[82vh] overflow-y-auto bg-white rounded-[28px] border border-[rgba(137,60,227,0.12)] shadow-[0_24px_70px_rgba(73,35,120,0.25)]"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        <div className="flex items-center gap-4 px-6 py-5 border-b border-purple-100">
+                          <span className="text-[35px]">{selectedWatchData.icon}</span>
+                          <div className="flex-1">
+                            <h3 className="text-[22px] font-extrabold text-[#171528] leading-tight">
+                              {isZh ? selectedWatchData.nameZh : selectedWatchData.name}
+                            </h3>
+                            <p className="text-[13px] font-semibold text-[#66617d] mt-1">
+                              {NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
+                                ? (isZh ? '每份营养含量与年龄适配提示' : 'Nutrient content and age-specific guidance')
+                                : (isZh ? '配料与添加剂详情' : 'Ingredient and additive details')}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => setSelectedWatch(null)}
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-[#66617d] hover:bg-purple-50 text-xl"
+                          >
+                            ×
+                          </button>
+                        </div>
+
+                        <div className="px-6 py-5">
+                          <div className="flex items-start gap-3 py-3 border-b border-purple-50">
+                            <span className="w-3 h-3 rounded-full bg-[#f97316] mt-1.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-[15px] font-extrabold text-[#29233f]">
+                                {isZh ? '评估结果' : 'Assessment'}
+                              </p>
+                              <p className="text-[14px] text-[#5d5873] leading-relaxed mt-1">
+                                {isZh ? selectedWatchData.detailZh : selectedWatchData.detail}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start gap-3 py-3 border-b border-purple-50">
+                            <span className="w-3 h-3 rounded-full bg-[#f97316] mt-1.5 flex-shrink-0" />
+                            <div>
+                              <p className="text-[15px] font-extrabold text-[#29233f]">
+                                {isZh ? '当前等级' : 'Current level'}
+                              </p>
+                              <p
+                                className="text-[17px] font-extrabold mt-1"
+                                style={{
+                                  color: NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
+                                    ? watchLevel(selectedWatchData.code, selectedWatchData.present).color
+                                    : ingredientStatus(selectedWatchData.present).color,
+                                }}
+                              >
+                                {NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
+                                  ? watchLevel(selectedWatchData.code, selectedWatchData.present).label
+                                  : ingredientStatus(selectedWatchData.present).label}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* 对应具体添加剂 */}
+                          {view.additiveTags.filter(a => {
+                            const info = ADDITIVE_DICT[a.code];
+                            return info && WATCH_ADDITIVE_TYPES[selectedWatchData.code]?.includes(info.type);
+                          }).map(a => {
+                            const info = ADDITIVE_DICT[a.code]!;
+                            const risk = RISK_COLOR[info.risk];
+                            return (
+                              <div
+                                key={a.code}
+                                className="mt-3 rounded-xl p-3 border"
+                                style={{ background: risk.bg, borderColor: risk.border }}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-[12px] font-extrabold" style={{ color: risk.text }}>
+                                    {a.code}
+                                  </span>
+                                  <span className="text-[13px] font-bold text-gray-800">
+                                    {isZh ? info.nameZh : info.name}
+                                  </span>
+                                  <span
+                                    className="ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full"
+                                    style={{ background: risk.border, color: risk.text }}
+                                  >
+                                    {isZh ? risk.labelZh : risk.label}
+                                  </span>
+                                </div>
+                                <p className="text-[12px] text-gray-600 leading-relaxed">
+                                  {isZh ? info.descZh : info.desc}
+                                </p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   )}
+
                   {nova && (
                     <div className="border-t border-[rgba(200,160,100,0.25)] pt-4 mt-3">
                       <h4 className="font-extrabold text-[#a07040] tracking-wide mb-2">{isZh ? '加工程度' : 'PROCESSING'}</h4>
