@@ -484,10 +484,12 @@ export default function FoodAnalyzer() {
     if (isEs) return ({ High: 'Alto', Moderate: 'Moderado', Low: 'Bajo' } as Record<string, string>)[lvl];
     return lvl;
   };
+  // 只统计孩子实际选择、且有足够营养证据支持的目标。
+  // 未选择的目标和 tier=null 的目标不计入 “Supports X goals”。
   const tierCounts = view ? {
-    core: view.goals.filter(g => g.tier === 'core').length,
-    important: view.goals.filter(g => g.tier === 'important').length,
-    supporting: view.goals.filter(g => g.tier === 'supporting').length,
+    core: view.goals.filter(g => g.selected && g.tier === 'core').length,
+    important: view.goals.filter(g => g.selected && g.tier === 'important').length,
+    supporting: view.goals.filter(g => g.selected && g.tier === 'supporting').length,
   } : null;
 
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
@@ -1023,10 +1025,25 @@ export default function FoodAnalyzer() {
                       </p>
                     )}
 
+                    {tierCounts &&
+                      tierCounts.core + tierCounts.important + tierCounts.supporting === 0 && (
+                        <div className="rounded-xl bg-white/55 border border-[rgba(137,60,227,0.12)] px-3 py-3 mb-3">
+                          <p className="text-[11px] font-bold text-[#6b6b8a] leading-relaxed">
+                            {isZh
+                              ? '该食品目前没有足够的营养证据支持所选发育目标。'
+                              : 'This food does not currently provide enough nutrient evidence to support the selected developmental goals.'}
+                          </p>
+                        </div>
+                      )}
+
                     {/* 按 tier 分组 */}
                     {(['core', 'important', 'supporting'] as const).map(tier => {
-                      const goalsInTier = view.goals.filter(g => g.tier === tier);
-                      const inactiveGoals = tier === 'supporting' ? view.goals.filter(g => !g.tier) : [];
+                      const goalsInTier = view.goals.filter(
+                        g => g.selected && g.tier === tier
+                      );
+                      const inactiveGoals = tier === 'supporting'
+                        ? view.goals.filter(g => g.selected && !g.tier)
+                        : [];
                       if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
                       const tc = TIER_CONFIG[tier];
                       return (

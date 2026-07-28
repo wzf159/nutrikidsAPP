@@ -325,27 +325,94 @@ export async function scoreFood(input: ScoreInput) {
     goalScoresDebug
   );
 
-  // goalScore(0~1) 判定档位的门槛,可以按需调整
-  const GOAL_SCORE_TIER_THRESHOLDS = { core: 0.6, important: 0.3, supporting: 0 } as const;
+  // DevScore 的单目标公式是 min(1, sum(sj))，适合参与总分，
+  // 但不能直接拿来做前端 Core / Important / Supporting：
+  // 多个目标会共享 Protein、Zinc、Vitamin D 等营养素，
+  // 单个高分营养素可能把很多目标同时推到 1。
+  //
+  // 前端展示等级额外加入“真实营养证据数量”：
+  // - Core:       goalScore >= 0.75 且至少 3 个映射营养素有有效贡献
+  // - Important:  goalScore >= 0.45 且至少 2 个映射营养素有有效贡献
+  // - Supporting: goalScore >= 0.20 且至少 1 个映射营养素有有效贡献
+  //
+  // 这里不改变 DevScore，只约束 UI 不要把一个营养素夸大成支持全部目标。
+  const goalEvidence = (goalId: number) => {
+    const mappedIds = GOAL_NUTRIENT_MAP[goalId] ?? [];
+
+    const contributing = mappedIds
+      .map((nutrientId) => {
+        const nutrient = prodNutr.find(
+          (n: { nutrientId: number }) => n.nutrientId === nutrientId
+        );
+
+        if (!nutrient) return null;
+
+        const dailyValue = Number(nutrient.dailyValue ?? 0);
+        const value100g = Number((nutrient as any).value100g ?? NaN);
+
+        // %DV >= 5 视为有实际每份贡献；
+        // 对没有 %DV 但有有效每100g原始值的数据，也保留为弱证据。
+        const hasContribution =
+          dailyValue >= 5 ||
+          (Number.isFinite(value100g) && value100g > 0);
+
+        if (!hasContribution) return null;
+
+        return {
+          nutrientId,
+          dailyValue,
+        };
+      })
+      .filter(
+        (
+          item
+        ): item is {
+          nutrientId: number;
+          dailyValue: number;
+        } => item !== null
+      );
+
+    return {
+      count: contributing.length,
+      contributing,
+    };
+  };
+
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
+
     const score = goalScores[goalId];
-    if (score === undefined) return null; // 这个年龄段/性别下,这个目标本来就不适用
-    if (score >= GOAL_SCORE_TIER_THRESHOLDS.core) return 'core';
-    if (score >= GOAL_SCORE_TIER_THRESHOLDS.important) return 'important';
-    if (score > GOAL_SCORE_TIER_THRESHOLDS.supporting) return 'supporting';
+    if (score === undefined || score <= 0) return null;
+
+    const evidenceCount = goalEvidence(goalId).count;
+
+    if (score >= 0.75 && evidenceCount >= 3) return 'core';
+    if (score >= 0.45 && evidenceCount >= 2) return 'important';
+    if (score >= 0.20 && evidenceCount >= 1) return 'supporting';
+
     return null;
   };
 
-  const viewGoals = allGoals.map((g) => ({
-    id: g.id,
-    icon: g.icon,
-    label: g.label,
-    labelZh: g.labelZh,
-    selected: childGoalIds.has(g.id),
-    tier: devTierOf(g.id),
-    supportDV: Math.round((goalScores[g.id] ?? 0) * 100), // 0~100,现在是goalScore的百分比,不再是%DV
-  }));
+  const viewGoals = allGoals.map((g) => {
+    const evidence = goalEvidence(g.id);
+    const tier = devTierOf(g.id);
+
+    // supportDV 是 UI 展示值，不参与最终 DevScore。
+    // 使用证据覆盖率抑制“一个营养素让整个目标满分”的视觉误导。
+    const mappedCount = Math.max((GOAL_NUTRIENT_MAP[g.id] ?? []).length, 1);
+    const evidenceCoverage = Math.min(1, evidence.count / Math.min(mappedCount, 3));
+    const displaySupport = (goalScores[g.id] ?? 0) * evidenceCoverage;
+
+    return {
+      id: g.id,
+      icon: g.icon,
+      label: g.label,
+      labelZh: g.labelZh,
+      selected: childGoalIds.has(g.id),
+      tier,
+      supportDV: Math.round(displaySupport * 100),
+    };
+  });
   // scoreFood 函数里，在 flows 计算之前加
   console.log('childGoalIds:', [...childGoalIds]);
   console.log('viewNutrIds:', [...viewNutrIds]);
