@@ -4,9 +4,20 @@ import { computeAdditiveScoreV2 } from './scoring/additiveScoreV2.js';
 import { hasAdditiveCategory } from './scoring/additiveCategories.js';
 import { OFF_NUTRIENT_MAP } from './productFinder.js';
 
-// nutrients 字典中 "Sugars" 的 id（见 seed.ts）
-const ENERGY_NUTRIENT_ID = 16;
+// nutrients 字典 ID（见 seed.ts）
 const SUGAR_NUTRIENT_ID = 15;
+const ENERGY_NUTRIENT_ID = 16;
+const SATURATED_FAT_NUTRIENT_ID = 17;
+const SODIUM_NUTRIENT_ID = 18;
+
+// 前端正向营养素列表中排除的项目。
+// 总脂肪并不必然是儿童饮食中的负面营养素，因此这里只排除糖、能量、饱和脂肪和钠。
+const EXCLUDED_FROM_POSITIVE_NUTRIENTS = new Set<number>([
+  SUGAR_NUTRIENT_ID,
+  ENERGY_NUTRIENT_ID,
+  SATURATED_FAT_NUTRIENT_ID,
+  SODIUM_NUTRIENT_ID,
+]);
 
 
 
@@ -146,7 +157,9 @@ export async function scoreFood(input: ScoreInput) {
   const stageMatch = clamp(Math.round((matched / Math.max(childNutrIds.size, 1)) * 10), 0, 10);
 
 
-  // Step A: DevScore (v2 — 分类层级爬树版本)
+  // Step A: DevScore
+  // computeDevScoreV2 / computeGoalScoresV2 必须使用 notebook 原始规则：
+  // 遍历全部 categoriesTags，收集所有可用 p10 / p90，并分别取中位数；不进行分类树父级遍历。
   const genderKey = child.gender === 'girl' ? 'female' : 'male';
   const ageIdx = stageIdx(child.stageKey);
 
@@ -160,14 +173,23 @@ export async function scoreFood(input: ScoreInput) {
   const nutrientValuesByTag: Record<string, number> = {};
   for (const n of prodNutr as any[]) {
     const tag = nutrientIdToTag[n.nutrientId];
-    if (tag && n.value100g != null) nutrientValuesByTag[tag] = Number(n.value100g);
+    const value100g = Number(n.value100g);
+    if (tag && n.value100g != null && Number.isFinite(value100g)) {
+      nutrientValuesByTag[tag] = value100g;
+    }
   }
 
-  // 产品的 OFF 分类数组(旧数据没有 categoriesTagsJson 时当空数组处理 →
-  // DevScore 会因为爬不到任何分类而对每个营养素都跳过,goalScore 记为 0,不会报错)
+  // 产品的 OFF 分类数组。旧数据没有 categoriesTagsJson 或 JSON 格式错误时按空数组处理；
+  // 此时没有可用分类统计，相关营养素会跳过，goalScore 记为 0，不会报错。
   let categoriesTags: string[] = [];
   try {
-    categoriesTags = product.categoriesTagsJson ? JSON.parse(product.categoriesTagsJson) : [];
+    const parsed = product.categoriesTagsJson
+      ? JSON.parse(product.categoriesTagsJson)
+      : [];
+
+    categoriesTags = Array.isArray(parsed)
+      ? parsed.filter((tag): tag is string => typeof tag === 'string')
+      : [];
   } catch {
     categoriesTags = [];
   }
@@ -259,14 +281,13 @@ export async function scoreFood(input: ScoreInput) {
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
   
-  const NEGATIVE_NUTRIENTS = new Set([17, 18, 19, 21]);// Saturated Fat, Sodium, Fat
-
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
   const viewNutrients = prodNutr
-    .filter((n: { nutrientId: number }) => n.nutrientId !== SUGAR_NUTRIENT_ID 
-    && n.nutrientId !== ENERGY_NUTRIENT_ID 
-    && !NEGATIVE_NUTRIENTS.has(n.nutrientId) )
+    .filter(
+      (n: { nutrientId: number }) =>
+        !EXCLUDED_FROM_POSITIVE_NUTRIENTS.has(n.nutrientId)
+    )
     .map((n) => ({
       id: n.nutrientId,
       name: n.nutrient.name,
@@ -378,19 +399,19 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: (prodNutr.find((n: any) => n.nutrientId === 18)?.value ?? 0) > sodiumThreshold,
-      detail: `${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
-      detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 18)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
+      present: (prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.value ?? 0) > sodiumThreshold,
+      detail: `${prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
+      detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
     },
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-      present: (prodNutr.find((n: any) => n.nutrientId === 17)?.value ?? 0) > satfatThreshold,
+      present: (prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.value ?? 0) > satfatThreshold,
       detail: satfatLimit === null
-        ? `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
-        : `${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
+        ? `${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
+        : `${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
       detailZh: satfatLimit === null
-        ? `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
-        : `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === 17)?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
+        ? `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
+        : `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',

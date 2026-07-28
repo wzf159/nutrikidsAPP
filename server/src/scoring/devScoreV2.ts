@@ -1,31 +1,30 @@
 /**
- * DevScore v2 —— 分类层级爬树版本。
+ * DevScore —— 全部 categories_tags 中位数版本。
  *
- * 跟旧版(硬编码 DRI_TABLE,单营养素得分 = min(1, actual/DRI每日推荐量))的区别:
- * 单营养素得分改成"这个产品的营养素含量,落在同类产品 P10~P90 区间的哪个位置"
- * (clip((x-L)/(U-L), 0, 1)),L/U 是从 category_nutrition_stats.json 里,按产品的
- * OFF 分类层级(爬树找最具体、样本量又达标的分类)查出来的。
+ * 算法与原始 notebook / Python 实现保持一致：
  *
- * 目标/权重结构(每个发育目标下的营养素加权求和、按 tier 权重合计)保持不变,
- * 只是数据来源从硬编码表换成 nutrient_goal_mapping.json + age_gender_weight_summary.json。
+ * 1. 遍历产品全部 categories_tags；
+ * 2. 对当前 nutrient_tag 收集每个分类中可用的 p10 / p90；
+ * 3. L_j = median(all p10)；
+ * 4. U_j = median(all p90)；
+ * 5. s_j = clip((x_j - L_j) / (U_j - L_j), 0, 1)；
+ * 6. 每个发育目标 GoalScore = min(1, sum(s_j))；
+ * 7. DevScore = sum(GoalScore_i * weight_i) / sum(weight_i)。
  *
- * 依赖的5个参考数据文件:
- *   - category_nutrition_stats.json
- *   - nutrient_goal_mapping.json
- *   - age_gender_weight_summary.json
- *   - categories_parents.json
+ * 不使用：
+ * - 分类树
+ * - 父级回溯
+ * - most specific category
+ * - categories_parents.json
+ * - 评分阶段 MIN_N 过滤
  */
-
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CategoryTaxonomy } from './categoryTaxonomy.js';
 
-// ESM 里没有 __dirname,用 import.meta.url 换算出等价的目录路径
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 const DATA_DIR = path.join(__dirname, 'data');
 
 function readJson<T>(filename: string): T {
@@ -49,54 +48,33 @@ interface NutrientGoalRow {
   weight: number;
 }
 
-// 启动时读一次,常驻内存,不要在请求处理函数里读盘
-const categoryNutritionStats = readJson<Record<string, Record<string, CategoryStat>>>(
-  'category_nutrition_stats.json'
+interface BoundsLookupResult {
+  L: number;
+  U: number;
+  matchedCategories: {
+    category: string;
+    p10: number;
+    p90: number;
+  }[];
+}
+
+interface SingleGoalResult {
+  goalScore: number;
+  weight: number;
+}
+
+const categoryNutritionStats = readJson<
+  Record<string, Record<string, CategoryStat>>
+>('category_nutrition_stats.json');
+
+const nutrientGoalMapping = readJson<NutrientGoalRow[]>(
+  'nutrient_goal_mapping.json'
 );
-const nutrientGoalMapping = readJson<NutrientGoalRow[]>('nutrient_goal_mapping.json');
-const ageGenderWeightSummary = readJson<Record<string, number>>('age_gender_weight_summary.json');
-const categoriesParents = readJson<Record<string, string[]>>('categories_parents.json');
 
-const taxonomy = new CategoryTaxonomy(categoriesParents);
+const ageGenderWeightSummary = readJson<Record<string, number>>(
+  'age_gender_weight_summary.json'
+);
 
-// 跟 Python 版 gen_category_nutrition_stats.py 里的 MIN_N 保持一致,这里只是双重保险
-const MIN_N = 30;
-
-function statsIfReliable(category: string, nutrientTag: string): CategoryStat | null {
-  const stat = categoryNutritionStats[category]?.[nutrientTag];
-  if (!stat) return null;
-  if (stat.p10 === null || stat.p90 === null || stat.n < MIN_N) return null;
-  return stat;
-}
-
-function lookupMostSpecificBounds(
-  categoriesTags: string[],
-  nutrientTag: string
-): { L: number; U: number } | null {
-  const leaves = taxonomy.mostSpecificTags(categoriesTags);
-  const found: { n: number; p10: number; p90: number }[] = [];
-
-  for (const leaf of leaves) {
-    const matchedCat = taxonomy.nearestAncestorWithData(leaf, (c) => statsIfReliable(c, nutrientTag) !== null);
-    if (matchedCat === null) continue;
-    const stat = statsIfReliable(matchedCat, nutrientTag)!;
-    found.push({ n: stat.n, p10: stat.p10 as number, p90: stat.p90 as number });
-  }
-
-  if (found.length === 0) return null;
-
-  // 多个分支都找到时,取 n 最小(=最具体)的那个
-  const best = found.reduce((a, b) => (b.n < a.n ? b : a));
-  return { L: best.p10, U: best.p90 };
-}
-
-/**
- * 发育目标数字 id -> nutrient_goal_mapping.json 里 development_goal 字符串。
- * 注意: DevelopmentGoal 表里 id=3 的 label 是 'Heart Development'、id=7 是
- * 'Visual Development',但 nutrient_goal_mapping.json 里这两个分别叫
- * 'Heart Growth'、'Vision Development' —— 字符串不完全一样,所以这里显式写死
- * 这份映射,不能直接拿数据库里的 goal.label 去查 nutrient_goal_mapping.json。
- */
 export const GOAL_ID_TO_DEVELOPMENT_GOAL: Record<number, string> = {
   1: 'Brain Development',
   2: 'Bone Development',
@@ -108,7 +86,6 @@ export const GOAL_ID_TO_DEVELOPMENT_GOAL: Record<number, string> = {
   8: 'Dental Development',
 };
 
-/** ageIdx(0~5,跟 scoreFood.ts 里 stageIdx() 返回值一致) -> age_group 字符串 */
 export const AGE_GROUP_STRINGS = [
   '0-6 months',
   '7-12 months',
@@ -116,24 +93,78 @@ export const AGE_GROUP_STRINGS = [
   '4-8 years',
   '9-13 years',
   '14-18 years',
-];
+] as const;
 
 export interface DevScoreInput {
   categoriesTags: string[];
-  /** nutrient_tag(OFF风格,比如 'vitamin-b9') -> 每100g原始值 */
+  /** OFF nutrient_tag -> 每 100g 原始值 */
   nutrientValuesByTag: Record<string, number>;
   ageIdx: number;
   genderKey: 'male' | 'female';
 }
 
-/** 单个发育目标的计算结果 */
-interface SingleGoalResult {
-  goalScore: number;
-  weight: number;
+function clamp01(value: number): number {
+  return Math.min(1, Math.max(0, value));
 }
 
-/** 抽出来的单目标计算逻辑,devScore总分和"每个目标单独的goalScore"都复用这一份,
- * 避免两处逻辑慢慢跑偏。*/
+function median(values: number[]): number | null {
+  if (values.length === 0) return null;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+  }
+
+  return sorted[middle];
+}
+
+/**
+ * 遍历全部 categoriesTags，收集当前营养素所有可用 p10 / p90，
+ * 分别取中位数。
+ */
+function lookupMedianBounds(
+  categoriesTags: string[],
+  nutrientTag: string
+): BoundsLookupResult | null {
+  const p10Values: number[] = [];
+  const p90Values: number[] = [];
+  const matchedCategories: BoundsLookupResult['matchedCategories'] = [];
+
+  for (const category of categoriesTags) {
+    const stat = categoryNutritionStats[category]?.[nutrientTag];
+    if (!stat) continue;
+
+    const p10 = stat.p10;
+    const p90 = stat.p90;
+
+    if (
+      p10 === null ||
+      p90 === null ||
+      !Number.isFinite(p10) ||
+      !Number.isFinite(p90)
+    ) {
+      continue;
+    }
+
+    p10Values.push(p10);
+    p90Values.push(p90);
+    matchedCategories.push({ category, p10, p90 });
+  }
+
+  const L = median(p10Values);
+  const U = median(p90Values);
+
+  if (L === null || U === null) return null;
+
+  return {
+    L,
+    U,
+    matchedCategories,
+  };
+}
+
 function computeSingleGoalScore(
   goalLabel: string,
   categoriesTags: string[],
@@ -143,94 +174,212 @@ function computeSingleGoalScore(
   debug: string[]
 ): SingleGoalResult | null {
   const rows = nutrientGoalMapping.filter(
-    (r) => r.age_group === ageGroupStr && r.gender === genderStr && r.development_goal === goalLabel
+    (row) =>
+      row.age_group === ageGroupStr &&
+      row.gender === genderStr &&
+      row.development_goal === goalLabel
   );
+
   if (rows.length === 0) return null;
 
-  const weight = rows[0].weight;
-  if (!weight) return null;
+  const weight = Number(rows[0].weight);
+  if (!Number.isFinite(weight) || weight <= 0) return null;
 
-  const sList: number[] = [];
+  const nutrientScores: number[] = [];
+
+  debug.push(`[${goalLabel}] weight=${weight}`);
+
   for (const row of rows) {
-    if (row.status !== 'found' || !row.nutrient_tag) continue; // 比如 Prebiotics 没有 OFF 数据,跳过
-
-    const xj = nutrientValuesByTag[row.nutrient_tag];
-    if (xj === undefined) continue; // 产品没测这个营养素
-
-    const bounds = lookupMostSpecificBounds(categoriesTags, row.nutrient_tag);
-    if (bounds === null) continue; // 爬遍分类树也查不到可靠区间
-
-    const { L, U } = bounds;
-    let sj: number;
-    if (U === L) {
-      sj = xj >= L ? 1 : 0;
-    } else {
-      sj = Math.min(1, Math.max(0, (xj - L) / (U - L)));
+    if (row.status !== 'found' || !row.nutrient_tag) {
+      continue;
     }
-    sList.push(sj);
-    debug.push(`    ${row.nutrient_tag}: x=${xj} L(p10)=${L} U(p90)=${U} -> sj=${sj.toFixed(3)}`);
+
+    const nutrientTag = row.nutrient_tag;
+    const x = nutrientValuesByTag[nutrientTag];
+
+    if (x === undefined || !Number.isFinite(x)) {
+      debug.push(
+        `  - ${row.my_nutrient} (${nutrientTag}): 产品没有有效值，跳过`
+      );
+      continue;
+    }
+
+    const bounds = lookupMedianBounds(categoriesTags, nutrientTag);
+
+    if (!bounds) {
+      debug.push(
+        `  - ${row.my_nutrient} (${nutrientTag}): 全部分类均无可用 p10/p90，跳过`
+      );
+      continue;
+    }
+
+    const { L, U, matchedCategories } = bounds;
+
+    debug.push(`  - ${row.my_nutrient} (${nutrientTag}): x=${x}`);
+    debug.push(
+      `    遍历产品全部 categories_tags，共 ${categoriesTags.length} 个`
+    );
+
+    for (const matched of matchedCategories) {
+      debug.push(
+        `    - 命中 category=${matched.category}: p10=${matched.p10}, p90=${matched.p90}`
+      );
+    }
+
+    debug.push(`    共命中 ${matchedCategories.length} 个分类`);
+    debug.push(`    p10 中位数 -> L=${L}`);
+    debug.push(`    p90 中位数 -> U=${U}`);
+
+    let nutrientScore: number;
+
+    if (U === L) {
+      nutrientScore = x >= L ? 1 : 0;
+    } else {
+      nutrientScore = clamp01((x - L) / (U - L));
+    }
+
+    nutrientScores.push(nutrientScore);
+
+    debug.push(`    -> sj=${nutrientScore.toFixed(3)}`);
   }
 
-  const goalScore = sList.length > 0 ? Math.min(1, sList.reduce((a, b) => a + b, 0)) : 0;
-  debug.push(`  [${goalLabel}] weight=${weight} nutrients_scored=${sList.length}/${rows.length} goalScore=${goalScore.toFixed(3)}`);
-  return { goalScore, weight };
+  const goalScore =
+    nutrientScores.length > 0
+      ? Math.min(
+          1,
+          nutrientScores.reduce((sum, score) => sum + score, 0)
+        )
+      : 0;
+
+  debug.push(
+    `  => GoalScore=min(1,sum(sj))=${goalScore.toFixed(3)}`
+  );
+  debug.push(
+    `  => WeightedGoalScore=${(goalScore * weight).toFixed(3)}`
+  );
+
+  return {
+    goalScore,
+    weight,
+  };
 }
 
-export function computeDevScoreV2(input: DevScoreInput, debug: string[] = []): number {
-  const { categoriesTags, nutrientValuesByTag, ageIdx, genderKey } = input;
-  const ageGroupStr = AGE_GROUP_STRINGS[ageIdx];
+function resolveAgeGroup(ageIdx: number): string | null {
+  return AGE_GROUP_STRINGS[ageIdx] ?? null;
+}
+
+export function computeDevScore(
+  input: DevScoreInput,
+  debug: string[] = []
+): number {
+  const {
+    categoriesTags,
+    nutrientValuesByTag,
+    ageIdx,
+    genderKey,
+  } = input;
+
+  const ageGroupStr = resolveAgeGroup(ageIdx);
+  if (!ageGroupStr) {
+    debug.push(`无效 ageIdx=${ageIdx}，DevScore=0`);
+    return 0;
+  }
+
   const genderStr = genderKey === 'female' ? 'Female' : 'Male';
 
   debug.push(
-    `DevScore v2: age_group=${ageGroupStr}, gender=${genderStr}, categories=${JSON.stringify(categoriesTags)}`
+    `DevScore: age_group=${ageGroupStr}, gender=${genderStr}`
+  );
+  debug.push(
+    `categories_tags (${categoriesTags.length}): ${JSON.stringify(categoriesTags)}`
   );
 
   let weightedSum = 0;
 
-  for (const goalIdStr of Object.keys(GOAL_ID_TO_DEVELOPMENT_GOAL)) {
-    const goalId = Number(goalIdStr);
+  for (const goalId of Object.keys(
+    GOAL_ID_TO_DEVELOPMENT_GOAL
+  ).map(Number)) {
     const goalLabel = GOAL_ID_TO_DEVELOPMENT_GOAL[goalId];
 
-    const result = computeSingleGoalScore(goalLabel, categoriesTags, nutrientValuesByTag, ageGroupStr, genderStr, debug);
-    if (result === null) continue;
+    const result = computeSingleGoalScore(
+      goalLabel,
+      categoriesTags,
+      nutrientValuesByTag,
+      ageGroupStr,
+      genderStr,
+      debug
+    );
+
+    if (!result) continue;
 
     weightedSum += result.goalScore * result.weight;
   }
 
-  const sumW = ageGenderWeightSummary[`${ageGroupStr}|${genderStr}`];
-  debug.push(`sum(weightedGoalScore)=${weightedSum.toFixed(3)}, sum(w)=${sumW}`);
+  const sumWeights =
+    ageGenderWeightSummary[`${ageGroupStr}|${genderStr}`];
 
-  if (!sumW) {
-    debug.push('sum(w) 是 0 或找不到,DevScore 记为 0');
+  debug.push(
+    `sum(WeightedGoalScore)=${weightedSum.toFixed(3)}`
+  );
+  debug.push(`sum(w)=${sumWeights}`);
+
+  if (!Number.isFinite(sumWeights) || sumWeights <= 0) {
+    debug.push('sum(w) 无效，DevScore=0');
     return 0;
   }
 
-  const devScore = weightedSum / sumW;
-  debug.push(`DevScore v2 = ${devScore.toFixed(4)}`);
+  const devScore = weightedSum / sumWeights;
+
+  debug.push(
+    `DevScore=${weightedSum.toFixed(3)}/${sumWeights}=${devScore.toFixed(4)}`
+  );
+
   return devScore;
 }
 
-/**
- * 每个发育目标单独的 goalScore(0~1),不做加权汇总——给"这个食品支持哪些发育目标"
- * 这类展示功能用,取代旧版"该目标映射营养素里最大单项%DV是否≥15%"的判定方式。
- *
- * 返回值: goalId(1~8,对应 GOAL_ID_TO_DEVELOPMENT_GOAL 的 key) -> goalScore(0~1)。
- * 某个目标在这个 age_group/gender 下没有权重(比如年龄段不适用)的,不会出现在返回结果里。
- */
-export function computeGoalScoresV2(input: DevScoreInput, debug: string[] = []): Record<number, number> {
-  const { categoriesTags, nutrientValuesByTag, ageIdx, genderKey } = input;
-  const ageGroupStr = AGE_GROUP_STRINGS[ageIdx];
-  const genderStr = genderKey === 'female' ? 'Female' : 'Male';
+export function computeGoalScores(
+  input: DevScoreInput,
+  debug: string[] = []
+): Record<number, number> {
+  const {
+    categoriesTags,
+    nutrientValuesByTag,
+    ageIdx,
+    genderKey,
+  } = input;
 
+  const ageGroupStr = resolveAgeGroup(ageIdx);
+  if (!ageGroupStr) return {};
+
+  const genderStr = genderKey === 'female' ? 'Female' : 'Male';
   const scores: Record<number, number> = {};
-  for (const goalIdStr of Object.keys(GOAL_ID_TO_DEVELOPMENT_GOAL)) {
-    const goalId = Number(goalIdStr);
+
+  for (const goalId of Object.keys(
+    GOAL_ID_TO_DEVELOPMENT_GOAL
+  ).map(Number)) {
     const goalLabel = GOAL_ID_TO_DEVELOPMENT_GOAL[goalId];
 
-    const result = computeSingleGoalScore(goalLabel, categoriesTags, nutrientValuesByTag, ageGroupStr, genderStr, debug);
-    if (result === null) continue;
+    const result = computeSingleGoalScore(
+      goalLabel,
+      categoriesTags,
+      nutrientValuesByTag,
+      ageGroupStr,
+      genderStr,
+      debug
+    );
+
+    if (!result) continue;
 
     scores[goalId] = result.goalScore;
   }
+
   return scores;
 }
+
+/**
+ * 兼容现有 scoring.ts。
+ * 等你以后愿意统一命名时，可以把调用改成 computeDevScore / computeGoalScores，
+ * 再删除这两个别名。
+ */
+export const computeDevScoreV2 = computeDevScore;
+export const computeGoalScoresV2 = computeGoalScores;
