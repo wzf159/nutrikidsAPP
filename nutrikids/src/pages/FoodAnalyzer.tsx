@@ -1234,46 +1234,159 @@ export default function FoodAnalyzer() {
                         })}
                       </div>
 
-                      {/* 顶部最右栏：无全屏遮罩的局部小窗口 */}
-                      {topWatchPopupData?.present && (
-                        <div className="absolute right-0 top-full z-30 mt-2 w-[285px] rounded-[18px] border border-[rgba(249,115,22,0.24)] bg-white p-4 shadow-[0_14px_36px_rgba(80,40,120,0.20)]">
-                          <div className="flex items-start gap-3">
-                            <span className="text-[27px]">{topWatchPopupData.icon}</span>
+                      {/* 顶部最右栏：结构化详情卡，无全屏遮罩 */}
+                      {topWatchPopupData?.present && (() => {
+                        const watchData = topWatchPopupData as typeof topWatchPopupData & {
+                          value?: number;
+                          unit?: string;
+                          dailyValue?: number;
+                          ageLimit?: number | null;
+                          ageLimitUnit?: string;
+                          threshold?: number;
+                          referenceBasis?: string;
+                        };
 
-                            <div className="min-w-0 flex-1">
-                              <p className="text-[14px] font-extrabold text-[#29233f]">
-                                {isZh ? topWatchPopupData.nameZh : topWatchPopupData.name}
-                              </p>
-                              <p className="mt-1 text-[11px] leading-relaxed text-[#6b667d]">
-                                {isZh
-                                  ? topWatchPopupData.detailZh
-                                  : topWatchPopupData.detail}
-                              </p>
+                        const isNutrient = NUTRIENT_WATCH_CODES.has(watchData.code);
+                        const status = isNutrient
+                          ? watchLevel(watchData.code, true)
+                          : ingredientStatus(true);
 
-                              <p
-                                className="mt-2 text-[10px] font-extrabold tracking-wide"
-                                style={{
-                                  color: NUTRIENT_WATCH_CODES.has(topWatchPopupData.code)
-                                    ? watchLevel(topWatchPopupData.code, true).color
-                                    : ingredientStatus(true).color,
-                                }}
+                        return (
+                          <div className="absolute right-0 top-full z-30 mt-2 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]">
+                            <div className="flex items-center gap-3 border-b border-purple-100 px-5 py-4">
+                              <span className="text-[30px]">{watchData.icon}</span>
+
+                              <div className="min-w-0 flex-1">
+                                <p className="text-[19px] font-extrabold leading-tight text-[#171528]">
+                                  {isZh ? watchData.nameZh : watchData.name}
+                                </p>
+                                <p className="mt-0.5 text-[11px] font-semibold text-[#68627c]">
+                                  {isNutrient
+                                    ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
+                                    : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
+                                </p>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => setTopWatchPopup(null)}
+                                className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] text-gray-400 hover:bg-purple-50 hover:text-gray-700"
                               >
-                                {NUTRIENT_WATCH_CODES.has(topWatchPopupData.code)
-                                  ? watchLevel(topWatchPopupData.code, true).label
-                                  : ingredientStatus(true).label}
-                              </p>
+                                ×
+                              </button>
                             </div>
 
-                            <button
-                              type="button"
-                              onClick={() => setTopWatchPopup(null)}
-                              className="text-[16px] text-gray-400 hover:text-gray-700"
-                            >
-                              ×
-                            </button>
+                            <div className="px-5 py-3">
+                              {isNutrient ? (
+                                <>
+                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? watchData.nameZh : watchData.name}
+                                      </p>
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                        {Number.isFinite(Number(watchData.value))
+                                          ? `${Number(watchData.value).toLocaleString(undefined, {
+                                              maximumFractionDigits: 2,
+                                            })}${watchData.unit ?? ''}`
+                                          : (isZh ? '暂无数值' : 'Value unavailable')}
+                                        <span className="ml-1 text-[14px] font-bold text-[#29233f]">
+                                          {isZh
+                                            ? `每 ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
+                                            : `for ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
+                                        </span>
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
+                                      </p>
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                        {Number(watchData.dailyValue ?? 0).toLocaleString(undefined, {
+                                          maximumFractionDigits: 1,
+                                        })}%, {status.label}
+                                      </p>
+                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
+                                        {watchData.ageLimit === null
+                                          ? (isZh
+                                              ? '该年龄段暂无明确每日上限'
+                                              : 'No established daily limit for this age group')
+                                          : (isZh
+                                              ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
+                                              : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-start gap-3 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? '评估基准' : 'Assessment Basis'}
+                                      </p>
+                                      <p className="mt-1 text-[13px] font-bold leading-relaxed text-[#f97316]">
+                                        {isZh
+                                          ? `警示阈值：${watchData.threshold ?? '—'}${watchData.unit ?? ''}；当前状态为 ${status.label}`
+                                          : `Watch threshold: ${watchData.threshold ?? '—'}${watchData.unit ?? ''}; current level is ${status.label}`}
+                                      </p>
+                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
+                                        {isZh
+                                          ? '基于产品营养数据与孩子年龄阶段计算'
+                                          : 'Calculated from product nutrition data and the child’s age stage'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? '检测状态' : 'Detection Status'}
+                                      </p>
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#dc2626]">
+                                        {status.label}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? '为什么需要注意' : 'Why It Matters'}
+                                      </p>
+                                      <p className="mt-1 text-[12px] leading-relaxed text-[#625d72]">
+                                        {isZh ? watchData.detailZh : watchData.detail}
+                                      </p>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-start gap-3 py-3">
+                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
+                                    <div>
+                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                        {isZh ? '数据来源' : 'Evidence Source'}
+                                      </p>
+                                      <p className="mt-1 text-[12px] font-bold text-[#f97316]">
+                                        {isZh
+                                          ? '产品配料表与 Open Food Facts 添加剂标签'
+                                          : 'Ingredient list and Open Food Facts additive tags'}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                     {nova && (
                       <div className="bg-[rgba(249,115,22,0.08)] border-l-3 border-[#f97316] rounded-lg px-2.5 py-1.5 flex items-center gap-2">

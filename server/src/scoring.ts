@@ -102,6 +102,10 @@ export interface ScoreInput {
   imagePath?: string | null;
 }
 
+function viewReferenceBasis(servingSize: string | null): string {
+  return servingSize?.trim() || '100 g / 100 ml';
+}
+
 // 结合"孩子档案 × 产品事实"计算个性化评分，写入 analyses 全套明细，返回结果 + 前端视图数据。
 export async function scoreFood(input: ScoreInput) {
   const { userId, childId, productId } = input;
@@ -433,17 +437,35 @@ export async function scoreFood(input: ScoreInput) {
   })();
   const hasRawAdditive = (codes: string[]) => 
     codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
+
+  const sugarNutrient = prodNutr.find(
+    (n: any) => n.nutrientId === SUGAR_NUTRIENT_ID
+  );
+  const sodiumNutrient = prodNutr.find(
+    (n: any) => n.nutrientId === SODIUM_NUTRIENT_ID
+  );
+  const satfatNutrient = prodNutr.find(
+    (n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID
+  );
+
   const watch = [
     // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
     {
       code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
       present: sugarG >= sugarThreshold && (product.novaScore ?? 4) >= 2,
+      value: Number(sugarNutrient?.value ?? sugarG ?? 0),
+      unit: sugarNutrient?.unit ?? 'g',
+      dailyValue: Number(sugarNutrient?.dailyValue ?? 0),
+      ageLimit: sugarLimit,
+      ageLimitUnit: 'g',
+      threshold: sugarThreshold,
+      referenceBasis: viewReferenceBasis(product.servingSize),
       detail: sugarLimit === 0
-        ? `${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}% DV sugar per serving — added sugar is not recommended for this age group.`
-        : `${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}% of daily sugar limit per serving (limit: ${sugarLimit}g).`,
+        ? `${sugarNutrient?.dailyValue ?? 0}% DV sugar per serving — added sugar is not recommended for this age group.`
+        : `${sugarNutrient?.dailyValue ?? 0}% of daily sugar limit per serving (limit: ${sugarLimit}g).`,
       detailZh: sugarLimit === 0
-        ? `每份糖分占每日参考值的${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段不建议摄入添加糖。`
-        : `每份糖分占每日上限的${prodNutr.find(n => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0}%（上限：${sugarLimit}g）。`,
+        ? `每份糖分占每日参考值的${sugarNutrient?.dailyValue ?? 0}%，该年龄段不建议摄入添加糖。`
+        : `每份糖分占每日上限的${sugarNutrient?.dailyValue ?? 0}%（上限：${sugarLimit}g）。`,
     },
     {
       code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
@@ -466,19 +488,33 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: (prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.value ?? 0) > sodiumThreshold,
-      detail: `${prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
-      detailZh: `每份钠含量占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
+      present: Number(sodiumNutrient?.value ?? 0) > sodiumThreshold,
+      value: Number(sodiumNutrient?.value ?? 0),
+      unit: sodiumNutrient?.unit ?? 'mg',
+      dailyValue: Number(sodiumNutrient?.dailyValue ?? 0),
+      ageLimit: sodiumLimit,
+      ageLimitUnit: 'mg',
+      threshold: sodiumThreshold,
+      referenceBasis: viewReferenceBasis(product.servingSize),
+      detail: `${sodiumNutrient?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
+      detailZh: `每份钠含量占每日参考值的${sodiumNutrient?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
     },
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-      present: (prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.value ?? 0) > satfatThreshold,
+      present: Number(satfatNutrient?.value ?? 0) > satfatThreshold,
+      value: Number(satfatNutrient?.value ?? 0),
+      unit: satfatNutrient?.unit ?? 'g',
+      dailyValue: Number(satfatNutrient?.dailyValue ?? 0),
+      ageLimit: satfatLimit,
+      ageLimitUnit: 'g',
+      threshold: satfatThreshold,
+      referenceBasis: viewReferenceBasis(product.servingSize),
       detail: satfatLimit === null
-        ? `${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
-        : `${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
+        ? `${satfatNutrient?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
+        : `${satfatNutrient?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
       detailZh: satfatLimit === null
-        ? `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
-        : `每份饱和脂肪占每日参考值的${prodNutr.find((n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID)?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
+        ? `每份饱和脂肪占每日参考值的${satfatNutrient?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
+        : `每份饱和脂肪占每日参考值的${satfatNutrient?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
