@@ -126,6 +126,56 @@ export interface DevScoreInput {
   genderKey: 'male' | 'female';
 }
 
+/** 单个发育目标的计算结果 */
+interface SingleGoalResult {
+  goalScore: number;
+  weight: number;
+}
+
+/** 抽出来的单目标计算逻辑,devScore总分和"每个目标单独的goalScore"都复用这一份,
+ * 避免两处逻辑慢慢跑偏。*/
+function computeSingleGoalScore(
+  goalLabel: string,
+  categoriesTags: string[],
+  nutrientValuesByTag: Record<string, number>,
+  ageGroupStr: string,
+  genderStr: string,
+  debug: string[]
+): SingleGoalResult | null {
+  const rows = nutrientGoalMapping.filter(
+    (r) => r.age_group === ageGroupStr && r.gender === genderStr && r.development_goal === goalLabel
+  );
+  if (rows.length === 0) return null;
+
+  const weight = rows[0].weight;
+  if (!weight) return null;
+
+  const sList: number[] = [];
+  for (const row of rows) {
+    if (row.status !== 'found' || !row.nutrient_tag) continue; // 比如 Prebiotics 没有 OFF 数据,跳过
+
+    const xj = nutrientValuesByTag[row.nutrient_tag];
+    if (xj === undefined) continue; // 产品没测这个营养素
+
+    const bounds = lookupMostSpecificBounds(categoriesTags, row.nutrient_tag);
+    if (bounds === null) continue; // 爬遍分类树也查不到可靠区间
+
+    const { L, U } = bounds;
+    let sj: number;
+    if (U === L) {
+      sj = xj >= L ? 1 : 0;
+    } else {
+      sj = Math.min(1, Math.max(0, (xj - L) / (U - L)));
+    }
+    sList.push(sj);
+    debug.push(`    ${row.nutrient_tag}: x=${xj} L(p10)=${L} U(p90)=${U} -> sj=${sj.toFixed(3)}`);
+  }
+
+  const goalScore = sList.length > 0 ? Math.min(1, sList.reduce((a, b) => a + b, 0)) : 0;
+  debug.push(`  [${goalLabel}] weight=${weight} nutrients_scored=${sList.length}/${rows.length} goalScore=${goalScore.toFixed(3)}`);
+  return { goalScore, weight };
+}
+
 export function computeDevScoreV2(input: DevScoreInput, debug: string[] = []): number {
   const { categoriesTags, nutrientValuesByTag, ageIdx, genderKey } = input;
   const ageGroupStr = AGE_GROUP_STRINGS[ageIdx];
@@ -141,38 +191,10 @@ export function computeDevScoreV2(input: DevScoreInput, debug: string[] = []): n
     const goalId = Number(goalIdStr);
     const goalLabel = GOAL_ID_TO_DEVELOPMENT_GOAL[goalId];
 
-    const rows = nutrientGoalMapping.filter(
-      (r) => r.age_group === ageGroupStr && r.gender === genderStr && r.development_goal === goalLabel
-    );
-    if (rows.length === 0) continue;
+    const result = computeSingleGoalScore(goalLabel, categoriesTags, nutrientValuesByTag, ageGroupStr, genderStr, debug);
+    if (result === null) continue;
 
-    const weight = rows[0].weight;
-    if (!weight) continue;
-
-    const sList: number[] = [];
-    for (const row of rows) {
-      if (row.status !== 'found' || !row.nutrient_tag) continue; // 比如 Prebiotics 没有 OFF 数据,跳过
-
-      const xj = nutrientValuesByTag[row.nutrient_tag];
-      if (xj === undefined) continue; // 产品没测这个营养素
-
-      const bounds = lookupMostSpecificBounds(categoriesTags, row.nutrient_tag);
-      if (bounds === null) continue; // 爬遍分类树也查不到可靠区间
-
-      const { L, U } = bounds;
-      let sj: number;
-      if (U === L) {
-        sj = xj >= L ? 1 : 0;
-      } else {
-        sj = Math.min(1, Math.max(0, (xj - L) / (U - L)));
-      }
-      sList.push(sj);
-      debug.push(`    ${row.nutrient_tag}: x=${xj} L(p10)=${L} U(p90)=${U} -> sj=${sj.toFixed(3)}`);
-    }
-
-    const goalScore = sList.length > 0 ? Math.min(1, sList.reduce((a, b) => a + b, 0)) : 0;
-    weightedSum += goalScore * weight;
-    debug.push(`  [${goalLabel}] weight=${weight} nutrients_scored=${sList.length}/${rows.length} goalScore=${goalScore.toFixed(3)}`);
+    weightedSum += result.goalScore * result.weight;
   }
 
   const sumW = ageGenderWeightSummary[`${ageGroupStr}|${genderStr}`];
@@ -186,4 +208,29 @@ export function computeDevScoreV2(input: DevScoreInput, debug: string[] = []): n
   const devScore = weightedSum / sumW;
   debug.push(`DevScore v2 = ${devScore.toFixed(4)}`);
   return devScore;
+}
+
+/**
+ * 每个发育目标单独的 goalScore(0~1),不做加权汇总——给"这个食品支持哪些发育目标"
+ * 这类展示功能用,取代旧版"该目标映射营养素里最大单项%DV是否≥15%"的判定方式。
+ *
+ * 返回值: goalId(1~8,对应 GOAL_ID_TO_DEVELOPMENT_GOAL 的 key) -> goalScore(0~1)。
+ * 某个目标在这个 age_group/gender 下没有权重(比如年龄段不适用)的,不会出现在返回结果里。
+ */
+export function computeGoalScoresV2(input: DevScoreInput, debug: string[] = []): Record<number, number> {
+  const { categoriesTags, nutrientValuesByTag, ageIdx, genderKey } = input;
+  const ageGroupStr = AGE_GROUP_STRINGS[ageIdx];
+  const genderStr = genderKey === 'female' ? 'Female' : 'Male';
+
+  const scores: Record<number, number> = {};
+  for (const goalIdStr of Object.keys(GOAL_ID_TO_DEVELOPMENT_GOAL)) {
+    const goalId = Number(goalIdStr);
+    const goalLabel = GOAL_ID_TO_DEVELOPMENT_GOAL[goalId];
+
+    const result = computeSingleGoalScore(goalLabel, categoriesTags, nutrientValuesByTag, ageGroupStr, genderStr, debug);
+    if (result === null) continue;
+
+    scores[goalId] = result.goalScore;
+  }
+  return scores;
 }

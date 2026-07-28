@@ -9,7 +9,7 @@ export interface AdditiveInfo {
   desc: string;
   descZh: string;
   ansesInterest?: boolean;
-  efsaOverexposureRisk?: 'no' | 'moderate' | 'high';
+  efsaOverexposureRisk?: string;
 }
 
 export interface WatchCard {
@@ -21,7 +21,12 @@ export interface WatchCard {
     | 'sodium'
     | 'saturated-fat'
     | 'trans-fat'
-    | 'hfcs';
+    | 'hfcs'
+    | 'antioxidants'
+    | 'acidity_regulators'
+    | 'thickeners_emulsifiers'
+    | 'flavor_enhancers'
+    | 'sweeteners';
   name: string;
   nameZh: string;
   icon: string;
@@ -469,12 +474,13 @@ export const RISK_COLOR: Record<
 };
 
 /**
- * Recommended eight cards for the current UI.
+ * Watch cards for the current UI (originally 8, now 13 with the 5 additive-category cards added).
  *
  * Important:
  * - "Added Sugar", "Sodium", "Saturated Fat" and "Trans Fat" come from nutriments.
  * - "Flavorings" and "HFCS" come from ingredients text/tags.
- * - "Food Colors" and "Preservatives" come from additive tags.
+ * - "Food Colors", "Preservatives", "Antioxidants", "Acidity Regulators",
+ *   "Thickeners / Emulsifiers", "Flavor Enhancers" and "Sweeteners" come from additive tags.
  */
 export const WATCH_CARDS: WatchCard[] = [
   { code: 'added-sugar', name: 'Added Sugar', nameZh: '添加糖', icon: '🍬', source: 'nutriments' },
@@ -485,11 +491,21 @@ export const WATCH_CARDS: WatchCard[] = [
   { code: 'saturated-fat', name: 'Saturated Fat', nameZh: '饱和脂肪', icon: '🥩', source: 'nutriments' },
   { code: 'trans-fat', name: 'Trans Fat', nameZh: '反式脂肪', icon: '🛢️', source: 'nutriments' },
   { code: 'hfcs', name: 'High Fructose Corn Syrup', nameZh: '高果糖玉米糖浆', icon: '🌽', source: 'ingredients' },
+  { code: 'antioxidants', name: 'Antioxidants', nameZh: '抗氧化剂', icon: '🍊', source: 'additives' },
+  { code: 'acidity_regulators', name: 'Acidity Regulators', nameZh: '酸度调节剂', icon: '🍋', source: 'additives' },
+  { code: 'thickeners_emulsifiers', name: 'Thickeners / Emulsifiers', nameZh: '增稠剂/乳化剂', icon: '🥣', source: 'additives' },
+  { code: 'flavor_enhancers', name: 'Flavor Enhancers', nameZh: '增味剂', icon: '🍥', source: 'additives' },
+  { code: 'sweeteners', name: 'Sweeteners', nameZh: '甜味剂', icon: '🍭', source: 'additives' },
 ];
 
 export const WATCH_ADDITIVE_TYPES: Record<string, string[]> = {
   colors: ['Color'],
   preservatives: ['Preservative'],
+  antioxidants: ['Antioxidant'],
+  acidity_regulators: ['Acidity Regulator'],
+  thickeners_emulsifiers: ['Thickener', 'Emulsifier'],
+  flavor_enhancers: ['Flavor Enhancer'],
+  sweeteners: ['Sweetener'],
 };
 
 /** Normalize Open Food Facts additive tags such as "en:e250" or "E250". */

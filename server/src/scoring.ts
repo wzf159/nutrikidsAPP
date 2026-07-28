@@ -1,14 +1,13 @@
 import { prisma } from './prisma.js';
-import { computeDevScoreV2 } from './scoring/devScoreV2.js';
+import { computeDevScoreV2, computeGoalScoresV2 } from './scoring/devScoreV2.js';
+import { computeAdditiveScoreV2 } from './scoring/additiveScoreV2.js';
+import { hasAdditiveCategory } from './scoring/additiveCategories.js';
 import { OFF_NUTRIENT_MAP } from './productFinder.js';
 
 // nutrients 字典中 "Sugars" 的 id（见 seed.ts）
 const ENERGY_NUTRIENT_ID = 16;
 const SUGAR_NUTRIENT_ID = 15;
-const SATFAT_NUTRIENT_ID = 17;
-const SODIUM_NUTRIENT_ID = 18;
-const FIBER_NUTRIENT_ID = 22;
-const PROTEIN_NUTRIENT_ID = 13;
+
 
 
 type DevTier = 'core' | 'important' | 'supporting';
@@ -180,45 +179,54 @@ export async function scoreFood(input: ScoreInput) {
   );
   console.log(devScoreDebug.join('\n'));
 
-  // Step B: NutriNorm（Nutri-Score 2014）
-  // 需要 per 100g 数据，serving 数据近似处理
-  const servingSizeG = (() => {
-    const m = (product.servingSize ?? '').match(/\(?\s*(\d+(?:\.\d+)?)\s*g\s*\)?/i);
-    if (m) return parseFloat(m[1]);
-    const fallback = parseFloat(product.servingSize ?? '100');
-    return fallback > 0 ? fallback : 100;
-  })();
-  const per100 = (val: number | null) => val != null ? (val / servingSizeG) * 100 : 0;
+  // Step B: NutriNorm —— 还原 notebook 设计: 直接读 OFF 官方 nutriscore_score 换算,
+  // 不再自己手动重算 Nutri-Score 的正负分(之前那套手动实现缺了水果/蔬菜/坚果这个
+  // 维度,代码里自己也写了"暂缺,设0",精度不如 OFF 官方算好的分数)。
+  //
+  // 跟 notebook 一致: nutriscore_score 缺失,或者 nutriscore_grade 不是 a~e 之一,
+  // 就判定这个产品"暂时没法评分",不再像之前那样硬凑一个退回值。
+  if (product.nutriScore === null || product.nutriScore === undefined) {
+    throw Object.assign(
+      new Error('此产品缺少 Nutri-Score 分数(nutriscore_score),暂时无法评分'),
+      { statusCode: 422 }
+    );
+  }
+  const nutriNorm = Math.max(0, Math.min(1, (55 - product.nutriScore) / 72));
 
+  // Step C: FinalScore —— 按 Nutri-Score 等级分支(还原 notebook 原始设计):
+  // A/B 用 DevScore 加分,C/D/E 用 additive_score 扣分。
+  const alpha = 0.5;
+  const nutriGradeLower = (product.nutriGrade ?? '').toLowerCase();
 
-  
-  const energyKJ = per100(prodNutr.find((n: any) => n.nutrientId === ENERGY_NUTRIENT_ID)?.value ?? null) * 4.184;
-  const sugarG100 = per100(prodNutr.find((n: any) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? null);
-  const satFatG100 = per100(prodNutr.find((n: any) => n.nutrientId === SATFAT_NUTRIENT_ID)?.value ?? null);
-  const saltG100 = (per100(prodNutr.find((n: any) => n.nutrientId === SODIUM_NUTRIENT_ID)?.value ?? null) * 2.5) / 1000;
-  const fiberG100 = per100(prodNutr.find((n: any) => n.nutrientId === FIBER_NUTRIENT_ID)?.value ?? null);
-  const proteinG100 = per100(prodNutr.find((n: any) => n.nutrientId === PROTEIN_NUTRIENT_ID)?.value ?? null);
-  // Negative points
-  const negEnergy = Math.min(10, Math.floor(energyKJ / 335));
-  const negSugar = Math.min(15, Math.floor(sugarG100 / 4.5));
-  const negSatFat = Math.min(10, Math.floor(satFatG100 / 1));
-  const negSalt = Math.min(20, Math.floor(saltG100 / 0.2));
-  const negative = negEnergy + negSugar + negSatFat + negSalt;
+  let overallRaw: number;
+  let additiveScore: number | null = null;
 
-  // Positive points
-  const posFiber = Math.min(5, Math.floor(fiberG100 / 0.9));
-  const posProtein = Math.min(5, Math.floor(proteinG100 / 1.6));
-  const positive = posFiber + posProtein; // 水果/蔬菜比例暂缺，设0
-
-  const nutriNorm = Math.max(0, Math.min(1, (positive - negative + 55) / 72));
-
-  // Step C: FinalScore
-  const b = 0.6;
+  if (nutriGradeLower === 'a' || nutriGradeLower === 'b') {
+    overallRaw = 100 * (alpha * nutriNorm + (1 - alpha) * devScore);
+  } else if (nutriGradeLower === 'c' || nutriGradeLower === 'd' || nutriGradeLower === 'e') {
+    const additiveDebug: string[] = [];
+    let additiveTagsForScore: string[] = [];
+    try {
+      additiveTagsForScore = product.additivesJson ? JSON.parse(product.additivesJson) : [];
+    } catch {
+      additiveTagsForScore = [];
+    }
+    additiveScore = computeAdditiveScoreV2(additiveTagsForScore, additiveDebug);
+    console.log(additiveDebug.join('\n'));
+    overallRaw = Math.max(0, 100 * (alpha * nutriNorm - (1 - alpha) * additiveScore));
+  } else {
+    // 等级既不是 a/b 也不是 c/d/e(比如缺失或者脏数据) —— 跟 notebook 一致,
+    // 判定这个产品没法评分,不再硬凑一个退回值
+    throw Object.assign(
+      new Error(`nutriGrade='${product.nutriGrade}' 不是 a~e 之一,暂时无法评分`),
+      { statusCode: 422 }
+    );
+  }
 
   console.log('DevScore:', devScore.toFixed(3));
   console.log('NutriNorm:', nutriNorm.toFixed(3));
-  console.log('FinalScore:', (100 * nutriNorm * (b + (1 - b) * devScore)).toFixed(1));
-  console.log('negative:', negative, 'positive:', positive);
+  console.log('nutriGrade:', nutriGradeLower, 'additiveScore:', additiveScore);
+  console.log('FinalScore:', overallRaw.toFixed(1));
   // 每日上限
   const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25;
   const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5;
@@ -233,7 +241,7 @@ export async function scoreFood(input: ScoreInput) {
   const satfatThreshold = [1, 1, 2, 2.5, 3, 4][ageIdx];
   // 更严格，尤其婴幼儿
 
-  const overall = Math.round(100 * nutriNorm * (b + (1 - b) * devScore));
+  const overall = Math.round(overallRaw);
   const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
   // 过敏命中
   const childAllergIds = new Set(child.allergens.map((a: { allergenId: number }) => a.allergenId));
@@ -274,29 +282,38 @@ export async function scoreFood(input: ScoreInput) {
     .slice(0, 6);
   const viewNutrIds = new Set(viewNutrients.map((n: { id: number }) => n.id));
 
-  // 目标支持度：对孩子选定的每个目标，累计映射营养素的 %DV
+  // 目标支持度：用 DevScore 同一套算法算出每个目标单独的 goalScore(0~1),
+  // 再按门槛分 Core/Important/Supporting 档位——不再用"最大单项%DV≥15%"的旧判定方式。
+  // flows(具体贡献了哪些营养素,给弹窗展示用)还是走 %DV,这个跟 tier 判定是两回事,没有改。
   const childGoalIds = new Set(child.goals.map((g: { goalId: number }) => g.goalId));
   const dvOf = (nid: number) => Number(prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === nid)?.dailyValue ?? 0);
 
   const flows: { goalId: number; nutrientId: number; value: number }[] = [];
-  const goalSupport: Record<number, number> = {}; // 现在存的是该目标映射营养素里的最大单项 %DV，不再是累加总和
   for (const goalId of childGoalIds) {
     for (const nid of GOAL_NUTRIENT_MAP[goalId] ?? []) {
       const dv = dvOf(nid);
       if (dv > 0 && viewNutrIds.has(nid)) {
         flows.push({ goalId, nutrientId: nid, value: Math.round(dv) });
-        goalSupport[goalId] = Math.max(goalSupport[goalId] ?? 0, dv);
       }
     }
   }
 
+  const goalScoresDebug: string[] = [];
+  const goalScores = computeGoalScoresV2(
+    { categoriesTags, nutrientValuesByTag, ageIdx, genderKey },
+    goalScoresDebug
+  );
 
-
-  const SUPPORT_DV_THRESHOLD = 15; // 该目标映射营养素里，至少一项要达到每日推荐量的 15%
+  // goalScore(0~1) 判定档位的门槛,可以按需调整
+  const GOAL_SCORE_TIER_THRESHOLDS = { core: 0.6, important: 0.3, supporting: 0 } as const;
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
-    if ((goalSupport[goalId] ?? 0) < SUPPORT_DV_THRESHOLD) return null;
-    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;
+    const score = goalScores[goalId];
+    if (score === undefined) return null; // 这个年龄段/性别下,这个目标本来就不适用
+    if (score >= GOAL_SCORE_TIER_THRESHOLDS.core) return 'core';
+    if (score >= GOAL_SCORE_TIER_THRESHOLDS.important) return 'important';
+    if (score > GOAL_SCORE_TIER_THRESHOLDS.supporting) return 'supporting';
+    return null;
   };
 
   const viewGoals = allGoals.map((g) => ({
@@ -306,8 +323,7 @@ export async function scoreFood(input: ScoreInput) {
     labelZh: g.labelZh,
     selected: childGoalIds.has(g.id),
     tier: devTierOf(g.id),
-    //tier: childGoalIds.has(g.id) ? tierOf(g.id) : null,
-    supportDV: Math.round(goalSupport[g.id] ?? 0),
+    supportDV: Math.round((goalScores[g.id] ?? 0) * 100), // 0~100,现在是goalScore的百分比,不再是%DV
   }));
   // scoreFood 函数里，在 flows 计算之前加
   console.log('childGoalIds:', [...childGoalIds]);
@@ -386,6 +402,38 @@ export async function scoreFood(input: ScoreInput) {
       code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
       detail: 'Contains high fructose corn syrup.', detailZh: '含果葡糖浆。'
     },
+    // ↓↓↓ 新增: 抗氧化剂/酸度调节剂/增稠乳化剂/增味剂/甜味剂
+    // present 判断依据 additive_categories.json(跟前端 ADDITIVE_DICT 生成用同一套E编号分类规则)
+    {
+      code: 'antioxidants', icon: '🍊', name: 'Antioxidants', nameZh: '抗氧化剂',
+      present: hasAdditiveCategory(rawAdditives, 'Antioxidant'),
+      detail: 'Contains antioxidant additives, commonly used to slow oxidation and extend shelf life.',
+      detailZh: '含抗氧化剂类添加剂，常用于延缓氧化、延长保质期。',
+    },
+    {
+      code: 'acidity_regulators', icon: '🍋', name: 'Acidity Regulators', nameZh: '酸度调节剂',
+      present: hasAdditiveCategory(rawAdditives, 'Acidity Regulator'),
+      detail: 'Contains acidity regulator additives, used to control pH or stabilize flavor.',
+      detailZh: '含酸度调节剂类添加剂，用于控制酸碱度或稳定风味。',
+    },
+    {
+      code: 'thickeners_emulsifiers', icon: '🥣', name: 'Thickeners / Emulsifiers', nameZh: '增稠剂/乳化剂',
+      present: hasAdditiveCategory(rawAdditives, 'Thickener'),
+      detail: 'Contains thickener/emulsifier additives, used to adjust texture or help ingredients blend.',
+      detailZh: '含增稠剂/乳化剂类添加剂，用于调整口感质地或帮助成分融合。',
+    },
+    {
+      code: 'flavor_enhancers', icon: '🍥', name: 'Flavor Enhancers', nameZh: '增味剂',
+      present: hasAdditiveCategory(rawAdditives, 'Flavor Enhancer'),
+      detail: 'Contains flavor enhancer additives (such as MSG-type compounds).',
+      detailZh: '含增味剂类添加剂（比如味精类化合物）。',
+    },
+    {
+      code: 'sweeteners', icon: '🍭', name: 'Sweeteners', nameZh: '甜味剂',
+      present: hasAdditiveCategory(rawAdditives, 'Sweetener'),
+      detail: 'Contains non-sugar sweetener additives.',
+      detailZh: '含非糖类甜味剂添加剂。',
+    },
   ];
   console.log('Sodium value:', prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value);
   const matchedAllergens = product.allergens
@@ -406,10 +454,9 @@ export async function scoreFood(input: ScoreInput) {
       whyTextZh: `针对该孩子综合评分 ${overall}/100。`,
       breakdown: {
         create: [
-          { dimension: 'devScore', score: Math.round(devScore * 100), weight: 0.7 },
-          { dimension: 'nutriNorm', score: Math.round(nutriNorm * 100), weight: 0.3 },
-          { dimension: 'negative', score: negative, weight: 0 },
-          { dimension: 'positive', score: positive, weight: 0 },
+          { dimension: 'devScore', score: Math.round(devScore * 100), weight: alpha },
+          { dimension: 'nutriNorm', score: Math.round(nutriNorm * 100), weight: alpha },
+          { dimension: 'additiveScore', score: additiveScore !== null ? Math.round(additiveScore * 100) : null, weight: 1 - alpha },
         ],
       },
       factors: { create: factors },

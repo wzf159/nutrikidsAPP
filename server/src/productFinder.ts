@@ -125,12 +125,15 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
       .map((m) => {
-        const valuePer100g = p.nutriments![m.offKey] * m.factor;
+        const rawOffValue100g = p.nutriments![m.offKey];  // OFF原始单位(通常是克),不做任何换算
+        const valuePer100g = rawOffValue100g * m.factor;  // 换算成展示用单位(比如毫克),给 value/dailyValue 用
         const value = Math.round(valuePer100g * servingFactor * 100) / 100;  // ← 乘以份量比例
         return {
           nutrientId: m.nutrientId,
           value,
-          value100g: Math.round(valuePer100g * 100) / 100,  // 每100g原始值,DevScore专用
+          // 每100g原始值,DevScore专用: 必须跟 category_nutrition_stats.json 同单位口径
+          // (那份表是直接从OFF原始克数算出来的P10/P90,不能在这里先乘factor换算单位)
+          value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
           unit: m.unit,
           dailyValue: Math.round((value / m.dvRef) * 100),
         };
@@ -161,7 +164,8 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });
-  } catch {
+  } catch (e) {
+    console.error(`importFromOpenFoodFacts 失败 (barcode=${barcode}):`, e);
     return null;
   }
 }
@@ -213,12 +217,13 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
       .map((m) => {
-        const valuePer100g = p.nutriments![m.offKey] * m.factor;
+        const rawOffValue100g = p.nutriments![m.offKey];  // OFF原始单位(通常是克),不做任何换算
+        const valuePer100g = rawOffValue100g * m.factor;  // 换算成展示用单位(比如毫克),给 value/dailyValue 用
         const value = Math.round(valuePer100g * servingFactor * 100) / 100;  // ← 乘以份量比例
         return {
           nutrientId: m.nutrientId,
           value,
-          value100g: Math.round(valuePer100g * 100) / 100,  // 每100g原始值,DevScore专用
+          value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
           unit: m.unit,
           dailyValue: Math.round((value / m.dvRef) * 100),
         };
@@ -250,7 +255,8 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });
-  } catch {
+  } catch (e) {
+    console.error(`searchOpenFoodFactsByName 失败 (name=${name}):`, e);
     return null;
   }
 }
@@ -292,7 +298,8 @@ export async function createProductByAI(nameEn: string, nameZh: string, brand: s
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
     });
-  } catch {
+  } catch (e) {
+    console.error(`createProductByAI 失败 (nameEn=${nameEn}):`, e);
     return null;
   }
 }
