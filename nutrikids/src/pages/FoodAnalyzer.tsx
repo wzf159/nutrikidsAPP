@@ -1716,7 +1716,7 @@ export default function FoodAnalyzer() {
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             {ingredientWatch.map(w => {
-                              const status = ingredientStatus(w.present);
+                              
                               return (
                                 <button
                                   key={w.code}
