@@ -1140,8 +1140,8 @@ export default function FoodAnalyzer() {
                               .filter(Boolean);
                             return (
                               <div
-                                className="absolute z-40 top-[72px] left-1/2 -translate-x-1/2 w-[260px] max-w-[calc(100vw-32px)] rounded-[18px] border border-[rgba(124,58,237,0.14)] bg-white/98 shadow-[0_12px_30px_rgba(80,40,160,0.18)] overflow-hidden"
-                                onClick={e => e.stopPropagation()}
+                              className="absolute z-40 top-full mt-2 left-1/2 -translate-x-1/2 w-[260px] max-w-[calc(100vw-32px)] rounded-[18px] border border-[rgba(124,58,237,0.14)] bg-white/98 shadow-[0_12px_30px_rgba(80,40,160,0.18)] overflow-hidden"
+                              onClick={e => e.stopPropagation()}
                               >
                                 <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
                                   <span className="text-[24px] leading-none">{g.icon}</span>
@@ -1258,12 +1258,9 @@ export default function FoodAnalyzer() {
                           : ingredientStatus(true);
 
                         return createPortal(
-                          <div
-                            className="fixed inset-0 z-[100] flex items-end justify-end overflow-y-auto px-4 py-10"
-                            onClick={() => setTopWatchPopup(null)}
-                          >
+                          
                             <div
-                              className="w-full max-w-[360px] max-h-[80vh] overflow-y-auto rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]"
+                              className="absolute right-0 top-full z-30 mt-2 w-[360px] max-w-[calc(100vw-32px)] max-h-[80vh] overflow-y-auto rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]"
                               onClick={e => e.stopPropagation()}
                             >
                               <div className="sticky top-0 z-10 flex items-start gap-2.5 bg-white px-4 py-3 border-b border-[#eee8f7]">
@@ -1381,7 +1378,7 @@ export default function FoodAnalyzer() {
                                 )}
                               </div>
                             </div>
-                          </div>,
+                          ,
                           document.body
                         );
                       })()}
@@ -1594,7 +1591,7 @@ export default function FoodAnalyzer() {
               {/* ③ 家长须知 */}
               <section
                 ref={thingsToWatchRef}
-                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
+                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-visible ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
               >   <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
@@ -1747,7 +1744,7 @@ export default function FoodAnalyzer() {
                       <>
                         {/* ① Nutrients to Watch */}
                         {nutrientWatch.length > 0 && (
-                          <div className="mb-7">
+                          <div className="relative mb-7">
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div>
                                 <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
@@ -1810,14 +1807,14 @@ export default function FoodAnalyzer() {
                             </div>
 
                             {selectedWatchData?.present && NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="mt-4">{renderWatchPopup()}</div>
+                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
                             )}
                           </div>
                         )}
 
                         {/* ② Ingredients to Be Aware Of */}
                         {ingredientWatch.length > 0 && (
-                          <div className="mb-7">
+                          <div className="relative mb-7">
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div>
                                 <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
@@ -1861,7 +1858,7 @@ export default function FoodAnalyzer() {
                             </div>
 
                             {selectedWatchData?.present && !NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="mt-4">{renderWatchPopup()}</div>
+                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
                             )}
                           </div>
                         )}
