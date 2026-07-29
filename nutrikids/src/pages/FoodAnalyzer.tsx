@@ -1391,6 +1391,30 @@ export default function FoodAnalyzer() {
 
                 </div>
               </div>
+              <div className="border-t border-[rgba(160,120,210,0.25)] pt-3 pb-1 px-[18px] mb-5">
+                <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                  <span className="text-[11px] font-extrabold text-gray-400 tracking-wide mr-1">
+                    {isZh ? '来源：' : 'SOURCES:'}
+                  </span>
+                  {[
+                    'WHO', 'AAP', 'AHA', 'BioRxiv', 'CDC', 'Front. Nutr', 'IJORO',
+                    'MMPE', 'NCBI', 'NIH ODS', 'PMC + NCBI', 'Karger',
+                    'ScienceDirect', 'NDC', 'USPSTF', 'Open Food Facts',
+                  ].map(src => (
+                    <button
+                      key={src}
+                      type="button"
+                      onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
+                      className="px-3 py-1 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[11px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                    >
+                      {src}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[11px] font-semibold text-gray-400">
+                  👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                </span>
+              </div>
             </section>
 
             <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''} `}>
@@ -1629,106 +1653,105 @@ export default function FoodAnalyzer() {
 
                       return (
                         <div className="relative z-20 mb-5 w-full max-w-[300px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 px-4 py-3 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
-                          
-                            {/* Header */}
-                            <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
-                              <span className="text-[24px] leading-none">{wd.icon}</span>
+                          {/* Header */}
+                          <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
+                            <span className="text-[24px] leading-none">{wd.icon}</span>
 
-                              <div className="min-w-0 flex-1">
-                                <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
-                                  {isZh ? wd.nameZh : wd.name}
-                                </h3>
-                                <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                  {isNutrient
-                                    ? (isZh ? `每份${wd.nameZh ?? wd.name}含量` : `${wd.name} content per serving`)
-                                    : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
-                                </p>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={() => setSelectedWatch(null)}
-                                className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
-                              >
-                                ✕
-                              </button>
+                            <div className="min-w-0 flex-1">
+                              <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                                {isZh ? wd.nameZh : wd.name}
+                              </h3>
+                              <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
+                                {isNutrient
+                                  ? (isZh ? `每份${wd.nameZh ?? wd.name}含量` : `${wd.name} content per serving`)
+                                  : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
+                              </p>
                             </div>
 
-                            {/* Body */}
-                            {isNutrient ? (
-                              <div className="px-4 py-2">
-                                <div className="flex items-start gap-2.5 py-2.5 border-b border-gray-100">
-                                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
-                                  <div>
-                                    <p className="text-[12px] font-semibold text-[#1a1040]">{isZh ? wd.nameZh : wd.name}</p>
-                                    <p className="mt-0.5 text-[13px] font-bold text-[#f97316]">
-                                      {Number.isFinite(Number(wd.value))
-                                        ? `${Number(wd.value).toLocaleString(undefined, { maximumFractionDigits: 2 })}${wd.unit ?? ''}`
-                                        : (isZh ? '暂无数值' : 'Value unavailable')}
-                                      <span className="ml-1 font-semibold text-[#1a1040]">
-                                        {isZh
-                                          ? `每 ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
-                                          : `for ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
-                                      </span>
-                                    </p>
-                                  </div>
-                                </div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedWatch(null)}
+                              className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
+                            >
+                              ✕
+                            </button>
+                          </div>
 
-                                <div className="flex items-start gap-2.5 py-2.5">
-                                  <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
-                                  <div>
-                                    <p className="text-[12px] font-semibold text-[#1a1040]">
-                                      {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
-                                    </p>
-                                    <p className="mt-0.5 text-[13px] font-bold" style={{ color: status.color }}>
-                                      {Number(wd.dailyValue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}%, {status.label}
-                                    </p>
-                                    <p className="mt-0.5 text-[10px] text-gray-400">
-                                      {wd.ageLimit === null
-                                        ? (isZh ? '该年龄段暂无明确每日上限' : 'No established daily limit for this age group')
-                                        : (isZh
-                                          ? `该年龄段每日参考上限：${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`
-                                          : `Daily reference limit: ${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`)}
-                                    </p>
-                                  </div>
+                          {/* Body */}
+                          {isNutrient ? (
+                            <div className="px-4 py-2">
+                              <div className="flex items-start gap-2.5 py-2.5 border-b border-gray-100">
+                                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
+                                <div>
+                                  <p className="text-[12px] font-semibold text-[#1a1040]">{isZh ? wd.nameZh : wd.name}</p>
+                                  <p className="mt-0.5 text-[13px] font-bold text-[#f97316]">
+                                    {Number.isFinite(Number(wd.value))
+                                      ? `${Number(wd.value).toLocaleString(undefined, { maximumFractionDigits: 2 })}${wd.unit ?? ''}`
+                                      : (isZh ? '暂无数值' : 'Value unavailable')}
+                                    <span className="ml-1 font-semibold text-[#1a1040]">
+                                      {isZh
+                                        ? `每 ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
+                                        : `for ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
+                                    </span>
+                                  </p>
                                 </div>
                               </div>
-                            ) : (
-                              <div className="px-4 py-3">
-                                <p className="text-[11px] leading-[1.5] text-[#615c73]">
-                                  {isZh ? wd.detailZh : wd.detail}
-                                </p>
 
-                                {view.additiveTags
-                                  .filter(a => {
-                                    const info = ADDITIVE_DICT[a.code];
-                                    return info && WATCH_ADDITIVE_TYPES[wd.code]?.includes(info.type);
-                                  })
-                                  .map(a => {
-                                    const info = ADDITIVE_DICT[a.code]!;
-                                    const risk = RISK_COLOR[info.risk];
-                                    return (
-                                      <div
-                                        key={a.code}
-                                        className="mt-2.5 rounded-[12px] border px-3 py-2.5"
-                                        style={{ background: risk.bg, borderColor: risk.border }}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-[10px] font-extrabold" style={{ color: risk.text }}>
-                                            {a.code}
-                                          </span>
-                                          <span className="text-[11px] font-bold text-[#29233f]">
-                                            {isZh ? info.nameZh : info.name}
-                                          </span>
-                                        </div>
-                                        <p className="mt-1 text-[10px] leading-[1.45] text-gray-600">
-                                          {isZh ? info.descZh : info.desc}
-                                        </p>
+                              <div className="flex items-start gap-2.5 py-2.5">
+                                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
+                                <div>
+                                  <p className="text-[12px] font-semibold text-[#1a1040]">
+                                    {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
+                                  </p>
+                                  <p className="mt-0.5 text-[13px] font-bold" style={{ color: status.color }}>
+                                    {Number(wd.dailyValue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}%, {status.label}
+                                  </p>
+                                  <p className="mt-0.5 text-[10px] text-gray-400">
+                                    {wd.ageLimit === null
+                                      ? (isZh ? '该年龄段暂无明确每日上限' : 'No established daily limit for this age group')
+                                      : (isZh
+                                        ? `该年龄段每日参考上限：${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`
+                                        : `Daily reference limit: ${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`)}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="px-4 py-3">
+                              <p className="text-[11px] leading-[1.5] text-[#615c73]">
+                                {isZh ? wd.detailZh : wd.detail}
+                              </p>
+
+                              {view.additiveTags
+                                .filter(a => {
+                                  const info = ADDITIVE_DICT[a.code];
+                                  return info && WATCH_ADDITIVE_TYPES[wd.code]?.includes(info.type);
+                                })
+                                .map(a => {
+                                  const info = ADDITIVE_DICT[a.code]!;
+                                  const risk = RISK_COLOR[info.risk];
+                                  return (
+                                    <div
+                                      key={a.code}
+                                      className="mt-2.5 rounded-[12px] border px-3 py-2.5"
+                                      style={{ background: risk.bg, borderColor: risk.border }}
+                                    >
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] font-extrabold" style={{ color: risk.text }}>
+                                          {a.code}
+                                        </span>
+                                        <span className="text-[11px] font-bold text-[#29233f]">
+                                          {isZh ? info.nameZh : info.name}
+                                        </span>
                                       </div>
-                                    );
-                                  })}
-                              </div>
-                            )}
+                                      <p className="mt-1 text-[10px] leading-[1.45] text-gray-600">
+                                        {isZh ? info.descZh : info.desc}
+                                      </p>
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          )}
                         </div>
                       );
                     };
