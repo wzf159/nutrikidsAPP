@@ -1259,7 +1259,7 @@ export default function FoodAnalyzer() {
 
                         return createPortal(
                           <div
-                            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 py-10"
+                            className="fixed inset-0 z-[100] flex items-end justify-end overflow-y-auto px-4 py-10"
                             onClick={() => setTopWatchPopup(null)}
                           >
                             <div
