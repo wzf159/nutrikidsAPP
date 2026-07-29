@@ -1393,7 +1393,7 @@ export default function FoodAnalyzer() {
               </div>
               <div className="border-t border-[rgba(160,120,210,0.25)] pt-3 pb-1 px-[18px] mb-5">
                 <div className="flex items-center flex-wrap gap-2 mb-1.5">
-                  <span className="text-[11px] font-extrabold text-gray-400 tracking-wide mr-1">
+                  <span className="text-[9px] font-extrabold text-gray-400 tracking-wide mr-1">
                     {isZh ? '来源：' : 'SOURCES:'}
                   </span>
                   {[
@@ -1405,7 +1405,7 @@ export default function FoodAnalyzer() {
                       key={src}
                       type="button"
                       onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
-                      className="px-3 py-1 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[11px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                      className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
                     >
                       {src}
                     </button>
@@ -1603,6 +1603,28 @@ export default function FoodAnalyzer() {
                       </p>
                     </>
                   )}
+                </div>
+                <div className="border-t border-[rgba(160,120,210,0.25)] pt-3 pb-1 px-[18px] mb-5">
+                  <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                    <span className="text-[9px] font-extrabold text-gray-400 tracking-wide mr-1">
+                      {isZh ? '来源：' : 'SOURCES:'}
+                    </span>
+                    {[
+                      'WHO', 'CHLA', 'NCBI', 'NIH NCCIH', 'NIH ODS', 'PMC + NCBI', 'USPSTF',
+                    ].map(src => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
+                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                      >
+                        {src}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-400">
+                    👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                  </span>
                 </div>
               </section>
 
@@ -1942,6 +1964,30 @@ export default function FoodAnalyzer() {
                       </p>
                     </div>
                   )}
+                </div>
+                <div className="border-t border-[rgba(160,120,210,0.25)] pt-3 pb-1 px-[18px] mb-5">
+                  <div className="flex items-center flex-wrap gap-2 mb-1.5">
+                    <span className="text-[11px] font-extrabold text-gray-400 tracking-wide mr-1">
+                      {isZh ? '来源：' : 'SOURCES:'}
+                    </span>
+                    {[
+                      'WHO', 'AAP', 'AHA', 'BioRxiv', 'CDC', 'Front. Nutr', 'IJORO',
+                      'MMPE', 'NCBI', 'NIH ODS', 'PMC + NCBI', 'Karger',
+                      'ScienceDirect', 'NDC', 'USPSTF', 'Open Food Facts',
+                    ].map(src => (
+                      <button
+                        key={src}
+                        type="button"
+                        onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
+                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                      >
+                        {src}
+                      </button>
+                    ))}
+                  </div>
+                  <span className="text-[9px] font-extrabold text-gray-400 tracking-wide mr-1">
+                    👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                  </span>
                 </div>
               </section>
             </div>
