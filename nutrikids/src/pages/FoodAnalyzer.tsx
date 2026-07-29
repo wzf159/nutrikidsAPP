@@ -537,7 +537,7 @@ export default function FoodAnalyzer() {
   };
 
   const [goalPopup, setGoalPopup] = useState<number | null>(null);
- 
+
   const NOVA_ICON: Record<number, string> = {
     1: '🍎',  // 未加工/天然食物
     2: '🧂',  // 加工烹饪食材
@@ -1214,9 +1214,8 @@ export default function FoodAnalyzer() {
                               className="flex flex-col items-center gap-1 cursor-pointer"
                             >
                               <span
-                                className={`w-[48px] h-[48px] rounded-full bg-[rgba(255,237,213,0.8)] border-2 border-[rgba(249,115,22,0.35)] flex items-center justify-center text-[22px] transition-transform ${
-                                  topWatchPopup === w.code ? 'scale-110' : ''
-                                }`}
+                                className={`w-[48px] h-[48px] rounded-full bg-[rgba(255,237,213,0.8)] border-2 border-[rgba(249,115,22,0.35)] flex items-center justify-center text-[22px] transition-transform ${topWatchPopup === w.code ? 'scale-110' : ''
+                                  }`}
                               >
                                 {w.icon}
                               </span>
@@ -1259,14 +1258,15 @@ export default function FoodAnalyzer() {
 
                         return (
                           <div className="absolute right-0 top-full z-30 mt-2 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]">
-                            <div className="flex items-center gap-3 border-b border-purple-100 px-5 py-4">
-                              <span className="text-[24px]">{watchData.icon}</span>
+                            <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
+                              <span className="text-[24px] leading-none">{watchData.icon}</span>
 
                               <div className="min-w-0 flex-1">
-                                <p className="text-[19px] font-extrabold leading-tight text-[#171528]">
+                                <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
                                   {isZh ? watchData.nameZh : watchData.name}
-                                </p>
-                                <p className="mt-0.5 text-[11px] font-semibold text-[#68627c]">
+                                </h3>
+
+                                <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
                                   {isNutrient
                                     ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
                                     : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
@@ -1276,9 +1276,9 @@ export default function FoodAnalyzer() {
                               <button
                                 type="button"
                                 onClick={() => setTopWatchPopup(null)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full text-[18px] text-gray-400 hover:bg-purple-50 hover:text-gray-700"
+                                className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
                               >
-                                ×
+                                ✕
                               </button>
                             </div>
 
@@ -1294,8 +1294,8 @@ export default function FoodAnalyzer() {
                                       <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
                                         {Number.isFinite(Number(watchData.value))
                                           ? `${Number(watchData.value).toLocaleString(undefined, {
-                                              maximumFractionDigits: 2,
-                                            })}${watchData.unit ?? ''}`
+                                            maximumFractionDigits: 2,
+                                          })}${watchData.unit ?? ''}`
                                           : (isZh ? '暂无数值' : 'Value unavailable')}
                                         <span className="ml-1 text-[14px] font-bold text-[#29233f]">
                                           {isZh
@@ -1320,11 +1320,11 @@ export default function FoodAnalyzer() {
                                       <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
                                         {watchData.ageLimit === null
                                           ? (isZh
-                                              ? '该年龄段暂无明确每日上限'
-                                              : 'No established daily limit for this age group')
+                                            ? '该年龄段暂无明确每日上限'
+                                            : 'No established daily limit for this age group')
                                           : (isZh
-                                              ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
-                                              : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
+                                            ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
+                                            : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
                                       </p>
                                     </div>
                                   </div>
@@ -1633,115 +1633,115 @@ export default function FoodAnalyzer() {
                       <>
                         {/* ① Nutrients to Watch */}
                         {nutrientWatch.length > 0 && (
-                        <div className="mb-7">
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div>
-                              <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
-                                ① {isZh ? '需要留意的营养素' : 'NUTRIENTS TO WATCH'}
-                              </h4>
-                              <p className="text-[12px] text-gray-400 mt-1">
-                                {isZh
-                                  ? '建议控制这些营养素的摄入；反式脂肪应尽量避免'
-                                  : 'Limit intake of these nutrients — Trans Fat should be avoided entirely'}
-                              </p>
+                          <div className="mb-7">
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div>
+                                <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
+                                  ① {isZh ? '需要留意的营养素' : 'NUTRIENTS TO WATCH'}
+                                </h4>
+                                <p className="text-[12px] text-gray-400 mt-1">
+                                  {isZh
+                                    ? '建议控制这些营养素的摄入；反式脂肪应尽量避免'
+                                    : 'Limit intake of these nutrients — Trans Fat should be avoided entirely'}
+                                </p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+                                👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
+                              </span>
                             </div>
-                            <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
-                              👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
-                            </span>
-                          </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {nutrientWatch.map(w => {
-                              const level = watchLevel(w.code, w.present);
-                              return (
-                                <button
-                                  key={w.code}
-                                  disabled={!w.present}
-                                  onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
-                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {nutrientWatch.map(w => {
+                                const level = watchLevel(w.code, w.present);
+                                return (
+                                  <button
+                                    key={w.code}
+                                    disabled={!w.present}
+                                    onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
+                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
                                     ${w.present
-                                      ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
-                                      : 'cursor-default opacity-60'
-                                    }
+                                        ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
+                                        : 'cursor-default opacity-60'
+                                      }
                                     ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
-                                  style={{
-                                    background: level.bg,
-                                    borderColor: w.present
-                                      ? 'rgba(251,146,60,0.42)'
-                                      : 'rgba(255,255,255,0.65)',
-                                  }}
-                                >
-                                  <span
-                                    className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
-                                      ${w.present ? '' : 'grayscale opacity-65'}`}
                                     style={{
-                                      background: w.present
-                                        ? 'rgba(255,247,237,0.88)'
-                                        : 'rgba(255,255,255,0.45)',
+                                      background: level.bg,
                                       borderColor: w.present
-                                        ? 'rgba(251,146,60,0.38)'
-                                        : 'rgba(230,225,235,0.55)',
+                                        ? 'rgba(251,146,60,0.42)'
+                                        : 'rgba(255,255,255,0.65)',
                                     }}
                                   >
-                                    {w.icon}
-                                  </span>
+                                    <span
+                                      className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
+                                      ${w.present ? '' : 'grayscale opacity-65'}`}
+                                      style={{
+                                        background: w.present
+                                          ? 'rgba(255,247,237,0.88)'
+                                          : 'rgba(255,255,255,0.45)',
+                                        borderColor: w.present
+                                          ? 'rgba(251,146,60,0.38)'
+                                          : 'rgba(230,225,235,0.55)',
+                                      }}
+                                    >
+                                      {w.icon}
+                                    </span>
 
-                                  <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
-                                    {isZh ? w.nameZh : w.name}
-                                  </span>
+                                    <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
+                                      {isZh ? w.nameZh : w.name}
+                                    </span>
 
-                                </button>
-                              );
-                            })}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
                         )}
 
                         {/* ② Ingredients to Be Aware Of */}
                         {ingredientWatch.length > 0 && (
-                        <div className="mb-7">
-                          <div className="flex items-start justify-between gap-3 mb-3">
-                            <div>
-                              <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
-                                ② {isZh ? '需要注意的配料' : 'INGREDIENTS TO BE AWARE OF'}
-                              </h4>
-                              <p className="text-[12px] text-gray-400 mt-1">
-                                {isZh ? '在可以选择时，建议尽量避免' : 'Best avoided when possible'}
-                              </p>
+                          <div className="mb-7">
+                            <div className="flex items-start justify-between gap-3 mb-3">
+                              <div>
+                                <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
+                                  ② {isZh ? '需要注意的配料' : 'INGREDIENTS TO BE AWARE OF'}
+                                </h4>
+                                <p className="text-[12px] text-gray-400 mt-1">
+                                  {isZh ? '在可以选择时，建议尽量避免' : 'Best avoided when possible'}
+                                </p>
+                              </div>
+                              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
+                                👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
+                              </span>
                             </div>
-                            <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
-                              👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
-                            </span>
-                          </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            {ingredientWatch.map(w => {
-                              
-                              return (
-                                <button
-                                  key={w.code}
-                                  disabled={!w.present}
-                                  onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
-                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {ingredientWatch.map(w => {
+
+                                return (
+                                  <button
+                                    key={w.code}
+                                    disabled={!w.present}
+                                    onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
+                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
                                     ${w.present
-                                      ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
-                                      : 'bg-white/35 border-white/65 cursor-default opacity-60'
-                                    }
+                                        ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
+                                        : 'bg-white/35 border-white/65 cursor-default opacity-60'
+                                      }
                                     ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
-                                >
-                                  <span className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'}`}>
-                                    {w.icon}
-                                  </span>
+                                  >
+                                    <span className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'}`}>
+                                      {w.icon}
+                                    </span>
 
-                                  <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
-                                    {isZh ? w.nameZh : w.name}
-                                  </span>
+                                    <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
+                                      {isZh ? w.nameZh : w.name}
+                                    </span>
 
-                                </button>
-                              );
-                            })}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
                         )}
 
                         {nutrientWatch.length === 0 && ingredientWatch.length === 0 && (
@@ -1760,57 +1760,71 @@ export default function FoodAnalyzer() {
                   {/* 点击图标后的详情弹窗 */}
                   {selectedWatchData?.present && (
                     <div className="relative z-20 mb-5 ml-auto w-full max-w-[300px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 px-4 py-3 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
-                      <div className="flex items-start gap-3">
-                        <span className={`text-[30px] ${selectedWatchData.present ? '' : 'grayscale opacity-55'}`}>
-                          {selectedWatchData.icon}
-                        </span>
+                      <div className="overflow-hidden rounded-[18px] border border-[#e7def3] bg-white shadow-[0_8px_28px_rgba(80,40,160,0.14)]">
+                        {/* Header */}
+                        <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
+                          <span className="text-[24px] leading-none">
+                            {selectedWatchData.icon}
+                          </span>
 
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div>
-                              <h3 className="text-[17px] font-extrabold text-[#29233f]">
-                                {isZh ? selectedWatchData.nameZh : selectedWatchData.name}
-                              </h3>
-                              <p
-                                className="mt-1 text-[11px] font-extrabold tracking-wide"
-                                style={{
-                                  color: NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
-                                    ? watchLevel(selectedWatchData.code, selectedWatchData.present).color
-                                    : ingredientStatus(selectedWatchData.present).color,
-                                }}
-                              >
-                                {NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
-                                  ? watchLevel(selectedWatchData.code, selectedWatchData.present).label
-                                  : ingredientStatus(selectedWatchData.present).label}
-                              </p>
-                            </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                              {isZh
+                                ? selectedWatchData.nameZh
+                                : selectedWatchData.name}
+                            </h3>
 
-                            <button
-                              type="button"
-                              onClick={() => setSelectedWatch(null)}
-                              className="text-[18px] text-gray-400 hover:text-gray-700"
+                            <p
+                              className="mt-0.5 text-[10px] leading-tight font-bold"
+                              style={{
+                                color: NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
+                                  ? watchLevel(
+                                    selectedWatchData.code,
+                                    selectedWatchData.present
+                                  ).color
+                                  : ingredientStatus(selectedWatchData.present).color,
+                              }}
                             >
-                              ×
-                            </button>
+                              {NUTRIENT_WATCH_CODES.has(selectedWatchData.code)
+                                ? watchLevel(
+                                  selectedWatchData.code,
+                                  selectedWatchData.present
+                                ).label
+                                : ingredientStatus(selectedWatchData.present).label}
+                            </p>
                           </div>
 
-                          <p className="mt-2 text-[11px] leading-[1.45] text-[#615c73]">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedWatch(null)}
+                            className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
+                          >
+                            ✕
+                          </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-4 py-3">
+                          <p className="text-[11px] leading-[1.5] text-[#615c73]">
                             {selectedWatchData.present
-                              ? (isZh
-                                  ? selectedWatchData.detailZh
-                                  : selectedWatchData.detail)
-                              : (isZh
-                                  ? '当前产品中未检测到该项。'
-                                  : 'This item was not detected in the current product.')}
+                              ? isZh
+                                ? selectedWatchData.detailZh
+                                : selectedWatchData.detail
+                              : isZh
+                                ? '当前产品中未检测到该项。'
+                                : 'This item was not detected in the current product.'}
                           </p>
 
                           {selectedWatchData.present &&
                             view.additiveTags
                               .filter(a => {
                                 const info = ADDITIVE_DICT[a.code];
+
                                 return (
                                   info &&
-                                  WATCH_ADDITIVE_TYPES[selectedWatchData.code]?.includes(info.type)
+                                  WATCH_ADDITIVE_TYPES[selectedWatchData.code]?.includes(
+                                    info.type
+                                  )
                                 );
                               })
                               .map(a => {
@@ -1820,7 +1834,7 @@ export default function FoodAnalyzer() {
                                 return (
                                   <div
                                     key={a.code}
-                                    className="mt-3 rounded-xl border p-3"
+                                    className="mt-2.5 rounded-[12px] border px-3 py-2.5"
                                     style={{
                                       background: risk.bg,
                                       borderColor: risk.border,
@@ -1828,16 +1842,18 @@ export default function FoodAnalyzer() {
                                   >
                                     <div className="flex items-center gap-2">
                                       <span
-                                        className="text-[11px] font-extrabold"
+                                        className="text-[10px] font-extrabold"
                                         style={{ color: risk.text }}
                                       >
                                         {a.code}
                                       </span>
-                                      <span className="text-[12px] font-bold text-gray-800">
+
+                                      <span className="text-[11px] font-bold text-[#29233f]">
                                         {isZh ? info.nameZh : info.name}
                                       </span>
                                     </div>
-                                    <p className="mt-1 text-[11px] leading-relaxed text-gray-600">
+
+                                    <p className="mt-1 text-[10px] leading-[1.45] text-gray-600">
                                       {isZh ? info.descZh : info.desc}
                                     </p>
                                   </div>
