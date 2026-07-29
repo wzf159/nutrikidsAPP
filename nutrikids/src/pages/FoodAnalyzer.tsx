@@ -1240,7 +1240,7 @@ export default function FoodAnalyzer() {
                         })}
                       </div>
 
-                      {/* 顶部最右栏：结构化详情卡，无全屏遮罩 */}
+                      {/* 顶部最右栏：结构化详情卡 —— 用 portal 渲染到 body，避免被后面的卡片盖住/裁切 */}
                       {topWatchPopupData?.present && (() => {
                         const watchData = topWatchPopupData as typeof topWatchPopupData & {
                           value?: number;
@@ -1257,141 +1257,132 @@ export default function FoodAnalyzer() {
                           ? watchLevel(watchData.code, true)
                           : ingredientStatus(true);
 
-                        return (
-                          <div className="absolute right-0 top-full z-30 mt-2 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]">
-                            <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
-                              <span className="text-[24px] leading-none">{watchData.icon}</span>
+                        return createPortal(
+                          <div
+                            className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto px-4 py-10"
+                            onClick={() => setTopWatchPopup(null)}
+                          >
+                            <div
+                              className="w-full max-w-[360px] max-h-[80vh] overflow-y-auto rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <div className="sticky top-0 z-10 flex items-start gap-2.5 bg-white px-4 py-3 border-b border-[#eee8f7]">
+                                <span className="text-[24px] leading-none">{watchData.icon}</span>
 
-                              <div className="min-w-0 flex-1">
-                                <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
-                                  {isZh ? watchData.nameZh : watchData.name}
-                                </h3>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                                    {isZh ? watchData.nameZh : watchData.name}
+                                  </h3>
 
-                                <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                  {isNutrient
-                                    ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
-                                    : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
-                                </p>
+                                  <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
+                                    {isNutrient
+                                      ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
+                                      : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
+                                  </p>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => setTopWatchPopup(null)}
+                                  className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
+                                >
+                                  ✕
+                                </button>
                               </div>
 
-                              <button
-                                type="button"
-                                onClick={() => setTopWatchPopup(null)}
-                                className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5"
-                              >
-                                ✕
-                              </button>
-                            </div>
-
-                            <div className="px-5 py-3">
-                              {isNutrient ? (
-                                <>
-                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                              <div className="px-4 py-2">
+                                {isNutrient ? (
+                                  <>
+                                    <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100">
+                                      <span className="text-[12px] font-semibold text-[#1a1040] truncate">
                                         {isZh ? watchData.nameZh : watchData.name}
-                                      </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                      </span>
+                                      <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap text-right">
                                         {Number.isFinite(Number(watchData.value))
                                           ? `${Number(watchData.value).toLocaleString(undefined, {
                                             maximumFractionDigits: 2,
                                           })}${watchData.unit ?? ''}`
                                           : (isZh ? '暂无数值' : 'Value unavailable')}
-                                        <span className="ml-1 text-[14px] font-bold text-[#29233f]">
+                                        <span className="ml-1 font-semibold text-[#1a1040]">
                                           {isZh
                                             ? `每 ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
                                             : `for ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
                                         </span>
-                                      </p>
+                                      </span>
                                     </div>
-                                  </div>
 
-                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                    <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100">
+                                      <span className="text-[12px] font-semibold text-[#1a1040] truncate">
                                         {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
-                                      </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                      </span>
+                                      <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap">
                                         {Number(watchData.dailyValue ?? 0).toLocaleString(undefined, {
                                           maximumFractionDigits: 1,
                                         })}%, {status.label}
-                                      </p>
-                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
-                                        {watchData.ageLimit === null
-                                          ? (isZh
-                                            ? '该年龄段暂无明确每日上限'
-                                            : 'No established daily limit for this age group')
-                                          : (isZh
-                                            ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
-                                            : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
-                                      </p>
+                                      </span>
                                     </div>
-                                  </div>
+                                    <p className="pb-2 text-[10px] leading-snug text-gray-400">
+                                      {watchData.ageLimit === null
+                                        ? (isZh
+                                          ? '该年龄段暂无明确每日上限'
+                                          : 'No established daily limit for this age group')
+                                        : (isZh
+                                          ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
+                                          : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
+                                    </p>
 
-                                  <div className="flex items-start gap-3 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                    <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                      <span className="text-[12px] font-semibold text-[#1a1040] truncate">
                                         {isZh ? '评估基准' : 'Assessment Basis'}
-                                      </p>
-                                      <p className="mt-1 text-[13px] font-bold leading-relaxed text-[#f97316]">
+                                      </span>
+                                      <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap">
                                         {isZh
-                                          ? `警示阈值：${watchData.threshold ?? '—'}${watchData.unit ?? ''}；当前状态为 ${status.label}`
-                                          : `Watch threshold: ${watchData.threshold ?? '—'}${watchData.unit ?? ''}; current level is ${status.label}`}
-                                      </p>
-                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
-                                        {isZh
-                                          ? '基于产品营养数据与孩子年龄阶段计算'
-                                          : 'Calculated from product nutrition data and the child’s age stage'}
-                                      </p>
+                                          ? `阈值 ${watchData.threshold ?? '—'}${watchData.unit ?? ''}`
+                                          : `Threshold ${watchData.threshold ?? '—'}${watchData.unit ?? ''}`}
+                                      </span>
                                     </div>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                    <p className="pb-3 text-[10px] leading-snug text-gray-400">
+                                      {isZh
+                                        ? '基于产品营养数据与孩子年龄阶段计算'
+                                        : 'Calculated from product nutrition data and the child’s age stage'}
+                                    </p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100">
+                                      <span className="text-[12px] font-semibold text-[#1a1040] truncate">
                                         {isZh ? '检测状态' : 'Detection Status'}
-                                      </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#dc2626]">
+                                      </span>
+                                      <span className="text-[11px] font-bold text-[#dc2626] whitespace-nowrap">
                                         {status.label}
-                                      </p>
+                                      </span>
                                     </div>
-                                  </div>
 
-                                  <div className="flex items-start gap-3 border-b border-purple-50 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                    <div className="py-2 border-b border-gray-100">
+                                      <p className="text-[12px] font-semibold text-[#1a1040] mb-1">
                                         {isZh ? '为什么需要注意' : 'Why It Matters'}
                                       </p>
-                                      <p className="mt-1 text-[12px] leading-relaxed text-[#625d72]">
+                                      <p className="text-[11px] leading-relaxed text-[#615c73]">
                                         {isZh ? watchData.detailZh : watchData.detail}
                                       </p>
                                     </div>
-                                  </div>
 
-                                  <div className="flex items-start gap-3 py-3">
-                                    <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
-                                    <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                    <div className="py-2">
+                                      <p className="text-[12px] font-semibold text-[#1a1040] mb-1">
                                         {isZh ? '数据来源' : 'Evidence Source'}
                                       </p>
-                                      <p className="mt-1 text-[12px] font-bold text-[#f97316]">
+                                      <p className="text-[11px] font-bold text-[#f97316]">
                                         {isZh
                                           ? '产品配料表与 Open Food Facts 添加剂标签'
                                           : 'Ingredient list and Open Food Facts additive tags'}
                                       </p>
                                     </div>
-                                  </div>
-                                </>
-                              )}
+                                  </>
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          </div>,
+                          document.body
                         );
                       })()}
                     </div>
