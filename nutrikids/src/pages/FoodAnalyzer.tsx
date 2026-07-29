@@ -1638,7 +1638,7 @@ export default function FoodAnalyzer() {
 
                       return (
                         <div className="relative z-20 mb-5 w-full max-w-[300px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 px-4 py-3 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
-                          <div className="overflow-hidden rounded-[18px] border border-[#e7def3] bg-white shadow-[0_8px_28px_rgba(80,40,160,0.14)]">
+                          
                             {/* Header */}
                             <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
                               <span className="text-[24px] leading-none">{wd.icon}</span>
@@ -1738,7 +1738,7 @@ export default function FoodAnalyzer() {
                                   })}
                               </div>
                             )}
-                          </div>
+                         
                         </div>
                       );
                     };
