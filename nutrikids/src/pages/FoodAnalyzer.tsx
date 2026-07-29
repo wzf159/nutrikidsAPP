@@ -1594,7 +1594,7 @@ export default function FoodAnalyzer() {
               {/* ③ 家长须知 */}
               <section
                 ref={thingsToWatchRef}
-                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
+                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-visible ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
               >   <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
@@ -1747,7 +1747,7 @@ export default function FoodAnalyzer() {
                       <>
                         {/* ① Nutrients to Watch */}
                         {nutrientWatch.length > 0 && (
-                          <div className="mb-7">
+                          <div className="relative mb-7">
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div>
                                 <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
@@ -1810,14 +1810,14 @@ export default function FoodAnalyzer() {
                             </div>
 
                             {selectedWatchData?.present && NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="mt-4">{renderWatchPopup()}</div>
+                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
                             )}
                           </div>
                         )}
 
                         {/* ② Ingredients to Be Aware Of */}
                         {ingredientWatch.length > 0 && (
-                          <div className="mb-7">
+                           <div className="relative mb-7">
                             <div className="flex items-start justify-between gap-3 mb-3">
                               <div>
                                 <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
@@ -1861,7 +1861,7 @@ export default function FoodAnalyzer() {
                             </div>
 
                             {selectedWatchData?.present && !NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="mt-4">{renderWatchPopup()}</div>
+                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
                             )}
                           </div>
                         )}
