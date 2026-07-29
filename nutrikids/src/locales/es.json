@@ -368,11 +368,26 @@
       "title": "Equipo",
       "desc": "NutriKids es desarrollado por un equipo multidisciplinario con experiencia en investigación, diseño de productos, ciencia de datos y desarrollo de software. El proyecto está liderado por <strong>SENSE Institute</strong>, una organización sin fines de lucro dedicada a promover el bienestar comunitario a través de la investigación, la educación y la innovación.",
       "members": [
-        { "name": "Houpu Li", "role": "Fundador y CEO, Líder de Investigación" },
-        { "name": "Yanyao Cui", "role": "Gerente de Producto e Investigadora" },
-        { "name": "Shiyun Wen", "role": "Ingeniera de Datos y Desarrolladora" },
-        { "name": "Zefan Wang", "role": "Ingeniero de Datos y Desarrollador" },
-        { "name": "Zhiyan Chen", "role": "Coordinadora de Proyecto e Investigadora" }
+        {
+          "name": "Houpu Li",
+          "role": "Fundador y CEO, Líder de Investigación"
+        },
+        {
+          "name": "Yanyao Cui",
+          "role": "Gerente de Producto e Investigadora"
+        },
+        {
+          "name": "Shiyun Wen",
+          "role": "Ingeniera de Datos y Desarrolladora"
+        },
+        {
+          "name": "Zefan Wang",
+          "role": "Ingeniero de Datos y Desarrollador"
+        },
+        {
+          "name": "Zhiyan Chen",
+          "role": "Coordinadora de Proyecto e Investigadora"
+        }
       ],
       "footer": "Damos la bienvenida a la colaboración con profesionales de la salud, expertos en nutrición, educadores, investigadores, tecnólogos y socios comunitarios que compartan nuestra misión."
     },
@@ -380,26 +395,79 @@
       "title": "Fuentes Científicas",
       "desc": "NutriKids se basa en evidencia científica disponible públicamente, investigación nutricional y orientación de organizaciones de salud y nutrición reconocidas, incluyendo:",
       "items": [
-        { "emoji": "🇺🇸", "label": "Departamento de Agricultura de EE. UU. (USDA)" },
-        { "emoji": "🏥", "label": "Centros para el Control y la Prevención de Enfermedades (CDC)" },
-        { "emoji": "🔬", "label": "Institutos Nacionales de Salud (NIH)" },
-        { "emoji": "👶", "label": "Academia Americana de Pediatría (AAP)" },
-        { "emoji": "🌍", "label": "Organización Mundial de la Salud (OMS)" },
-        { "emoji": "📚", "label": "Literatura científica revisada por pares y bases de datos de nutrición públicas" }
+        {
+          "emoji": "🇺🇸",
+          "label": "Departamento de Agricultura de los Estados Unidos (USDA)"
+        },
+        {
+          "emoji": "🏥",
+          "label": "Centros para el Control y la Prevención de Enfermedades (CDC)"
+        },
+        {
+          "emoji": "🔬",
+          "label": "Oficina de Suplementos Dietéticos de los Institutos Nacionales de Salud (NIH ODS)"
+        },
+        {
+          "emoji": "🧬",
+          "label": "Centro Nacional de Salud Complementaria e Integrativa (NCCIH)"
+        },
+        {
+          "emoji": "👶",
+          "label": "Academia Estadounidense de Pediatría (AAP)"
+        },
+        {
+          "emoji": "❤️",
+          "label": "Asociación Americana del Corazón (AHA)"
+        },
+        {
+          "emoji": "🌍",
+          "label": "Organización Mundial de la Salud (OMS)"
+        },
+        {
+          "emoji": "🩺",
+          "label": "Grupo de Trabajo de Servicios Preventivos de los Estados Unidos (USPSTF)"
+        },
+        {
+          "emoji": "🏨",
+          "label": "Hospital Infantil de Los Ángeles (CHLA)"
+        },
+        {
+          "emoji": "📖",
+          "label": "Centro Nacional de Información Biotecnológica (NCBI)"
+        },
+        {
+          "emoji": "📰",
+          "label": "Revistas científicas revisadas por pares (PubMed, Frontiers, ScienceDirect, Karger, AJCN, Nutrients, Pediatrics, etc.)"
+        },
+        {
+          "emoji": "📦",
+          "label": "Open Food Facts y otras bases de datos públicas de nutrición"
+        }
       ],
       "footer": "Revisamos regularmente los recursos disponibles y actualizamos nuestro contenido educativo para reflejar la evidencia actual y las mejores prácticas siempre que sea posible.",
       "scoreCalc": {
         "title": "Cómo se Calcula la Puntuación",
         "desc": "Las puntuaciones de NutriKids se calculan en dos pasos mediante un motor de reglas determinista, no generado aleatoriamente por IA, para que los resultados sean estables, auditables y trazables:",
         "dims": [
-          { "weight": "Paso 1", "label": "Equilibrio Nutricional (NutriNorm)", "desc": "Basado en el sistema Nutri-Score: energía, azúcar añadida, grasa saturada y sodio cuentan como puntos negativos (máx. 55); contenido de frutas/verduras, fibra y proteína cuentan como puntos positivos (máx. 17), combinados en una puntuación de 0-1" },
-          { "weight": "Paso 2", "label": "Coincidencia de Desarrollo (DevScore)", "desc": "Compara los nutrientes del alimento con la Ingesta Diaria de Referencia (DRI) según la edad del niño, ponderada por prioridad del objetivo de desarrollo (núcleo/importante/complementario), produciendo una puntuación de 0-1" },
-          { "weight": "Final", "label": "Puntuación Final", "desc": "Puntuación Final = 100 × Equilibrio Nutricional × (0.3 + 0.7 × Coincidencia de Desarrollo). Cuanto más equilibrada sea la nutrición y mejor se ajuste a las necesidades de desarrollo actuales del niño, mayor será la puntuación" }
+          {
+            "weight": "Paso 1",
+            "label": "Equilibrio Nutricional (NutriNorm)",
+            "desc": "Basado en el sistema Nutri-Score: energía, azúcar añadida, grasa saturada y sodio cuentan como puntos negativos (máx. 55); contenido de frutas/verduras, fibra y proteína cuentan como puntos positivos (máx. 17), combinados en una puntuación de 0-1"
+          },
+          {
+            "weight": "Paso 2",
+            "label": "Coincidencia de Desarrollo (DevScore)",
+            "desc": "Compara los nutrientes del alimento con la Ingesta Diaria de Referencia (DRI) según la edad del niño, ponderada por prioridad del objetivo de desarrollo (núcleo/importante/complementario), produciendo una puntuación de 0-1"
+          },
+          {
+            "weight": "Final",
+            "label": "Puntuación Final",
+            "desc": "Puntuación Final = 100 × Equilibrio Nutricional × (0.3 + 0.7 × Coincidencia de Desarrollo). Cuanto más equilibrada sea la nutrición y mejor se ajuste a las necesidades de desarrollo actuales del niño, mayor será la puntuación"
+          }
         ],
         "note": "Las fórmulas de puntuación se ajustan a medida que hay más investigación disponible. La IA solo se usa para traducir el resultado calculado en una explicación en lenguaje sencillo, no participa en el cálculo principal."
       }
     },
-   
     "panelAIDisclaimer": {
       "title": "Descargo de IA",
       "p1": "NutriKids utiliza tecnología de inteligencia artificial (IA) para ayudar a analizar información de alimentos y nutrición y generar conocimientos educativos.",
@@ -416,42 +484,100 @@
       "title": "Política de Privacidad",
       "lastUpdated": "Última actualización: julio de 2026",
       "sections": [
-        { "title": "Resumen", "content": "NutriKids se compromete a proteger su privacidad y manejar su información de manera responsable. Esta Política de Privacidad explica qué información recopilamos, cómo la usamos y las opciones disponibles para usted al usar NutriKids." },
-        { "title": "Información que Podemos Recopilar", "content": "Según cómo use NutriKids, podemos recopilar:", "items": [
-          "Información que usted proporciona voluntariamente, como preferencias de grupo de edad, datos relacionados con nutrición o envíos de comentarios",
-          "Información de alimentos y nutrición enviada para análisis",
-          "Información de uso y técnica, incluido el tipo de navegador, información del dispositivo y análisis del sitio web",
-          "Información de contacto proporcionada a través de solicitudes de soporte o donaciones"
-        ]},
-        { "title": "Cómo Usamos la Información", "content": "Podemos usar la información recopilada para:", "items": [
-          "Proporcionar y mejorar los servicios de NutriKids",
-          "Generar análisis nutricionales y conocimientos educativos",
-          "Comprender cómo los usuarios interactúan con la plataforma",
-          "Mejorar la funcionalidad, precisión y experiencia del usuario",
-          "Responder a consultas y solicitudes de soporte",
-          "Apoyar la investigación, evaluación y desarrollo de productos"
-        ]},
-        { "title": "Compartir Datos", "content": "<strong>NutriKids no vende información personal.</strong> Podemos compartir información con proveedores de servicios de confianza que ayudan a operar la plataforma, como servicios de alojamiento, análisis, procesamiento de pagos o proveedores de IA, cuando sea necesario para prestar servicios." },
-        { "title": "Privacidad Infantil", "content": "NutriKids está diseñado para apoyar a familias y cuidadores. Los padres y cuidadores deben proporcionar información en nombre de los niños. No recopilamos conscientemente información personal directamente de niños sin la participación parental adecuada." },
-        { "title": "Seguridad de Datos", "content": "Tomamos medidas razonables para proteger la información contra acceso no autorizado, pérdida, mal uso o divulgación. Sin embargo, ningún servicio en línea puede garantizar seguridad absoluta." },
-        { "title": "Actualizaciones de esta Política", "content": "Podemos actualizar esta Política de Privacidad periódicamente. Las versiones actualizadas se publicarán en esta página con una fecha de vigencia revisada." },
-        { "title": "Contáctenos", "content": "Si tiene preguntas sobre esta Política de Privacidad, contáctenos a través de la información de contacto proporcionada en el sitio web." }
+        {
+          "title": "Resumen",
+          "content": "NutriKids se compromete a proteger su privacidad y manejar su información de manera responsable. Esta Política de Privacidad explica qué información recopilamos, cómo la usamos y las opciones disponibles para usted al usar NutriKids."
+        },
+        {
+          "title": "Información que Podemos Recopilar",
+          "content": "Según cómo use NutriKids, podemos recopilar:",
+          "items": [
+            "Información que usted proporciona voluntariamente, como preferencias de grupo de edad, datos relacionados con nutrición o envíos de comentarios",
+            "Información de alimentos y nutrición enviada para análisis",
+            "Información de uso y técnica, incluido el tipo de navegador, información del dispositivo y análisis del sitio web",
+            "Información de contacto proporcionada a través de solicitudes de soporte o donaciones"
+          ]
+        },
+        {
+          "title": "Cómo Usamos la Información",
+          "content": "Podemos usar la información recopilada para:",
+          "items": [
+            "Proporcionar y mejorar los servicios de NutriKids",
+            "Generar análisis nutricionales y conocimientos educativos",
+            "Comprender cómo los usuarios interactúan con la plataforma",
+            "Mejorar la funcionalidad, precisión y experiencia del usuario",
+            "Responder a consultas y solicitudes de soporte",
+            "Apoyar la investigación, evaluación y desarrollo de productos"
+          ]
+        },
+        {
+          "title": "Compartir Datos",
+          "content": "<strong>NutriKids no vende información personal.</strong> Podemos compartir información con proveedores de servicios de confianza que ayudan a operar la plataforma, como servicios de alojamiento, análisis, procesamiento de pagos o proveedores de IA, cuando sea necesario para prestar servicios."
+        },
+        {
+          "title": "Privacidad Infantil",
+          "content": "NutriKids está diseñado para apoyar a familias y cuidadores. Los padres y cuidadores deben proporcionar información en nombre de los niños. No recopilamos conscientemente información personal directamente de niños sin la participación parental adecuada."
+        },
+        {
+          "title": "Seguridad de Datos",
+          "content": "Tomamos medidas razonables para proteger la información contra acceso no autorizado, pérdida, mal uso o divulgación. Sin embargo, ningún servicio en línea puede garantizar seguridad absoluta."
+        },
+        {
+          "title": "Actualizaciones de esta Política",
+          "content": "Podemos actualizar esta Política de Privacidad periódicamente. Las versiones actualizadas se publicarán en esta página con una fecha de vigencia revisada."
+        },
+        {
+          "title": "Contáctenos",
+          "content": "Si tiene preguntas sobre esta Política de Privacidad, contáctenos a través de la información de contacto proporcionada en el sitio web."
+        }
       ]
     },
     "panelTermsOfUse": {
       "title": "Términos de Uso",
       "lastUpdated": "Última actualización: julio de 2026",
       "sections": [
-        { "title": "Aceptación de Términos", "content": "Al acceder o usar NutriKids, usted acepta estos Términos de Uso. Si no está de acuerdo con estos términos, suspenda el uso de la plataforma.", "type": "warning" },
-        { "title": "Propósito Educativo", "content": "NutriKids es una plataforma educativa diseñada para ayudar a las familias a comprender mejor los alimentos, la nutrición y el desarrollo saludable. La plataforma es solo para <strong>fines informativos y educativos</strong>." },
-        { "title": "Sin Asesoramiento Médico", "content": "NutriKids no proporciona asesoramiento médico, diagnóstico, tratamiento ni servicios de atención médica. La información proporcionada a través de la plataforma no debe considerarse un sustituto de la orientación médica, nutricional o sanitaria profesional.", "type": "alert" },
-        { "title": "Responsabilidad del Usuario", "content": "Los usuarios son responsables de evaluar la información proporcionada por NutriKids y determinar su idoneidad para sus circunstancias individuales. Los padres y cuidadores deben consultar a profesionales de la salud calificados sobre preguntas relacionadas con la salud, nutrición, crecimiento o desarrollo de un niño." },
-        { "title": "Precisión de la Información", "content": "Nos esforzamos por proporcionar información precisa y basada en evidencia. Sin embargo, NutriKids no garantiza la precisión, integridad, confiabilidad o idoneidad de ningún contenido, análisis o recomendación. La información puede cambiar a medida que evoluciona el conocimiento científico." },
-        { "title": "Propiedad Intelectual", "content": "A menos que se indique lo contrario, el contenido, diseño, logotipos, texto y materiales disponibles a través de NutriKids son propiedad de NutriKids, SENSE Institute o sus respectivos propietarios y no pueden reproducirse sin permiso." },
-        { "title": "Limitación de Responsabilidad", "content": "En la máxima medida permitida por la ley, NutriKids, SENSE Institute y los contribuyentes del proyecto no serán responsables por daños directos, indirectos, incidentales, consecuentes o especiales que surjan del uso o la imposibilidad de usar la plataforma." },
-        { "title": "Modificaciones", "content": "Podemos modificar, suspender o discontinuar cualquier parte de NutriKids en cualquier momento sin previo aviso." },
-        { "title": "Actualizaciones de Estos Términos", "content": "Podemos actualizar estos Términos de Uso periódicamente. El uso continuado de NutriKids después de la publicación de los cambios constituye la aceptación de los términos revisados." },
-        { "title": "Contáctenos", "content": "Si tiene preguntas sobre estos Términos de Uso, contáctenos a través de la información de contacto proporcionada en el sitio web." }
+        {
+          "title": "Aceptación de Términos",
+          "content": "Al acceder o usar NutriKids, usted acepta estos Términos de Uso. Si no está de acuerdo con estos términos, suspenda el uso de la plataforma.",
+          "type": "warning"
+        },
+        {
+          "title": "Propósito Educativo",
+          "content": "NutriKids es una plataforma educativa diseñada para ayudar a las familias a comprender mejor los alimentos, la nutrición y el desarrollo saludable. La plataforma es solo para <strong>fines informativos y educativos</strong>."
+        },
+        {
+          "title": "Sin Asesoramiento Médico",
+          "content": "NutriKids no proporciona asesoramiento médico, diagnóstico, tratamiento ni servicios de atención médica. La información proporcionada a través de la plataforma no debe considerarse un sustituto de la orientación médica, nutricional o sanitaria profesional.",
+          "type": "alert"
+        },
+        {
+          "title": "Responsabilidad del Usuario",
+          "content": "Los usuarios son responsables de evaluar la información proporcionada por NutriKids y determinar su idoneidad para sus circunstancias individuales. Los padres y cuidadores deben consultar a profesionales de la salud calificados sobre preguntas relacionadas con la salud, nutrición, crecimiento o desarrollo de un niño."
+        },
+        {
+          "title": "Precisión de la Información",
+          "content": "Nos esforzamos por proporcionar información precisa y basada en evidencia. Sin embargo, NutriKids no garantiza la precisión, integridad, confiabilidad o idoneidad de ningún contenido, análisis o recomendación. La información puede cambiar a medida que evoluciona el conocimiento científico."
+        },
+        {
+          "title": "Propiedad Intelectual",
+          "content": "A menos que se indique lo contrario, el contenido, diseño, logotipos, texto y materiales disponibles a través de NutriKids son propiedad de NutriKids, SENSE Institute o sus respectivos propietarios y no pueden reproducirse sin permiso."
+        },
+        {
+          "title": "Limitación de Responsabilidad",
+          "content": "En la máxima medida permitida por la ley, NutriKids, SENSE Institute y los contribuyentes del proyecto no serán responsables por daños directos, indirectos, incidentales, consecuentes o especiales que surjan del uso o la imposibilidad de usar la plataforma."
+        },
+        {
+          "title": "Modificaciones",
+          "content": "Podemos modificar, suspender o discontinuar cualquier parte de NutriKids en cualquier momento sin previo aviso."
+        },
+        {
+          "title": "Actualizaciones de Estos Términos",
+          "content": "Podemos actualizar estos Términos de Uso periódicamente. El uso continuado de NutriKids después de la publicación de los cambios constituye la aceptación de los términos revisados."
+        },
+        {
+          "title": "Contáctenos",
+          "content": "Si tiene preguntas sobre estos Términos de Uso, contáctenos a través de la información de contacto proporcionada en el sitio web."
+        }
       ]
     },
     "panelGetInTouch": {
