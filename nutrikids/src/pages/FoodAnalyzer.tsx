@@ -115,11 +115,24 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
         return [];
       }
 
-      const rawValue = Number(f.value);
+      //const rawValue = Number(f.value);
 
       // 旧记录可能只有关联关系而没有有效权重。保留该关系并使用 1
       // 作为布局权重，避免页面显示“支持多个目标”却没有桑基图。
-      const value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 1;
+      const value = view.flows
+        .map(f => ({
+          ...f,
+          goalId: Number(f.goalId),
+          nutrientId: Number(f.nutrientId),
+          value: Number(f.value),
+        }))
+        .filter(
+          f =>
+            Number.isFinite(f.goalId) &&
+            Number.isFinite(f.nutrientId) &&
+            Number.isFinite(f.value) &&
+            f.value > 0
+        );
 
       return [{ goalId, nutrientId, value }];
     });
@@ -559,16 +572,40 @@ export default function FoodAnalyzer() {
   // 只统计真正有 flow 连接的已选择目标，确保顶部数字与桑基图一致。
   const connectedGoalIds = view
     ? new Set(
-        view.flows
-          .map(f => Number(f.goalId))
-          .filter(Number.isFinite)
-      )
+      view.flows
+        .map(f => Number(f.goalId))
+        .filter(Number.isFinite)
+    )
     : new Set<number>();
-
+  const supportedGoalIds = new Set(
+    (view?.flows ?? [])
+      .filter(f => {
+        const value = Number(f.value);
+        return Number.isFinite(value) && value > 0;
+      })
+      .map(f => Number(f.goalId))
+  );
   const tierCounts = view ? {
-    core: view.goals.filter(g => g.selected && g.tier === 'core' && connectedGoalIds.has(Number(g.id))).length,
-    important: view.goals.filter(g => g.selected && g.tier === 'important' && connectedGoalIds.has(Number(g.id))).length,
-    supporting: view.goals.filter(g => g.selected && g.tier === 'supporting' && connectedGoalIds.has(Number(g.id))).length,
+    core: view.goals.filter(
+      g =>
+        g.selected &&
+        g.tier === 'core' &&
+        supportedGoalIds.has(Number(g.id))
+    ).length,
+
+    important: view.goals.filter(
+      g =>
+        g.selected &&
+        g.tier === 'important' &&
+        supportedGoalIds.has(Number(g.id))
+    ).length,
+
+    supporting: view.goals.filter(
+      g =>
+        g.selected &&
+        g.tier === 'supporting' &&
+        supportedGoalIds.has(Number(g.id))
+    ).length,
   } : null;
 
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
@@ -1158,11 +1195,17 @@ export default function FoodAnalyzer() {
                     {/* 按 tier 分组 */}
                     {(['core', 'important', 'supporting'] as const).map(tier => {
                       const goalsInTier = view.goals.filter(
-                        g => g.selected && g.tier === tier
+                        g =>
+                          g.selected &&
+                          g.tier === tier &&
+                          supportedGoalIds.has(Number(g.id))
                       );
-                      const inactiveGoals = tier === 'supporting'
-                        ? view.goals.filter(g => g.selected && !g.tier)
-                        : [];
+                      const inactiveGoals = view.goals.filter(
+                        g =>
+                          g.selected &&
+                          g.tier === tier &&
+                          !supportedGoalIds.has(Number(g.id))
+                      );
                       if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
                       const tc = TIER_CONFIG[tier];
                       return (
