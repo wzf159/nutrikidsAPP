@@ -79,66 +79,125 @@ interface NodeLayout { id: number; y0: number; y1: number }
 
 function useSankeyLayout(view: AnalysisResult['view'] | null) {
   return useMemo(() => {
-    if (!view) return { goalNodes: [] as NodeLayout[], nutrientNodes: [] as NodeLayout[], ribbons: [] as { goalId: number; nutrientId: number; value: number; path: string }[] };
+    const empty = {
+      goalNodes: [] as NodeLayout[],
+      nutrientNodes: [] as NodeLayout[],
+      ribbons: [] as { goalId: number; nutrientId: number; value: number; path: string }[],
+    };
 
-    const activeGoals = view.goals.filter(g => g.selected && g.tier);
-    const activeGoalIds = new Set(activeGoals.map(g => g.id));
-    let activeFlows = view.flows.filter(f => activeGoalIds.has(f.goalId));
-    // 某些旧接口的 flow 与 tier 标记不同步时，仍优先显示已选择目标的营养流，避免桑基图整块消失。
-    if (activeFlows.length === 0) {
-      const selectedGoalIds = new Set(view.goals.filter(g => g.selected).map(g => g.id));
-      activeFlows = view.flows.filter(f => selectedGoalIds.has(f.goalId));
+    if (!view) return empty;
+
+    // API/旧数据中 id 偶尔会以字符串返回。统一转成 number，避免
+    // Set.has() 和 === 因为 "3" !== 3 而把所有 flow 过滤掉。
+    const selectedGoalIds = new Set(
+      view.goals
+        .filter(g => g.selected && g.tier)
+        .map(g => Number(g.id))
+        .filter(Number.isFinite)
+    );
+
+    const nutrientIds = new Set(
+      view.nutrients
+        .map(n => Number(n.id))
+        .filter(Number.isFinite)
+    );
+
+    const activeFlows = view.flows.flatMap(f => {
+      const goalId = Number(f.goalId);
+      const nutrientId = Number(f.nutrientId);
+
+      if (
+        !Number.isFinite(goalId) ||
+        !Number.isFinite(nutrientId) ||
+        !selectedGoalIds.has(goalId) ||
+        !nutrientIds.has(nutrientId)
+      ) {
+        return [];
+      }
+
+      const rawValue = Number(f.value);
+
+      // 旧记录可能只有关联关系而没有有效权重。保留该关系并使用 1
+      // 作为布局权重，避免页面显示“支持多个目标”却没有桑基图。
+      const value = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 1;
+
+      return [{ goalId, nutrientId, value }];
+    });
+
+    const connectedGoalIds = new Set(activeFlows.map(f => f.goalId));
+    const connectedNutrientIds = new Set(activeFlows.map(f => f.nutrientId));
+
+    const activeGoals = view.goals.filter(
+      g => g.selected && g.tier && connectedGoalIds.has(Number(g.id))
+    );
+    const activeNutrients = view.nutrients.filter(n =>
+      connectedNutrientIds.has(Number(n.id))
+    );
+
+    if (!activeFlows.length || !activeGoals.length || !activeNutrients.length) {
+      return empty;
     }
-    const activeNutrientIds = new Set(activeFlows.map(f => f.nutrientId));
-    const activeNutrients = view.nutrients.filter(n => activeNutrientIds.has(n.id));
-
-    const layoutGoals = activeGoals.length > 0
-      ? activeGoals
-      : view.goals.filter(g => activeFlows.some(f => f.goalId === g.id));
-
-    if (!activeFlows.length || !layoutGoals.length || !activeNutrients.length)
-      return { goalNodes: [], nutrientNodes: [], ribbons: [] };
 
     const goalTotals: Record<number, number> = {};
     const nutrientTotals: Record<number, number> = {};
+
     for (const f of activeFlows) {
       goalTotals[f.goalId] = (goalTotals[f.goalId] || 0) + f.value;
       nutrientTotals[f.nutrientId] = (nutrientTotals[f.nutrientId] || 0) + f.value;
     }
-    const total = activeFlows.reduce((s, f) => s + f.value, 0);
-    const rows = Math.max(layoutGoals.length, activeNutrients.length);
-    const avail = SK.height - SK.padTop * 2 - SK.gap * (rows - 1);
+
+    const total = activeFlows.reduce((sum, f) => sum + f.value, 0);
+    if (!Number.isFinite(total) || total <= 0) return empty;
+
+    const rows = Math.max(activeGoals.length, activeNutrients.length);
+    const avail = Math.max(
+      SK.height - SK.padTop * 2 - SK.gap * Math.max(rows - 1, 0),
+      60
+    );
     const scale = avail / total;
 
     const stack = (ids: number[], totals: Record<number, number>): NodeLayout[] => {
       const out: NodeLayout[] = [];
       let y = SK.padTop;
+
       for (const id of ids) {
         const h = Math.max((totals[id] ?? 0) * scale, 6);
         out.push({ id, y0: y, y1: y + h });
         y += h + SK.gap;
       }
+
       return out;
     };
 
-    const goalNodes = stack(layoutGoals.map(g => g.id), goalTotals);
-    const nutrientNodes = stack(activeNutrients.map(n => n.id), nutrientTotals);
+    const goalNodes = stack(activeGoals.map(g => Number(g.id)), goalTotals);
+    const nutrientNodes = stack(activeNutrients.map(n => Number(n.id)), nutrientTotals);
 
     const goalOffset: Record<number, number> = {};
     const nutrientOffset: Record<number, number> = {};
+
     const ribbons = activeFlows.flatMap(f => {
       const g = goalNodes.find(n => n.id === f.goalId);
-      const n = nutrientNodes.find(nd => nd.id === f.nutrientId);
+      const n = nutrientNodes.find(node => node.id === f.nutrientId);
       if (!g || !n) return [];
-      const h = f.value * scale;
+
+      const h = Math.max(f.value * scale, 1.5);
       const gy = g.y0 + (goalOffset[f.goalId] || 0);
       const ny = n.y0 + (nutrientOffset[f.nutrientId] || 0);
+
       goalOffset[f.goalId] = (goalOffset[f.goalId] || 0) + h;
       nutrientOffset[f.nutrientId] = (nutrientOffset[f.nutrientId] || 0) + h;
+
       const x0 = SK.leftX + SK.nodeWidth;
       const x1 = SK.rightX;
       const cx = (x0 + x1) / 2;
-      const path = [`M ${x0} ${gy}`, `C ${cx} ${gy}, ${cx} ${ny}, ${x1} ${ny}`, `L ${x1} ${ny + h}`, `C ${cx} ${ny + h}, ${cx} ${gy + h}, ${x0} ${gy + h}`, 'Z'].join(' ');
+      const path = [
+        `M ${x0} ${gy}`,
+        `C ${cx} ${gy}, ${cx} ${ny}, ${x1} ${ny}`,
+        `L ${x1} ${ny + h}`,
+        `C ${cx} ${ny + h}, ${cx} ${gy + h}, ${x0} ${gy + h}`,
+        'Z',
+      ].join(' ');
+
       return [{ ...f, path }];
     });
 
@@ -293,8 +352,8 @@ export default function FoodAnalyzer() {
     const idx = view?.nutrients.findIndex(n => n.id === id) ?? 0;
     return NUTRIENT_PALETTE[Math.max(idx, 0) % NUTRIENT_PALETTE.length];
   };
-  const goalById = (id: number) => view!.goals.find(g => g.id === id)!;
-  const nutrientById = (id: number) => view!.nutrients.find(n => n.id === id)!;
+  const goalById = (id: number) => view!.goals.find(g => Number(g.id) === Number(id))!;
+  const nutrientById = (id: number) => view!.nutrients.find(n => Number(n.id) === Number(id))!;
 
 
   async function runAnalysis(
@@ -497,12 +556,19 @@ export default function FoodAnalyzer() {
     if (isEs) return ({ High: 'Alto', Moderate: 'Moderado', Low: 'Bajo' } as Record<string, string>)[lvl];
     return lvl;
   };
-  // 只统计孩子实际选择、且有足够营养证据支持的目标。
-  // 未选择的目标和 tier=null 的目标不计入 “Supports X goals”。
+  // 只统计真正有 flow 连接的已选择目标，确保顶部数字与桑基图一致。
+  const connectedGoalIds = view
+    ? new Set(
+        view.flows
+          .map(f => Number(f.goalId))
+          .filter(Number.isFinite)
+      )
+    : new Set<number>();
+
   const tierCounts = view ? {
-    core: view.goals.filter(g => g.selected && g.tier === 'core').length,
-    important: view.goals.filter(g => g.selected && g.tier === 'important').length,
-    supporting: view.goals.filter(g => g.selected && g.tier === 'supporting').length,
+    core: view.goals.filter(g => g.selected && g.tier === 'core' && connectedGoalIds.has(Number(g.id))).length,
+    important: view.goals.filter(g => g.selected && g.tier === 'important' && connectedGoalIds.has(Number(g.id))).length,
+    supporting: view.goals.filter(g => g.selected && g.tier === 'supporting' && connectedGoalIds.has(Number(g.id))).length,
   } : null;
 
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
@@ -1135,8 +1201,8 @@ export default function FoodAnalyzer() {
                             const g = view.goals.find(g => g.id === goalPopup);
                             if (!g || g.tier !== tier) return null;
                             const nutrients = view.flows
-                              .filter(f => f.goalId === goalPopup)
-                              .map(f => view.nutrients.find(n => n.id === f.nutrientId))
+                              .filter(f => Number(f.goalId) === Number(goalPopup))
+                              .map(f => view.nutrients.find(n => Number(n.id) === Number(f.nutrientId)))
                               .filter(Boolean);
                             return (
                               <div
@@ -1560,7 +1626,7 @@ export default function FoodAnalyzer() {
                                 {isZh
                                   ? `该食物为此目标提供约 ${selectedGoalData.supportDV}% 的每日营养支持，主要来自：`
                                   : `This food provides ~${selectedGoalData.supportDV}% daily nutrient support for this goal, mainly from: `}
-                                {view.flows.filter(f => f.goalId === selectedGoalData.id).map(f => {
+                                {view.flows.filter(f => Number(f.goalId) === Number(selectedGoalData.id)).map(f => {
                                   const nt = nutrientById(f.nutrientId);
                                   return isZh ? nt.nameZh ?? nt.name : nt.name;
                                 }).join(isZh ? '、' : ', ')}
@@ -1971,9 +2037,7 @@ export default function FoodAnalyzer() {
                       {isZh ? '来源：' : 'SOURCES:'}
                     </span>
                     {[
-                      'WHO', 'AAP', 'AHA', 'BioRxiv', 'CDC', 'Front. Nutr', 'IJORO',
-                      'MMPE', 'NCBI', 'NIH ODS', 'PMC + NCBI', 'Karger',
-                      'ScienceDirect', 'NDC', 'USPSTF', 'Open Food Facts',
+                      'Open Food Facts',
                     ].map(src => (
                       <button
                         key={src}
