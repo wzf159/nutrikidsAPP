@@ -81,13 +81,22 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
   return useMemo(() => {
     if (!view) return { goalNodes: [] as NodeLayout[], nutrientNodes: [] as NodeLayout[], ribbons: [] as { goalId: number; nutrientId: number; value: number; path: string }[] };
 
-    const activeGoals = view.goals.filter(g => g.tier);
+    const activeGoals = view.goals.filter(g => g.selected && g.tier);
     const activeGoalIds = new Set(activeGoals.map(g => g.id));
-    const activeFlows = view.flows.filter(f => activeGoalIds.has(f.goalId));
+    let activeFlows = view.flows.filter(f => activeGoalIds.has(f.goalId));
+    // 某些旧接口的 flow 与 tier 标记不同步时，仍优先显示已选择目标的营养流，避免桑基图整块消失。
+    if (activeFlows.length === 0) {
+      const selectedGoalIds = new Set(view.goals.filter(g => g.selected).map(g => g.id));
+      activeFlows = view.flows.filter(f => selectedGoalIds.has(f.goalId));
+    }
     const activeNutrientIds = new Set(activeFlows.map(f => f.nutrientId));
     const activeNutrients = view.nutrients.filter(n => activeNutrientIds.has(n.id));
 
-    if (!activeFlows.length || !activeGoals.length || !activeNutrients.length)
+    const layoutGoals = activeGoals.length > 0
+      ? activeGoals
+      : view.goals.filter(g => activeFlows.some(f => f.goalId === g.id));
+
+    if (!activeFlows.length || !layoutGoals.length || !activeNutrients.length)
       return { goalNodes: [], nutrientNodes: [], ribbons: [] };
 
     const goalTotals: Record<number, number> = {};
@@ -97,7 +106,7 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       nutrientTotals[f.nutrientId] = (nutrientTotals[f.nutrientId] || 0) + f.value;
     }
     const total = activeFlows.reduce((s, f) => s + f.value, 0);
-    const rows = Math.max(activeGoals.length, activeNutrients.length);
+    const rows = Math.max(layoutGoals.length, activeNutrients.length);
     const avail = SK.height - SK.padTop * 2 - SK.gap * (rows - 1);
     const scale = avail / total;
 
@@ -112,7 +121,7 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       return out;
     };
 
-    const goalNodes = stack(activeGoals.map(g => g.id), goalTotals);
+    const goalNodes = stack(layoutGoals.map(g => g.id), goalTotals);
     const nutrientNodes = stack(activeNutrients.map(n => n.id), nutrientTotals);
 
     const goalOffset: Record<number, number> = {};
@@ -903,7 +912,7 @@ export default function FoodAnalyzer() {
             {/* ① 食物评估 */}
             <section
               key={`${view.product.id}-${result.overallScore}`}
-              className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-hidden"
+              className="bg-white/70 backdrop-blur-xl rounded-[18px] border-none shadow-[0_8px_32px_rgba(120,80,200,0.14),0_2px_8px_rgba(120,80,200,0.06),inset_0_1.5px_0_rgba(255,255,255,0.95),inset_0_-1px_0_rgba(200,180,255,0.15)] p-[18px] mb-5 animate-fade-in-up relative overflow-visible"
             >
               <div className="relative">
                 <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1.1fr_0.9fr] gap-0">
@@ -1091,7 +1100,7 @@ export default function FoodAnalyzer() {
                       if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
                       const tc = TIER_CONFIG[tier];
                       return (
-                        <div key={tier} className="mb-3">
+                        <div key={tier} className="mb-3 relative">
                           <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1.5 mb-3 border-b"
                             style={{ color: tc.color, borderColor: `${tc.color}33` }}>
                             <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: tc.color }} />
@@ -1124,45 +1133,42 @@ export default function FoodAnalyzer() {
                           </div>
                           {goalPopup !== null && (() => {
                             const g = view.goals.find(g => g.id === goalPopup);
+                            if (!g || g.tier !== tier) return null;
                             const nutrients = view.flows
                               .filter(f => f.goalId === goalPopup)
                               .map(f => view.nutrients.find(n => n.id === f.nutrientId))
                               .filter(Boolean);
-                            if (!g) return null;
                             return (
-                              <div className="fixed inset-0 z-40" onClick={() => setGoalPopup(null)}>
-                                <div
-                                  className="absolute bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[280px] max-h-[80vh] overflow-y-auto"
-                                  style={{ top: '30%', left: '50%', transform: 'translateX(-50%)' }}
-                                  onClick={e => e.stopPropagation()}
-                                >
-                                  <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                      <span className="text-3xl">{g.icon}</span>
-                                      <div>
-                                        <h3 className="text-[17px] font-extrabold text-[#1a1040]">
-                                          {isZh ? g.labelZh ?? g.label : g.label}
-                                        </h3>
-                                        <p className="text-[12px] text-gray-400">{isZh ? '每份贡献营养素' : 'Contributing nutrients per serving'}</p>
-                                      </div>
-                                    </div>
-                                    <button onClick={() => setGoalPopup(null)} className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-black/5">✕</button>
+                              <div
+                                className="absolute z-40 top-[72px] left-1/2 -translate-x-1/2 w-[260px] max-w-[calc(100vw-32px)] rounded-[18px] border border-[rgba(124,58,237,0.14)] bg-white/98 shadow-[0_12px_30px_rgba(80,40,160,0.18)] overflow-hidden"
+                                onClick={e => e.stopPropagation()}
+                              >
+                                <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
+                                  <span className="text-[24px] leading-none">{g.icon}</span>
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                                      {isZh ? g.labelZh ?? g.label : g.label}
+                                    </h3>
+                                    <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
+                                      {isZh ? '每份贡献营养素' : 'Contributing nutrients per serving'}
+                                    </p>
                                   </div>
-                                  <div className="flex flex-col gap-0">
-                                    {nutrients.map(n => n && (
-                                      <div key={n.id} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
-                                        <div className="flex items-center gap-2">
-                                          <span className="w-2 h-2 rounded-full bg-[#893ce3]" />
-                                          <span className="text-[14px] font-semibold text-[#1a1040]">{isZh ? n.nameZh ?? n.name : n.name}</span>
-                                        </div>
-                                        <span className="text-[14px] font-bold text-[#893ce3]">
-                                          {n.value != null ? `${n.value}${n.unit ?? ''}` : `${n.dailyValue}% DV`}
-                                        </span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <p className="mt-3 text-[11px] text-gray-400">{isZh ? '来源：' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份` : `Per ${view.product.servingSize ?? '100g'} serving`}</p>
+                                  <button type="button" onClick={() => setGoalPopup(null)} className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5">✕</button>
                                 </div>
+                                <div className="px-4 py-2 max-h-[190px] overflow-y-auto">
+                                  {nutrients.map(n => n && (
+                                    <div key={n.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-[#893ce3] flex-shrink-0" />
+                                        <span className="text-[12px] font-semibold text-[#1a1040] truncate">{isZh ? n.nameZh ?? n.name : n.name}</span>
+                                      </div>
+                                      <span className="text-[11px] font-bold text-[#893ce3] whitespace-nowrap">
+                                        {n.value != null ? `${n.value}${n.unit ?? ''}` : `${n.dailyValue}% DV`}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份` : `Per ${view.product.servingSize ?? '100g'} serving`}</p>
                               </div>
                             );
                           })()}
@@ -1254,7 +1260,7 @@ export default function FoodAnalyzer() {
                         return (
                           <div className="absolute right-0 top-full z-30 mt-2 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-[22px] border border-[rgba(137,60,227,0.18)] bg-white shadow-[0_18px_48px_rgba(80,40,120,0.24)]">
                             <div className="flex items-center gap-3 border-b border-purple-100 px-5 py-4">
-                              <span className="text-[30px]">{watchData.icon}</span>
+                              <span className="text-[24px]">{watchData.icon}</span>
 
                               <div className="min-w-0 flex-1">
                                 <p className="text-[19px] font-extrabold leading-tight text-[#171528]">
@@ -1408,7 +1414,7 @@ export default function FoodAnalyzer() {
               {/* ② 成长益处 */}
               <section
                 ref={growthBenefitsRef}
-                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-hidden ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
+                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(139,92,246,0.1),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-100 relative overflow-visible ${!isPositive && (hasAllergen || view.additiveTags.some(a => ADDITIVE_DICT[a.code]?.risk === 'high')) ? 'opacity-40 pointer-events-none' : ''}`}
               >
                 <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
@@ -1499,7 +1505,7 @@ export default function FoodAnalyzer() {
                               <div className="flex items-center gap-3">
                                 <span className="text-3xl">🔬</span>
                                 <div>
-                                  <h3 className="text-[17px] font-extrabold text-[#1a1040]">
+                                  <h3 className="text-[15px] font-extrabold text-[#1a1040]">
                                     {isZh ? selectedNutrientData.nameZh ?? selectedNutrientData.name : selectedNutrientData.name}
                                   </h3>
                                   <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full mt-1 inline-block ${selectedNutrientData.level === 'High' ? 'bg-green-100 text-green-700' :
@@ -1650,13 +1656,14 @@ export default function FoodAnalyzer() {
                               return (
                                 <button
                                   key={w.code}
-                                  onClick={() => setSelectedWatch(w.code)}
-                                  className={`min-h-[150px] rounded-[18px] px-3 py-4 flex flex-col items-center justify-center gap-2 border transition-all
+                                  disabled={!w.present}
+                                  onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
+                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
                                     ${w.present
                                       ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
-                                      : 'cursor-pointer opacity-75 hover:opacity-100'
+                                      : 'cursor-default opacity-60'
                                     }
-                                    ${selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                                    ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
                                   style={{
                                     background: level.bg,
                                     borderColor: w.present
@@ -1683,12 +1690,6 @@ export default function FoodAnalyzer() {
                                     {isZh ? w.nameZh : w.name}
                                   </span>
 
-                                  <span
-                                    className="text-[11px] font-extrabold tracking-wide"
-                                    style={{ color: level.color }}
-                                  >
-                                    {level.label}
-                                  </span>
                                 </button>
                               );
                             })}
@@ -1719,13 +1720,14 @@ export default function FoodAnalyzer() {
                               return (
                                 <button
                                   key={w.code}
-                                  onClick={() => setSelectedWatch(w.code)}
-                                  className={`min-h-[148px] rounded-[18px] px-3 py-4 flex flex-col items-center justify-center gap-2 border transition-all
+                                  disabled={!w.present}
+                                  onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
+                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
                                     ${w.present
                                       ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
-                                      : 'bg-white/35 border-white/65 cursor-pointer opacity-70 hover:opacity-100'
+                                      : 'bg-white/35 border-white/65 cursor-default opacity-60'
                                     }
-                                    ${selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                                    ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
                                 >
                                   <span className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'}`}>
                                     {w.icon}
@@ -1735,12 +1737,6 @@ export default function FoodAnalyzer() {
                                     {isZh ? w.nameZh : w.name}
                                   </span>
 
-                                  <span
-                                    className="text-[11px] font-extrabold tracking-wide"
-                                    style={{ color: status.color }}
-                                  >
-                                    {status.label}
-                                  </span>
                                 </button>
                               );
                             })}
@@ -1762,8 +1758,8 @@ export default function FoodAnalyzer() {
                   })()}
 
                   {/* 点击图标后的详情弹窗 */}
-                  {selectedWatchData && (
-                    <div className="relative z-20 mb-5 rounded-[20px] border border-[rgba(249,115,22,0.25)] bg-white/95 px-5 py-4 shadow-[0_12px_32px_rgba(80,40,120,0.16)]">
+                  {selectedWatchData?.present && (
+                    <div className="relative z-20 mb-5 ml-auto w-full max-w-[300px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 px-4 py-3 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
                       <div className="flex items-start gap-3">
                         <span className={`text-[30px] ${selectedWatchData.present ? '' : 'grayscale opacity-55'}`}>
                           {selectedWatchData.icon}
@@ -1798,7 +1794,7 @@ export default function FoodAnalyzer() {
                             </button>
                           </div>
 
-                          <p className="mt-3 text-[13px] leading-relaxed text-[#615c73]">
+                          <p className="mt-2 text-[11px] leading-[1.45] text-[#615c73]">
                             {selectedWatchData.present
                               ? (isZh
                                   ? selectedWatchData.detailZh
