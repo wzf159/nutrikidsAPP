@@ -1108,7 +1108,7 @@ export default function FoodAnalyzer() {
                           </p>
                           <div className="grid grid-cols-3 gap-2">
                             {goalsInTier.map(g => (
-                              <button key={g.id} onClick={() => g.tier && setGoalPopup(goalPopup === g.id ? null : g.id)} className="flex flex-col items-center gap-1 cursor-pointer">
+                              <button key={g.id} onClick={() => { if (!g.tier) return; setTopWatchPopup(null); setGoalPopup(goalPopup === g.id ? null : g.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
                                 <span
                                   className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)] ${selectedGoal === g.id ? 'scale-110' : ''}`}
                                   style={{ border: `3px solid ${tc.color}` }}
@@ -1208,9 +1208,10 @@ export default function FoodAnalyzer() {
                             <button
                               key={w.code}
                               type="button"
-                              onClick={() =>
-                                setTopWatchPopup(p => (p === w.code ? null : w.code))
-                              }
+                              onClick={() => {
+                                setGoalPopup(null);
+                                setTopWatchPopup(p => (p === w.code ? null : w.code));
+                              }}
                               className="flex flex-col items-center gap-1 cursor-pointer"
                             >
                               <span
@@ -1266,7 +1267,7 @@ export default function FoodAnalyzer() {
                                   {isZh ? watchData.nameZh : watchData.name}
                                 </h3>
 
-                                <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
+                                <p className="mt-0.5 text-[10px] leading-tight text-gray-400" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                   {isNutrient
                                     ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
                                     : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
@@ -1288,16 +1289,16 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 border-b border-purple-50 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? watchData.nameZh : watchData.name}
                                       </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                         {Number.isFinite(Number(watchData.value))
                                           ? `${Number(watchData.value).toLocaleString(undefined, {
                                             maximumFractionDigits: 2,
                                           })}${watchData.unit ?? ''}`
                                           : (isZh ? '暂无数值' : 'Value unavailable')}
-                                        <span className="ml-1 text-[14px] font-bold text-[#29233f]">
+                                        <span className="ml-1 text-[14px] font-bold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                           {isZh
                                             ? `每 ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
                                             : `for ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
@@ -1309,15 +1310,15 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 border-b border-purple-50 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
                                       </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]">
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#f97316]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                         {Number(watchData.dailyValue ?? 0).toLocaleString(undefined, {
                                           maximumFractionDigits: 1,
                                         })}%, {status.label}
                                       </p>
-                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
+                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {watchData.ageLimit === null
                                           ? (isZh
                                             ? '该年龄段暂无明确每日上限'
@@ -1332,15 +1333,15 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? '评估基准' : 'Assessment Basis'}
                                       </p>
-                                      <p className="mt-1 text-[13px] font-bold leading-relaxed text-[#f97316]">
+                                      <p className="mt-1 text-[13px] font-bold leading-relaxed text-[#f97316]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh
                                           ? `警示阈值：${watchData.threshold ?? '—'}${watchData.unit ?? ''}；当前状态为 ${status.label}`
                                           : `Watch threshold: ${watchData.threshold ?? '—'}${watchData.unit ?? ''}; current level is ${status.label}`}
                                       </p>
-                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]">
+                                      <p className="mt-1 text-[11px] font-semibold text-[#a3a0ae]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh
                                           ? '基于产品营养数据与孩子年龄阶段计算'
                                           : 'Calculated from product nutrition data and the child’s age stage'}
@@ -1353,10 +1354,10 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 border-b border-purple-50 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? '检测状态' : 'Detection Status'}
                                       </p>
-                                      <p className="mt-1 text-[18px] font-extrabold text-[#dc2626]">
+                                      <p className="mt-1 text-[18px] font-extrabold text-[#dc2626]" style={{ fontFamily: 'Poppins, sans-serif' }}>
                                         {status.label}
                                       </p>
                                     </div>
@@ -1365,10 +1366,10 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 border-b border-purple-50 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? '为什么需要注意' : 'Why It Matters'}
                                       </p>
-                                      <p className="mt-1 text-[12px] leading-relaxed text-[#625d72]">
+                                      <p className="mt-1 text-[12px] leading-relaxed text-[#625d72]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? watchData.detailZh : watchData.detail}
                                       </p>
                                     </div>
@@ -1377,10 +1378,10 @@ export default function FoodAnalyzer() {
                                   <div className="flex items-start gap-3 py-3">
                                     <span className="mt-1.5 h-2.5 w-2.5 flex-shrink-0 rounded-full bg-[#f97316]" />
                                     <div>
-                                      <p className="text-[14px] font-extrabold text-[#29233f]">
+                                      <p className="text-[14px] font-extrabold text-[#29233f]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh ? '数据来源' : 'Evidence Source'}
                                       </p>
-                                      <p className="mt-1 text-[12px] font-bold text-[#f97316]">
+                                      <p className="mt-1 text-[12px] font-bold text-[#f97316]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                         {isZh
                                           ? '产品配料表与 Open Food Facts 添加剂标签'
                                           : 'Ingredient list and Open Food Facts additive tags'}
