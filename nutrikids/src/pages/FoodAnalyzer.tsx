@@ -204,15 +204,17 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       return nodes;
     };
 
-    const goalNodes = stack(
-      activeGoals.map(goal => Number(goal.id)),
-      goalTotals
-    );
+    const goalIdsSorted = activeGoals
+      .map(goal => Number(goal.id))
+      .sort((a, b) => (goalTotals[b] ?? 0) - (goalTotals[a] ?? 0));
 
-    const nutrientNodes = stack(
-      activeNutrients.map(nutrient => Number(nutrient.id)),
-      nutrientTotals
-    );
+    const nutrientIdsSorted = activeNutrients
+      .map(nutrient => Number(nutrient.id))
+      .sort((a, b) => (nutrientTotals[b] ?? 0) - (nutrientTotals[a] ?? 0));
+
+    const goalNodes = stack(goalIdsSorted, goalTotals);
+
+    const nutrientNodes = stack(nutrientIdsSorted, nutrientTotals);
 
     const goalOffsets: Record<number, number> = {};
     const nutrientOffsets: Record<number, number> = {};
@@ -1632,7 +1634,7 @@ export default function FoodAnalyzer() {
                           return (
                             <g key={n.id} className="cursor-pointer" onClick={() => toggleGoal(n.id)}>
                               <rect x={SK.leftX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={TIER_COLOR[g.tier!]} opacity={selectedGoal == null || selectedGoal === n.id ? 1 : 0.3} className="transition-opacity" />
-                              <text x={SK.leftX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 1} dominantBaseline="middle" fontSize="20" fontWeight="700" fill={TIER_COLOR[g.tier!]}>
+                              <text x={SK.leftX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 1} dominantBaseline="middle" fontSize="26" fontWeight="800" fill={TIER_COLOR[g.tier!]}>
                                 {g.icon} {isZh ? g.labelZh ?? g.label : g.label}
                               </text>
                             </g>
@@ -1645,7 +1647,7 @@ export default function FoodAnalyzer() {
                           return (
                             <g key={n.id} className="cursor-pointer" onClick={() => toggleNutrient(n.id)}>
                               <rect x={SK.rightX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={color} opacity={selectedNutrient == null || selectedNutrient === n.id ? 1 : 0.3} className="transition-opacity" />
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="20" fontWeight="700" fill={color}>
+                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="26" fontWeight="800" fill={color}>
                                 {isZh ? nt.nameZh ?? nt.name : nt.name}
                               </text>
                               <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14} fontSize="15" fill="#6b7280">
@@ -2079,8 +2081,32 @@ export default function FoodAnalyzer() {
                         <span className="text-sm font-semibold text-[#f97316]" style={{ fontFamily: 'Nunito, sans-serif' }}>{isZh ? nova.zh : nova.en}</span>
                       </div>
 
+                      <div className="flex justify-between mb-1.5">
+                        <div className="flex-1 text-center">
+                          <span className="block text-[10px] font-extrabold text-[#22c55e]">{isZh ? '等级 1' : 'LEVEL 1'}</span>
+                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '低度加工' : 'Minimally Processed'}</span>
+                        </div>
+                        <div className="flex-1 text-center">
+                          <span className="block text-[10px] font-extrabold text-[#d4c000]">{isZh ? '等级 2' : 'LEVEL 2'}</span>
+                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '烹饪配料' : 'Culinary Ingredients'}</span>
+                        </div>
+                        <div className="flex-1 text-center">
+                          <span className="block text-[10px] font-extrabold text-[#f97316]">{isZh ? '等级 3' : 'LEVEL 3'}</span>
+                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '加工食品' : 'Processed Foods'}</span>
+                        </div>
+                        <div className="flex-1 text-center">
+                          <span className="block text-[10px] font-extrabold text-[#ef4444]">{isZh ? '等级 4' : 'LEVEL 4'}</span>
+                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '超加工' : 'Ultra Processed'}</span>
+                        </div>
+                      </div>
+
                       <div className="relative mb-1.5">
-                        <div className="h-[12px] rounded-full bg-gradient-to-r from-[#22c55e] via-[#86efac] via-[#fde047] to-[#f97316] to-[#ef4444]" />
+                        <div className="h-[12px] rounded-full overflow-hidden flex">
+                          <div className="flex-1 bg-[#22c55e]" />
+                          <div className="flex-1 bg-[#fde047]" />
+                          <div className="flex-1 bg-[#f97316]" />
+                          <div className="flex-1 bg-[#ef4444]" />
+                        </div>
                         <div className="absolute top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white border-[3px] border-[#4a4a6a] shadow" style={{ left: `calc(${nova.pos} - 10px)` }} />
                       </div>
                       <div className="flex justify-between text-xs text-gray-500 font-medium mb-3.5">

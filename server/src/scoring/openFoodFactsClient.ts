@@ -57,6 +57,11 @@ export async function getProductByBarcode(barcode: string): Promise<Product | nu
     "nutriscore_grade",
     "nutriscore_score",
     "ingredients_tags",
+    "ingredients_text",
+    "allergens",
+    "allergens_tags",
+    "traces",
+    "traces_tags",
   ].join(",");
 
   const url = `${BASE_URL}/api/v2/product/${encodeURIComponent(barcode)}.json?fields=${fields}`;
@@ -90,8 +95,18 @@ export function mapOffProductToProduct(offProduct: any): Product {
     categoriesTags: offProduct.categories_tags ?? [],
     nutriscoreGrade: offProduct.nutriscore_grade ?? null,
     nutriscoreScore:
-      offProduct.nutriscore_score === undefined ? null : offProduct.nutriscore_score,
+      offProduct.nutriscore_score === undefined
+        ? null
+        : offProduct.nutriscore_score,
     nutrients,
+  
     ingredientsTags: offProduct.ingredients_tags ?? [],
+    ingredientsText: offProduct.ingredients_text ?? null,
+  
+    allergens: offProduct.allergens ?? null,
+    allergenTags: offProduct.allergens_tags ?? [],
+  
+    traces: offProduct.traces ?? null,
+    traceTags: offProduct.traces_tags ?? [],
   };
 }

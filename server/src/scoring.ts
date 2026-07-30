@@ -136,8 +136,10 @@ export async function scoreFood(input: ScoreInput) {
   if (!product) throw Object.assign(new Error('产品不存在'), { statusCode: 404 });
   if (!child) throw Object.assign(new Error('孩子不存在'), { statusCode: 404 });
 
+
+
   const prodNutr = product.nutrients;
-  console.log('additivesJson:', product.additivesJson); 
+  console.log('additivesJson:', product.additivesJson);
   const sugarDV = prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0;
   const sugarG = prodNutr.find((n: { nutrientId: number; value: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? 0;
 
@@ -284,7 +286,7 @@ export async function scoreFood(input: ScoreInput) {
   if (sugarDV >= 10) factors.push({ kind: 'negative', label: 'Added Sugar' });
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
-  
+
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
   const viewNutrients = prodNutr
@@ -435,7 +437,7 @@ export async function scoreFood(input: ScoreInput) {
     try { return product.additivesJson ? JSON.parse(product.additivesJson) : []; }
     catch { return []; }
   })();
-  const hasRawAdditive = (codes: string[]) => 
+  const hasRawAdditive = (codes: string[]) =>
     codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
 
   const sugarNutrient = prodNutr.find(
@@ -468,22 +470,22 @@ export async function scoreFood(input: ScoreInput) {
         : `每份糖分占每日上限的${sugarNutrient?.dailyValue ?? 0}%（上限：${sugarLimit}g）。`,
     },
     {
-      code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
+      code: 'flavors', icon: '🧪', name: 'Artificial Flavors', nameZh: '人工香精',
       present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/) ||
-               hasRawAdditive(['e620','e621','e622','e623','e624','e625','e635']),
-      detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
+        hasRawAdditive(['e620', 'e621', 'e622', 'e623', 'e624', 'e625', 'e635']),
+      detail: 'Contains artificial flavoring. Generally recognized as safe, but indicates processing.',
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
     },
     {
-      code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素', 
-      present: hasAdd(/color|色素/) || hasIng(/color|色素/) || 
-         hasRawAdditive(['e102','e110','e122','e124','e129','e133','e150a','e150b','e150c','e150d','e151','e160']),
+      code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素',
+      present: hasAdd(/color|色素/) || hasIng(/color|色素/) ||
+        hasRawAdditive(['e102', 'e110', 'e122', 'e124', 'e129', 'e133', 'e150a', 'e150b', 'e150c', 'e150d', 'e151', 'e160']),
       detail: 'Contains artificial colors. Some are linked to hyperactivity in sensitive children.',
       detailZh: '含人工色素，部分色素与敏感儿童多动相关。'
     },
     {
-      code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂', 
-      present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/) || hasRawAdditive(['e200','e202','e210','e211','e212','e213','e220','e249','e250','e251','e252']),
+      code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂',
+      present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/) || hasRawAdditive(['e200', 'e202', 'e210', 'e211', 'e212', 'e213', 'e220', 'e249', 'e250', 'e251', 'e252']),
       detail: 'Contains preservatives.', detailZh: '含防腐剂。'
     },
     {
@@ -518,7 +520,7 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
-      present: hasIng(/hydrogenated|氢化/) || hasRawAdditive(['e471','e472']),
+      present: hasIng(/hydrogenated|氢化/) || hasRawAdditive(['e471', 'e472']),
       detail: 'Contains hydrogenated oils.',
       detailZh: '含氢化油脂。'
     },
@@ -535,7 +537,7 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: '含抗氧化剂类添加剂，常用于延缓氧化、延长保质期。',
     },
     {
-      code: 'acidity_regulators', icon: '🍋', name: 'Acidity Regulators', nameZh: '酸度调节剂',
+      code: 'acidity_regulators', icon: '🧪', name: 'Acidity Regulators', nameZh: '酸度调节剂',
       present: hasAdditiveCategory(rawAdditives, 'Acidity Regulator'),
       detail: 'Contains acidity regulator additives, used to control pH or stabilize flavor.',
       detailZh: '含酸度调节剂类添加剂，用于控制酸碱度或稳定风味。',
@@ -593,6 +595,14 @@ export async function scoreFood(input: ScoreInput) {
     analysisId: analysis.id,
     overallScore: overall,
     grade,
+
+    isAllergenSafe: matchedAllergens.length === 0,
+    matchedAllergens,
+    recommendation:
+      matchedAllergens.length === 0
+        ? 'recommended'
+        : 'not_recommended',
+
     breakdown: { nutrientDensity, riskIngredients, processingLevel, stageMatch },
     factors,
     allergenFlags,
@@ -607,9 +617,9 @@ export async function scoreFood(input: ScoreInput) {
         imageUrl: product.imageUrl,
         novaScore: product.novaScore,
         servingSize: product.servingSize,
-        verified: product.verified, 
+        verified: product.verified,
         isAiGenerated: !product.verified && product.barcode === null,
-   
+
       },
       child: { id: child.id, name: child.name, age: child.age },
       allergenSafe: matchedAllergens.length === 0,

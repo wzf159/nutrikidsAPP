@@ -22,12 +22,28 @@ export default async function analysisRoutes(app: FastifyInstance) {
     const { childId, productId, source, imagePath } = parsed.data;
 
     // 校验该孩子属于当前用户
-    const child = await prisma.child.findUnique({ where: { id: childId } });
+    const child = await prisma.child.findUnique({
+      where: { id: childId },
+      include: {
+        allergens: {
+          include: {
+            allergen: true,
+          },
+        },
+      },
+    });
     if (!child || child.userId !== req.user.sub)
       return reply.code(403).send({ error: '无权为该孩子打分' });
 
     try {
-      const result = await scoreFood({ userId: req.user.sub, childId, productId, source, imagePath });
+      const result = await scoreFood({
+        userId: req.user.sub,
+        childId,
+        productId,
+        source,
+        imagePath,
+        
+      });
       return reply.code(201).send(result);
     } catch (e) {
       const err = e as Error & { statusCode?: number };

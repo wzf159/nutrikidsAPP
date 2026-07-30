@@ -31,8 +31,18 @@ export interface Product {
   nutriscoreScore?: number | null;
   nutrients: NutrientEntry[];
   ingredientsTags: string[];
-}
+  ingredientsText?: string | null;
 
+  allergens?: string | null;
+  allergenTags?: string[];
+
+  traces?: string | null;
+  traceTags?: string[];
+}
+export interface AllergenCheckResult {
+  isSafe: boolean;
+  matchedAllergens: string[];
+}
 export interface NutrientGoalRow {
   age_group: string;
   gender: string;
@@ -70,6 +80,10 @@ export interface ScoreResult {
   devScore: number | null;
   additiveScore: number | null;
   finalScore: number | null;
+  // 新增：过敏安全结果
+  isAllergenSafe: boolean;
+  matchedAllergens: string[];
+  recommendation: "recommended" | "not_recommended";
   debug: string[];
 }
 
@@ -253,8 +267,13 @@ export class NutriKidsScorer {
     product: Product,
     ageGroup: string,
     gender: string,
-    alpha = 0.5
+    alpha = 0.5,
+    childAllergens: string[] = []
   ): ScoreResult {
+    const allergenResult = checkProductAllergens(
+      product,
+      childAllergens
+    );
     const debug: string[] = [];
     const log = (msg: string) => debug.push(msg);
 
@@ -282,6 +301,11 @@ export class NutriKidsScorer {
         devScore: null,
         additiveScore: null,
         finalScore: null,
+        isAllergenSafe: allergenResult.isSafe,
+        matchedAllergens: allergenResult.matchedAllergens,
+        recommendation: allergenResult.isSafe
+          ? "recommended"
+          : "not_recommended",
         debug,
       };
     }
@@ -324,6 +348,11 @@ export class NutriKidsScorer {
         devScore: null,
         additiveScore: null,
         finalScore: null,
+        isAllergenSafe: allergenResult.isSafe,
+        matchedAllergens: allergenResult.matchedAllergens,
+        recommendation: allergenResult.isSafe
+          ? "recommended"
+          : "not_recommended",
         debug,
       };
     }
@@ -344,7 +373,123 @@ export class NutriKidsScorer {
       devScore,
       additiveScore,
       finalScore: Math.round(finalScore * 100) / 100,
+      isAllergenSafe: allergenResult.isSafe,
+      matchedAllergens: allergenResult.matchedAllergens,
+      recommendation: allergenResult.isSafe
+        ? "recommended"
+        : "not_recommended",
       debug,
     };
   }
+}
+
+const ALLERGEN_ALIASES: Record<string, string[]> = {
+  peanut: [
+    "peanut",
+    "peanuts",
+    "en:peanut",
+    "en:peanuts",
+    "cacahuete",
+    "cacahuetes",
+    "cacahuète",
+    "cacahuètes",
+  ],
+
+  nut: [
+    "nut",
+    "nuts",
+    "en:nut",
+    "en:nuts",
+    "en:tree-nuts",
+  ],
+
+  milk: [
+    "milk",
+    "dairy",
+    "en:milk",
+    "en:dairy",
+    "en:cow-s-milk",
+    "lait",
+  ],
+
+  egg: [
+    "egg",
+    "eggs",
+    "en:egg",
+    "en:eggs",
+    "oeuf",
+    "oeufs",
+    "œuf",
+    "œufs",
+  ],
+
+  soy: [
+    "soy",
+    "soybean",
+    "soybeans",
+    "en:soy",
+    "en:soybeans",
+    "soja",
+  ],
+
+  wheat: [
+    "wheat",
+    "en:wheat",
+    "gluten",
+    "en:gluten",
+    "ble",
+    "blé",
+  ],
+};
+
+function normalizeAllergenText(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+export function checkProductAllergens(
+  product: Product,
+  childAllergens: string[]
+): AllergenCheckResult {
+  const productSources = [
+    ...(product.allergenTags ?? []),
+    ...(product.traceTags ?? []),
+    ...(product.ingredientsTags ?? []),
+    product.allergens ?? "",
+    product.traces ?? "",
+    product.ingredientsText ?? "",
+  ]
+    .map((value) => normalizeAllergenText(String(value)))
+    .filter(Boolean);
+
+  const matchedAllergens = childAllergens.filter((childAllergen) => {
+    const normalizedChildAllergen =
+      normalizeAllergenText(childAllergen);
+
+    const aliases =
+      ALLERGEN_ALIASES[normalizedChildAllergen] ??
+      [normalizedChildAllergen];
+
+    return aliases.some((alias) => {
+      const normalizedAlias = normalizeAllergenText(alias);
+
+      return productSources.some((source) => {
+        if (source === normalizedAlias) return true;
+
+        // OFF 标准 tag 使用精确匹配，避免 nut 误匹配 peanut
+        if (source.startsWith("en:")) return false;
+
+        // allergens、traces、ingredientsText 等普通文本允许包含匹配
+        return source.includes(normalizedAlias);
+      });
+    });
+  });
+
+  return {
+    isSafe: matchedAllergens.length === 0,
+    matchedAllergens,
+  };
 }

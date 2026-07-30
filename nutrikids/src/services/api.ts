@@ -62,6 +62,9 @@ export interface AnalysisResult {
   overallScore: number;
   grade: string;
   view: AnalysisView;
+  isAllergenSafe: boolean;
+  matchedAllergens: string[];
+  recommendation: "recommended" | "not_recommended";
 }
 export interface Child {
   id: string;
@@ -159,12 +162,18 @@ export async function searchProducts(q: string): Promise<ProductMatch[]> {
   return asJson(await fetch(`${API}/products/search?q=${encodeURIComponent(q)}`));
 }
 
-export async function analyzeProduct(childId: string, productId: number, source: 'search' | 'barcode' | 'photo'): Promise<AnalysisResult> {
-  return asJson(await authedFetch('/analyses', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ childId, productId, source }),
-  }));
+export async function analyzeProduct(
+  childId: string,
+  productId: number,
+  source: 'search' | 'barcode' | 'photo',
+): Promise<AnalysisResult> {
+  return asJson(
+    await authedFetch('/analyses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId, productId, source }),
+    }),
+  );
 }
 
 /* ================================================================
