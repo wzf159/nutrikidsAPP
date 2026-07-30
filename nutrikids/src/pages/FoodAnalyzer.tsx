@@ -414,8 +414,17 @@ export default function FoodAnalyzer() {
   }, [query]);
 
 
+  useEffect(() => {
+    console.log("★★★★★ result changed ★★★★★");
+    console.log(result);
+  }, [result]);
 
   const view = result?.view ?? null;
+
+  console.log('r.view =', view);
+  console.log('r.view.allergenSafe =', view?.allergenSafe);
+  console.log('r.view.matchedAllergens =', view?.matchedAllergens);
+
   const { goalNodes, nutrientNodes, ribbons } = useSankeyLayout(view);
 
   const nutrientColor = (id: number) => {
@@ -463,9 +472,7 @@ export default function FoodAnalyzer() {
       if (requestId !== analysisRequestRef.current) {
         return;
       }
-      console.log('r.view =', r.view);
-      console.log('r.view.allergenSafe =', r.view?.allergenSafe);
-      console.log('r.view.matchedAllergens =', r.view?.matchedAllergens);
+
       setResult(r);
       setPhase({ name: 'idle' });
     } catch (e) {
