@@ -176,8 +176,45 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       .filter((c): c is string => Boolean(c));
     const allergenRows = await prisma.allergen.findMany({ where: { code: { in: allergenCodes } } });
 
-    return prisma.product.create({
-      data: {
+    return prisma.product.upsert({
+      where: { barcode },
+    
+      update: {
+        name: p.product_name!,
+        nameZh: p.product_name_zh || null,
+        brandId,
+        imageUrl: p.image_front_url ?? null,
+        quantity: p.quantity ?? null,
+        servingSize: p.serving_size ?? '100g',
+        novaScore: p.nova_group ?? null,
+        nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
+        nutriScore:
+          typeof p.nutriscore_score === 'number'
+            ? p.nutriscore_score
+            : null,
+    
+        nutrients: {
+          deleteMany: {},
+          create: nutrients,
+        },
+    
+        allergens: {
+          deleteMany: {},
+          create: allergenRows.map((a) => ({
+            allergenId: a.id,
+          })),
+        },
+    
+        additivesJson: p.additives_tags?.length
+          ? JSON.stringify(p.additives_tags)
+          : null,
+    
+        categoriesTagsJson: p.categories_tags?.length
+          ? JSON.stringify(p.categories_tags)
+          : null,
+      },
+    
+      create: {
         barcode,
         name: p.product_name!,
         nameZh: p.product_name_zh || null,
@@ -187,19 +224,43 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         servingSize: p.serving_size ?? '100g',
         novaScore: p.nova_group ?? null,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
-        nutriScore: typeof p.nutriscore_score === 'number' ? p.nutriscore_score : null,
+        nutriScore:
+          typeof p.nutriscore_score === 'number'
+            ? p.nutriscore_score
+            : null,
         verified: false,
-        nutrients: { create: nutrients },
-        allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
-        additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
-        categoriesTagsJson: p.categories_tags?.length ? JSON.stringify(p.categories_tags) : null,
+    
+        nutrients: {
+          create: nutrients,
+        },
+    
+        allergens: {
+          create: allergenRows.map((a) => ({
+            allergenId: a.id,
+          })),
+        },
+    
+        additivesJson: p.additives_tags?.length
+          ? JSON.stringify(p.additives_tags)
+          : null,
+    
+        categoriesTagsJson: p.categories_tags?.length
+          ? JSON.stringify(p.categories_tags)
+          : null,
       },
-      select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
+    
+      select: {
+        id: true,
+        name: true,
+        nameZh: true,
+        imageUrl: true,
+        brand: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
-  } catch (e) {
-    console.error(`importFromOpenFoodFacts 失败 (barcode=${barcode}):`, e);
-    return null;
-  }
 }
 
 async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResult['product'] | null> {
