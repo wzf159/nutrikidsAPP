@@ -29,7 +29,7 @@ export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: num
   { nutrientId: 20, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 28 },
   { nutrientId: 21, offKey: 'carbohydrates_100g', factor: 1, unit: 'g', dvRef: 275 },
   { nutrientId: 22, offKey: 'fiber_100g', factor: 1, unit: 'g', dvRef: 25 },
-{ nutrientId: 23, offKey: 'magnesium_100g', factor: 1000, unit: 'mg', dvRef: 130 },
+  { nutrientId: 23, offKey: 'magnesium_100g', factor: 1000, unit: 'mg', dvRef: 130 },
   // ↓↓↓ 新增: 对应 seed.ts 里新加的 24~33 号营养素 ↓↓↓
   { nutrientId: 24, offKey: 'docosahexaenoic-acid_100g', factor: 1, unit: 'g', dvRef: 0.25 },
   { nutrientId: 25, offKey: 'choline_100g', factor: 1000, unit: 'mg', dvRef: 550 },
@@ -127,7 +127,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
-'?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,additives_tags',
+      '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,additives_tags',
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -153,7 +153,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
     }
 
     const servingFactor = getServingFactor(p.serving_size);
-    
+
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
       .map((m) => {
@@ -178,7 +178,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
 
     return prisma.product.upsert({
       where: { barcode },
-    
+
       update: {
         name: p.product_name!,
         nameZh: p.product_name_zh || null,
@@ -192,28 +192,28 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
           typeof p.nutriscore_score === 'number'
             ? p.nutriscore_score
             : null,
-    
+
         nutrients: {
           deleteMany: {},
           create: nutrients,
         },
-    
+
         allergens: {
           deleteMany: {},
           create: allergenRows.map((a) => ({
             allergenId: a.id,
           })),
         },
-    
+
         additivesJson: p.additives_tags?.length
           ? JSON.stringify(p.additives_tags)
           : null,
-    
+
         categoriesTagsJson: p.categories_tags?.length
           ? JSON.stringify(p.categories_tags)
           : null,
       },
-    
+
       create: {
         barcode,
         name: p.product_name!,
@@ -229,26 +229,26 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
             ? p.nutriscore_score
             : null,
         verified: false,
-    
+
         nutrients: {
           create: nutrients,
         },
-    
+
         allergens: {
           create: allergenRows.map((a) => ({
             allergenId: a.id,
           })),
         },
-    
+
         additivesJson: p.additives_tags?.length
           ? JSON.stringify(p.additives_tags)
           : null,
-    
+
         categoriesTagsJson: p.categories_tags?.length
           ? JSON.stringify(p.categories_tags)
           : null,
       },
-    
+
       select: {
         id: true,
         name: true,
@@ -261,6 +261,10 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         },
       },
     });
+  } catch (e) {
+    console.error(`searchOpenFoodFactsByName 失败 :`, e);
+    return null;
+  }
 }
 
 async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResult['product'] | null> {
@@ -302,7 +306,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
     }
 
     const servingFactor = getServingFactor(p.serving_size);
-    
+
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
       .map((m) => {
@@ -337,23 +341,23 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
           typeof p.nutriscore_score === 'number'
             ? p.nutriscore_score
             : null,
-    
+
         nutrients: {
           deleteMany: {},
           create: nutrients,
         },
-    
+
         allergens: {
           deleteMany: {},
           create: allergenRows.map((a) => ({
             allergenId: a.id,
           })),
         },
-    
+
         additivesJson: p.additives_tags?.length
           ? JSON.stringify(p.additives_tags)
           : null,
-    
+
         categoriesTagsJson: p.categories_tags?.length
           ? JSON.stringify(p.categories_tags)
           : null,
@@ -436,7 +440,7 @@ export async function findProduct(input: ProductFindInput): Promise<ProductFindR
     const off = await importFromOpenFoodFacts(barcode);
     if (off) return { product: off, source: 'openfoodfacts' };
   }
-  
+
 
   if (names.length > 0) {
     const local = await findLocalByNames(names);
