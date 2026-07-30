@@ -686,6 +686,51 @@ export default function FoodAnalyzer() {
   const isPositive = levelNum >= 3;
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
 
+  const highRiskAdditives = view.additiveTags.filter(
+    a => ADDITIVE_DICT[a.code]?.risk === 'high'
+  );
+
+  const hasHighRiskAdditive = highRiskAdditives.length > 0;
+  const hasSafetyRisk = hasAllergen || hasHighRiskAdditive;
+
+  const displayScore = hasSafetyRisk
+    ? 0
+    : Math.round(result.overallScore);
+
+  const displayLevel = hasSafetyRisk
+    ? 0
+    : levelNum;
+
+  const safetyTitle = hasAllergen && hasHighRiskAdditive
+    ? {
+      en: 'Allergen & Harmful Additives Detected',
+      zh: '检测到过敏原及有害添加剂',
+      es: 'Alérgenos y aditivos nocivos detectados',
+    }
+    : hasAllergen
+      ? {
+        en: 'Allergen Detected',
+        zh: '检测到过敏原',
+        es: 'Alérgeno detectado',
+      }
+      : {
+        en: 'Harmful Additives Detected',
+        zh: '检测到有害添加剂',
+        es: 'Aditivos nocivos detectados',
+      };
+
+  const safetySummary = hasAllergen
+    ? {
+      en: 'This product is not recommended because it contains an allergen associated with this child.',
+      zh: '该产品含有与当前儿童匹配的过敏原，因此不建议食用。',
+      es: 'Este producto no se recomienda porque contiene un alérgeno asociado con este niño.',
+    }
+    : {
+      en: 'This product is not recommended because it contains high-risk additives.',
+      zh: '该产品含有高风险添加剂，因此不建议食用。',
+      es: 'Este producto no se recomienda porque contiene aditivos de alto riesgo.',
+    };
+
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const TIER_CONFIG: Record<'core' | 'important' | 'supporting', {
@@ -1096,88 +1141,202 @@ export default function FoodAnalyzer() {
                         <div className="flex items-center gap-3 mb-2">
                           <div
                             className="w-[64px] h-[64px] rounded-full flex-shrink-0 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
-                            style={{ background: `linear-gradient(135deg, ${levelMeta.color}, ${levelMeta.color}cc)` }}
+                            style={{
+                              background: hasSafetyRisk
+                                ? 'linear-gradient(135deg, #dc2626, #b91c1c)'
+                                : `linear-gradient(135deg, ${levelMeta.color}, ${levelMeta.color}cc)`,
+                            }}
                           >
-                            <span className="text-[20px] font-extrabold text-white leading-none" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                              {Math.round(result.overallScore)}
+                            <span
+                              className="text-[20px] font-extrabold text-white leading-none"
+                              style={{ fontFamily: 'Poppins, sans-serif' }}
+                            >
+                              {displayScore}
                             </span>
-                            <span className="text-[9px] font-bold text-white/85 tracking-wider mt-0.5">LEVEL {levelNum}</span>
+
+                            <span className="text-[9px] font-bold text-white/85 tracking-wider mt-0.5">
+                              {hasSafetyRisk ? 'NOT SAFE' : `LEVEL ${displayLevel}`}
+                            </span>
                           </div>
+
                           <div className="flex-1">
-                            <h3 className="text-[18px] font-extrabold text-[#1a1a3a] leading-tight" style={{ fontFamily: 'Poppins, sans-serif' }}>
-                              {levelMeta.emoji} {isZh ? levelMeta.labelZh : isEs ? levelMeta.labelEs : levelMeta.label}
+                            <h3
+                              className={`text-[18px] font-extrabold leading-tight ${hasSafetyRisk ? 'text-red-700' : 'text-[#1a1a3a]'
+                                }`}
+                              style={{ fontFamily: 'Poppins, sans-serif' }}
+                            >
+                              {hasSafetyRisk ? (
+                                <>
+                                  🚨{' '}
+                                  {isZh
+                                    ? safetyTitle.zh
+                                    : isEs
+                                      ? safetyTitle.es
+                                      : safetyTitle.en}
+                                </>
+                              ) : (
+                                <>
+                                  {levelMeta.emoji}{' '}
+                                  {isZh
+                                    ? levelMeta.labelZh
+                                    : isEs
+                                      ? levelMeta.labelEs
+                                      : levelMeta.label}
+                                </>
+                              )}
                             </h3>
-                            {/* AI 生成时只显示小标注，不强调 */}
+
                             {!view.product.verified && view.product.isAiGenerated && (
-                              <p className="text-[10px] text-gray-400 mt-1" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                🤖 {isZh ? 'AI 估算数据，仅供参考' : 'AI-estimated data, for reference only'}
-                              </p>
+                              <div className="rounded-xl bg-yellow-50 border border-yellow-300 px-4 py-2.5 mb-2 flex items-start gap-2">
+                                <span className="text-base">🤖</span>
+
+                                <div>
+                                  <p className="text-[12px] font-extrabold text-yellow-800">
+                                    {isZh
+                                      ? 'AI 估算营养信息'
+                                      : isEs
+                                        ? 'Información nutricional estimada por IA'
+                                        : 'AI-Estimated Nutrition'}
+                                  </p>
+
+                                  <p
+                                    className="text-[11px] text-yellow-700"
+                                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                                  >
+                                    {isZh
+                                      ? '该产品未经过官方验证，营养数据由 AI 根据包装信息推断，仅供参考。'
+                                      : isEs
+                                        ? 'Este producto no ha sido verificado oficialmente. Los valores nutricionales fueron estimados por IA y son solo de referencia.'
+                                        : 'This product has not been officially verified. Nutrition values were estimated by AI from the package and should be used as reference only.'}
+                                  </p>
+                                </div>
+                              </div>
                             )}
-                            <p className="text-[11px] text-gray-500 leading-relaxed mt-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                              {isZh ? levelMeta.summaryZh : isEs ? levelMeta.summaryEs : levelMeta.summary}
+                            <p
+                              className={`text-[11px] leading-relaxed mt-0.5 ${hasSafetyRisk ? 'text-red-600' : 'text-gray-500'
+                                }`}
+                              style={{ fontFamily: 'Nunito, sans-serif' }}
+                            >
+                              {hasSafetyRisk
+                                ? isZh
+                                  ? safetySummary.zh
+                                  : isEs
+                                    ? safetySummary.es
+                                    : safetySummary.en
+                                : isZh
+                                  ? levelMeta.summaryZh
+                                  : isEs
+                                    ? levelMeta.summaryEs
+                                    : levelMeta.summary}
                             </p>
                           </div>
                         </div>
-                        {/* 过敏原 */}
-                        {hasAllergen && (
-                          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
-                            <span className="text-base">🚨</span>
-                            <div>
-                              <p className="text-[12px] font-extrabold text-red-700">{isZh ? '检测到过敏原' : 'Allergen Detected'}</p>
-                              <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                {view.matchedAllergens.map(a => isZh ? a.nameZh ?? a.name : a.name).join(', ')}
-                              </p>
-                            </div>
-                          </div>
-                        )}
 
-                        {/* 有害添加剂 */}
-                        {view.additiveTags.filter(a => {
-                          const info = ADDITIVE_DICT[a.code];
-                          return info && info.risk === 'high';
-                        }).length > 0 && (
-                            <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 mb-2 flex items-start gap-2">
-                              <span className="text-base">⚗️</span>
-                              <div>
-                                <p className="text-[12px] font-extrabold text-orange-700">{isZh ? '检测到有害添加剂' : 'Harmful Additives Detected'}</p>
-                                <p className="text-[11px] text-orange-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  {view.additiveTags.filter(a => ADDITIVE_DICT[a.code]?.risk === 'high').map(a => ADDITIVE_DICT[a.code]?.name ?? a.code).join(', ')}
-                                </p>
+                        {/* 安全风险优先 */}
+                        {hasSafetyRisk ? (
+                          <>
+                            {hasAllergen && (
+                              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                                <span className="text-base">🚨</span>
+
+                                <div>
+                                  <p className="text-[12px] font-extrabold text-red-700">
+                                    {isZh
+                                      ? '检测到过敏原'
+                                      : isEs
+                                        ? 'Alérgeno detectado'
+                                        : 'Allergen Detected'}
+                                  </p>
+
+                                  <p
+                                    className="text-[11px] text-red-600"
+                                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                                  >
+                                    {view.matchedAllergens
+                                      .map(a =>
+                                        isZh
+                                          ? a.nameZh ?? a.name
+                                          : a.name
+                                      )
+                                      .join(', ')}
+                                  </p>
+                                </div>
                               </div>
-                            </div>
-                          )}
-                        {isPositive ? (
-                          /* Level 3-5 绿色框 */
+                            )}
+
+                            {hasHighRiskAdditive && (
+                              <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                                <span className="text-base">⚗️</span>
+
+                                <div>
+                                  <p className="text-[12px] font-extrabold text-orange-700">
+                                    {isZh
+                                      ? '检测到有害添加剂'
+                                      : isEs
+                                        ? 'Aditivos nocivos detectados'
+                                        : 'Harmful Additives Detected'}
+                                  </p>
+
+                                  <p
+                                    className="text-[11px] text-orange-600"
+                                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                                  >
+                                    {highRiskAdditives
+                                      .map(a => ADDITIVE_DICT[a.code]?.name ?? a.code)
+                                      .join(', ')}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : isPositive ? (
                           topNutrients.length > 0 && (
                             <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
                               <span>⭐</span>
-                              <p className="text-[12px] font-semibold text-green-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                <span className="font-bold">{isZh ? '富含 ' : 'Good source of '}</span>
+
+                              <p
+                                className="text-[12px] font-semibold text-green-700"
+                                style={{ fontFamily: 'Nunito, sans-serif' }}
+                              >
+                                <span className="font-bold">
+                                  {isZh ? '富含 ' : isEs ? 'Buena fuente de ' : 'Good source of '}
+                                </span>
+
                                 {topNutrients.map((n, i) => (
-                                  <span key={n.id} className="font-extrabold" style={{ color: nutrientColor(n.id) }}>
-                                    {isZh ? n.nameZh ?? n.name : n.name}{i < topNutrients.length - 1 ? ' & ' : ''}
+                                  <span
+                                    key={n.id}
+                                    className="font-extrabold"
+                                    style={{ color: nutrientColor(n.id) }}
+                                  >
+                                    {isZh
+                                      ? n.nameZh ?? n.name
+                                      : n.name}
+
+                                    {i < topNutrients.length - 1 ? ' & ' : ''}
                                   </span>
                                 ))}
                               </p>
                             </div>
                           )
                         ) : (
-                          <>
+                          presentWatch.length > 0 && (
+                            <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 mb-2 flex items-center gap-2 flex-wrap">
+                              <span className="text-base">⚠️</span>
 
+                              <span className="text-[12px] font-extrabold text-amber-700">
+                                {isZh ? '注意：' : isEs ? 'Atención:' : 'Watch:'}
+                              </span>
 
-                            {/* Watch 项 */}
-                            {presentWatch.length > 0 && !hasAllergen && (
-                              <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 mb-2 flex items-center gap-2 flex-wrap">
-                                <span className="text-base">⚠️</span>
-                                <span className="text-[12px] font-extrabold text-amber-700">{isZh ? '注意：' : 'Watch:'}</span>
-                                {presentWatch.slice(0, 3).map(w => (
-                                  <span key={w.code} className="text-[11px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">
-                                    {isZh ? w.nameZh : w.name}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </>
+                              {presentWatch.slice(0, 3).map(w => (
+                                <span
+                                  key={w.code}
+                                  className="text-[11px] font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full"
+                                >
+                                  {isZh ? w.nameZh : w.name}
+                                </span>
+                              ))}
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
