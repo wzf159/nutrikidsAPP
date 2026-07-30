@@ -634,12 +634,16 @@ export default function FoodAnalyzer() {
   };
   // 只统计真正有有效 flow 连接的已选择目标，确保顶部数字与桑基图一致。
   const supportedGoalIds = new Set(
-    (view?.flows ?? [])
-      .filter(f => {
-        const value = Number(f.value);
-        return Number.isFinite(value) && value > 0;
+    (view?.goals ?? [])
+      .filter(g => {
+        const supportDV = Number(g.supportDV);
+        return (
+          g.selected &&
+          Number.isFinite(supportDV) &&
+          supportDV > 0
+        );
       })
-      .map(f => Number(f.goalId))
+      .map(g => Number(g.id))
   );
   const tierCounts = view ? {
     core: view.goals.filter(
