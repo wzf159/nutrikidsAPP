@@ -57,14 +57,22 @@ export interface AnalysisView {
   additiveTags: { code: string; name: string; nameZh: string; type: string }[];  
 }
 
+export interface MatchedAllergen {
+  code: string;
+  name: string;
+  nameZh?: string | null;
+  icon?: string | null;
+}
+
 export interface AnalysisResult {
   analysisId: string;
   overallScore: number;
   grade: string;
   view: AnalysisView;
+
   isAllergenSafe: boolean;
-  matchedAllergens: string[];
-  recommendation: "recommended" | "not_recommended";
+  matchedAllergens: MatchedAllergen[];
+  recommendation: 'recommended' | 'not_recommended';
 }
 export interface Child {
   id: string;

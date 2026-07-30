@@ -679,6 +679,11 @@ export default function FoodAnalyzer() {
   const levelMeta = LEVEL_META[levelNum];
   const isPositive = levelNum >= 3;
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
+  console.log('前端过敏数据:', {
+    allergenSafe: view?.allergenSafe,
+    matchedAllergens: view?.matchedAllergens,
+    hasAllergen,
+  });
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const TIER_CONFIG: Record<'core' | 'important' | 'supporting', {
