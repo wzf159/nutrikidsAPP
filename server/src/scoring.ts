@@ -139,7 +139,8 @@ export async function scoreFood(input: ScoreInput) {
 
 
   const prodNutr = product.nutrients;
-  console.log('additivesJson:', product.additivesJson);
+  console.log('product nutrients length:', product?.nutrients?.length);
+  
   const sugarDV = prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0;
   const sugarG = prodNutr.find((n: { nutrientId: number; value: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? 0;
 
@@ -289,6 +290,14 @@ export async function scoreFood(input: ScoreInput) {
 
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
+  console.table(
+    prodNutr.map(n => ({
+      id: n.nutrientId,
+      name: n.nutrient?.name,
+      dv: n.dailyValue,
+      value: n.value
+    }))
+  );
   const viewNutrients = prodNutr
     .filter(
       (n: { nutrientId: number }) =>
