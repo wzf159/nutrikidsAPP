@@ -537,7 +537,7 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: '含抗氧化剂类添加剂，常用于延缓氧化、延长保质期。',
     },
     {
-      code: 'acidity_regulators', icon: '🧪', name: 'Acidity Regulators', nameZh: '酸度调节剂',
+      code: 'acidity_regulators', icon: '🔮', name: 'Acidity Regulators', nameZh: '酸度调节剂',
       present: hasAdditiveCategory(rawAdditives, 'Acidity Regulator'),
       detail: 'Contains acidity regulator additives, used to control pH or stabilize flavor.',
       detailZh: '含酸度调节剂类添加剂，用于控制酸碱度或稳定风味。',
@@ -590,7 +590,23 @@ export async function scoreFood(input: ScoreInput) {
     },
     select: { id: true },
   });
-
+  console.log('孩子过敏原:', child.allergens.map(
+    item => ({
+      id: item.allergen.id,
+      code: item.allergen.code,
+      name: item.allergen.name,
+    })
+  ));
+  
+  console.log('产品过敏原:', product.allergens.map(
+    item => ({
+      id: item.allergen.id,
+      code: item.allergen.code,
+      name: item.allergen.name,
+    })
+  ));
+  
+  console.log('匹配结果:', matchedAllergens);
   return {
     analysisId: analysis.id,
     overallScore: overall,

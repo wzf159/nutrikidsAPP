@@ -492,7 +492,7 @@ export const WATCH_CARDS: WatchCard[] = [
   { code: 'trans-fat', name: 'Trans Fat', nameZh: '反式脂肪', icon: '🛢️', source: 'nutriments' },
   { code: 'hfcs', name: 'High Fructose Corn Syrup', nameZh: '高果糖玉米糖浆', icon: '🌽', source: 'ingredients' },
   { code: 'antioxidants', name: 'Antioxidants', nameZh: '抗氧化剂', icon: '🍊', source: 'additives' },
-  { code: 'acidity_regulators', name: 'Acidity Regulators', nameZh: '酸度调节剂', icon: '🍋', source: 'additives' },
+  { code: 'acidity_regulators', name: 'Acidity Regulators', nameZh: '酸度调节剂', icon: '🔮', source: 'additives' },
   { code: 'thickeners_emulsifiers', name: 'Thickeners / Emulsifiers', nameZh: '增稠剂/乳化剂', icon: '🥣', source: 'additives' },
   { code: 'flavor_enhancers', name: 'Flavor Enhancers', nameZh: '增味剂', icon: '🍥', source: 'additives' },
   { code: 'sweeteners', name: 'Sweeteners', nameZh: '甜味剂', icon: '🍭', source: 'additives' },
