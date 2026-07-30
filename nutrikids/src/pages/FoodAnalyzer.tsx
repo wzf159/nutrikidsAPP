@@ -421,9 +421,6 @@ export default function FoodAnalyzer() {
 
   const view = result?.view ?? null;
 
-  console.log('r.view =', view);
-  console.log('r.view.allergenSafe =', view?.allergenSafe);
-  console.log('r.view.matchedAllergens =', view?.matchedAllergens);
 
   const { goalNodes, nutrientNodes, ribbons } = useSankeyLayout(view);
 
@@ -688,8 +685,7 @@ export default function FoodAnalyzer() {
   const levelMeta = LEVEL_META[levelNum];
   const isPositive = levelNum >= 3;
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
-  console.log("result =", result);
-  console.log("result.view =", result?.view);
+
   const [showPhotoMenu, setShowPhotoMenu] = useState(false);
 
   const TIER_CONFIG: Record<'core' | 'important' | 'supporting', {
@@ -1122,6 +1118,34 @@ export default function FoodAnalyzer() {
                             </p>
                           </div>
                         </div>
+                        {/* 过敏原 */}
+                        {hasAllergen && (
+                          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                            <span className="text-base">🚨</span>
+                            <div>
+                              <p className="text-[12px] font-extrabold text-red-700">{isZh ? '检测到过敏原' : 'Allergen Detected'}</p>
+                              <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                {view.matchedAllergens.map(a => isZh ? a.nameZh ?? a.name : a.name).join(', ')}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* 有害添加剂 */}
+                        {view.additiveTags.filter(a => {
+                          const info = ADDITIVE_DICT[a.code];
+                          return info && info.risk === 'high';
+                        }).length > 0 && (
+                            <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                              <span className="text-base">⚗️</span>
+                              <div>
+                                <p className="text-[12px] font-extrabold text-orange-700">{isZh ? '检测到有害添加剂' : 'Harmful Additives Detected'}</p>
+                                <p className="text-[11px] text-orange-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                  {view.additiveTags.filter(a => ADDITIVE_DICT[a.code]?.risk === 'high').map(a => ADDITIVE_DICT[a.code]?.name ?? a.code).join(', ')}
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         {isPositive ? (
                           /* Level 3-5 绿色框 */
                           topNutrients.length > 0 && (
@@ -1139,34 +1163,7 @@ export default function FoodAnalyzer() {
                           )
                         ) : (
                           <>
-                            {/* 过敏原 */}
-                            {hasAllergen && (
-                              <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
-                                <span className="text-base">🚨</span>
-                                <div>
-                                  <p className="text-[12px] font-extrabold text-red-700">{isZh ? '检测到过敏原' : 'Allergen Detected'}</p>
-                                  <p className="text-[11px] text-red-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                    {view.matchedAllergens.map(a => isZh ? a.nameZh ?? a.name : a.name).join(', ')}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
 
-                            {/* 有害添加剂 */}
-                            {view.additiveTags.filter(a => {
-                              const info = ADDITIVE_DICT[a.code];
-                              return info && info.risk === 'high';
-                            }).length > 0 && (
-                                <div className="rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 mb-2 flex items-start gap-2">
-                                  <span className="text-base">⚗️</span>
-                                  <div>
-                                    <p className="text-[12px] font-extrabold text-orange-700">{isZh ? '检测到有害添加剂' : 'Harmful Additives Detected'}</p>
-                                    <p className="text-[11px] text-orange-600" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                      {view.additiveTags.filter(a => ADDITIVE_DICT[a.code]?.risk === 'high').map(a => ADDITIVE_DICT[a.code]?.name ?? a.code).join(', ')}
-                                    </p>
-                                  </div>
-                                </div>
-                              )}
 
                             {/* Watch 项 */}
                             {presentWatch.length > 0 && !hasAllergen && (
