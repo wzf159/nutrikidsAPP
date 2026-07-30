@@ -386,17 +386,14 @@ export async function scoreFood(input: ScoreInput) {
 
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
-
-    const score = goalScores[goalId];
-    if (score === undefined || score <= 0) return null;
-
-    const evidenceCount = goalEvidence(goalId).count;
-
-    if (score >= 0.75 && evidenceCount >= 3) return 'core';
-    if (score >= 0.45 && evidenceCount >= 2) return 'important';
-    if (score >= 0.20 && evidenceCount >= 1) return 'supporting';
-
-    return null;
+  
+    const stageConfig = DEV_TIERS[goalId]?.[ageIdx];
+  
+    if (!stageConfig) return null;
+  
+    return genderKey === 'female'
+      ? stageConfig.female
+      : stageConfig.male;
   };
 
   const viewGoals = allGoals.map((g) => {
@@ -419,6 +416,14 @@ export async function scoreFood(input: ScoreInput) {
       supportDV: Math.round(displaySupport * 100),
     };
   });
+  console.table(
+    allGoals.map(g => ({
+      id: g.id,
+      selected: childGoalIds.has(g.id),
+      tier: devTierOf(g.id),
+      score: goalScores[g.id],
+    }))
+  );
   // scoreFood 函数里，在 flows 计算之前加
   console.log('childGoalIds:', [...childGoalIds]);
   console.log('viewNutrIds:', [...viewNutrIds]);
