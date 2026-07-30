@@ -86,7 +86,43 @@ async function findLocalByNames(names: string[]): Promise<ProductFindResult['pro
   }
   return null;
 }
+function getServingFactor(servingSize?: string): number {
+  if (!servingSize) return 1;
 
+  // 例如：
+  // "26 g"
+  // "1 slice (26 g)"
+  // "2 pieces (30g)"
+  // "240 ml"
+  const metricMatch = servingSize.match(
+    /(\d+(?:\.\d+)?)\s*(g|ml)\b/i
+  );
+
+  if (metricMatch) {
+    const amount = Number(metricMatch[1]);
+
+    if (Number.isFinite(amount) && amount > 0) {
+      return amount / 100;
+    }
+  }
+
+  // 可选：处理 oz
+  const ounceMatch = servingSize.match(
+    /(\d+(?:\.\d+)?)\s*(?:oz|ounce|ounces)\b/i
+  );
+
+  if (ounceMatch) {
+    const ounces = Number(ounceMatch[1]);
+
+    if (Number.isFinite(ounces) && ounces > 0) {
+      const grams = ounces * 28.3495;
+      return grams / 100;
+    }
+  }
+
+  // 无法确定重量时，不要把 "1 slice" 当成 1g
+  return 1;
+}
 async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResult['product'] | null> {
   try {
     const res = await fetch(
@@ -116,11 +152,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       brandId = brand.id;
     }
 
-    const servingFactor = (() => {
-      const s = p.serving_size ?? '100g';
-      const match = s.match(/(\d+\.?\d*)/);
-      return match ? parseFloat(match[1]) / 100 : 1;
-    })();
+    const servingFactor = getServingFactor(p.serving_size);
     
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
@@ -208,11 +240,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       brandId = brand.id;
     }
 
-    const servingFactor = (() => {
-      const s = p.serving_size ?? '100g';
-      const match = s.match(/(\d+\.?\d*)/);
-      return match ? parseFloat(match[1]) / 100 : 1;
-    })();
+    const servingFactor = getServingFactor(p.serving_size);
     
     const nutrients = OFF_NUTRIENT_MAP
       .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
@@ -235,7 +263,40 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
 
     return prisma.product.upsert({
       where: { barcode: p.code ?? '' },
-      update: {},
+      update: {
+        name: p.product_name!,
+        nameZh: p.product_name_zh || null,
+        brandId,
+        imageUrl: p.image_front_url ?? null,
+        quantity: p.quantity ?? null,
+        servingSize: p.serving_size ?? '100g',
+        novaScore: p.nova_group ?? null,
+        nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
+        nutriScore:
+          typeof p.nutriscore_score === 'number'
+            ? p.nutriscore_score
+            : null,
+    
+        nutrients: {
+          deleteMany: {},
+          create: nutrients,
+        },
+    
+        allergens: {
+          deleteMany: {},
+          create: allergenRows.map((a) => ({
+            allergenId: a.id,
+          })),
+        },
+    
+        additivesJson: p.additives_tags?.length
+          ? JSON.stringify(p.additives_tags)
+          : null,
+    
+        categoriesTagsJson: p.categories_tags?.length
+          ? JSON.stringify(p.categories_tags)
+          : null,
+      },
       create: {
         barcode: p.code ?? null,
         name: p.product_name!,
