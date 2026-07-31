@@ -668,7 +668,7 @@ export default function FoodAnalyzer() {
     ).length,
   } : null;
 
-  
+
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
@@ -692,16 +692,16 @@ export default function FoodAnalyzer() {
   const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
 
   const highRiskAdditives =
-  view?.additiveTags.filter(
-    a => ADDITIVE_DICT[a.code]?.risk === "high"
-  ) ?? [];
+    view?.additiveTags.filter(
+      a => ADDITIVE_DICT[a.code]?.risk === "high"
+    ) ?? [];
 
   const hasHighRiskAdditive = highRiskAdditives.length > 0;
   const hasSafetyRisk = hasAllergen || hasHighRiskAdditive;
 
   const displayScore = hasSafetyRisk
-  ? 0
-  : Math.round(result?.overallScore ?? 0);
+    ? 0
+    : Math.round(result?.overallScore ?? 0);
 
   const displayLevel = hasSafetyRisk
     ? 0
@@ -2113,125 +2113,121 @@ export default function FoodAnalyzer() {
                     return (
                       <>
                         {/* ① Nutrients to Watch */}
-                        {nutrientWatch.length > 0 && (
-                          <div className="relative mb-7">
-                            <div className="flex items-start justify-between gap-3 mb-3">
-                              <div>
-                                <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
-                                  ① {isZh ? '需要留意的营养素' : 'NUTRIENTS TO WATCH'}
-                                </h4>
-                                <p className="text-[12px] text-gray-400 mt-1">
-                                  {isZh
-                                    ? '建议控制这些营养素的摄入；反式脂肪应尽量避免'
-                                    : 'Limit intake of these nutrients — Trans Fat should be avoided entirely'}
-                                </p>
-                              </div>
-                              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
-                                👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
-                              </span>
-                            </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {nutrientWatch.map(w => {
+                            const level = watchLevel(w.code, w.present);
+                            const isSelected =
+                              w.present &&
+                              selectedWatch === w.code &&
+                              NUTRIENT_WATCH_CODES.has(w.code);
 
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                              {nutrientWatch.map(w => {
-                                const level = watchLevel(w.code, w.present);
-                                return (
-                                  <button
-                                    key={w.code}
-                                    disabled={!w.present}
-                                    onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
-                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
-                                    ${w.present
-                                        ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
-                                        : 'cursor-default opacity-60'
-                                      }
-                                    ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                            return (
+                              <div key={w.code} className="relative">
+                                <button
+                                  disabled={!w.present}
+                                  onClick={() =>
+                                    w.present &&
+                                    setSelectedWatch(selectedWatch === w.code ? null : w.code)
+                                  }
+                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+          ${w.present
+                                      ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
+                                      : 'cursor-default opacity-60'
+                                    }
+          ${w.present && selectedWatch === w.code
+                                      ? 'ring-2 ring-orange-300'
+                                      : ''
+                                    }`}
+                                  style={{
+                                    background: level.bg,
+                                    borderColor: w.present
+                                      ? 'rgba(251,146,60,0.42)'
+                                      : 'rgba(255,255,255,0.65)',
+                                  }}
+                                >
+                                  <span
+                                    className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
+            ${w.present ? '' : 'grayscale opacity-65'}`}
                                     style={{
-                                      background: level.bg,
+                                      background: w.present
+                                        ? 'rgba(255,247,237,0.88)'
+                                        : 'rgba(255,255,255,0.45)',
                                       borderColor: w.present
-                                        ? 'rgba(251,146,60,0.42)'
-                                        : 'rgba(255,255,255,0.65)',
+                                        ? 'rgba(251,146,60,0.38)'
+                                        : 'rgba(230,225,235,0.55)',
                                     }}
                                   >
-                                    <span
-                                      className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
-                                      ${w.present ? '' : 'grayscale opacity-65'}`}
-                                      style={{
-                                        background: w.present
-                                          ? 'rgba(255,247,237,0.88)'
-                                          : 'rgba(255,255,255,0.45)',
-                                        borderColor: w.present
-                                          ? 'rgba(251,146,60,0.38)'
-                                          : 'rgba(230,225,235,0.55)',
-                                      }}
-                                    >
-                                      {w.icon}
-                                    </span>
+                                    {w.icon}
+                                  </span>
 
-                                    <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
-                                      {isZh ? w.nameZh : w.name}
-                                    </span>
+                                  <span
+                                    className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'
+                                      }`}
+                                  >
+                                    {isZh ? w.nameZh : w.name}
+                                  </span>
+                                </button>
 
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            {selectedWatchData?.present && NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
-                            )}
-                          </div>
-                        )}
+                                {isSelected && (
+                                  <div className="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2">
+                                    {renderWatchPopup()}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
 
                         {/* ② Ingredients to Be Aware Of */}
-                        {ingredientWatch.length > 0 && (
-                          <div className="relative mb-7">
-                            <div className="flex items-start justify-between gap-3 mb-3">
-                              <div>
-                                <h4 className="font-extrabold text-[#5b21b6] tracking-wide text-[16px]">
-                                  ② {isZh ? '需要注意的配料' : 'INGREDIENTS TO BE AWARE OF'}
-                                </h4>
-                                <p className="text-[12px] text-gray-400 mt-1">
-                                  {isZh ? '在可以选择时，建议尽量避免' : 'Best avoided when possible'}
-                                </p>
-                              </div>
-                              <span className="text-[11px] font-semibold text-gray-400 whitespace-nowrap">
-                                👆 {isZh ? '点击图标查看详情' : 'Tap icons for details'}
-                              </span>
-                            </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          {ingredientWatch.map(w => {
+                            const isSelected =
+                              w.present &&
+                              selectedWatch === w.code &&
+                              !NUTRIENT_WATCH_CODES.has(w.code);
 
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                              {ingredientWatch.map(w => {
-
-                                return (
-                                  <button
-                                    key={w.code}
-                                    disabled={!w.present}
-                                    onClick={() => w.present && setSelectedWatch(selectedWatch === w.code ? null : w.code)}
-                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
-                                    ${w.present
-                                        ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
-                                        : 'bg-white/35 border-white/65 cursor-default opacity-60'
-                                      }
-                                    ${w.present && selectedWatch === w.code ? 'ring-2 ring-orange-300' : ''}`}
+                            return (
+                              <div key={w.code} className="relative">
+                                <button
+                                  disabled={!w.present}
+                                  onClick={() =>
+                                    w.present &&
+                                    setSelectedWatch(selectedWatch === w.code ? null : w.code)
+                                  }
+                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+          ${w.present
+                                      ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
+                                      : 'bg-white/35 border-white/65 cursor-default opacity-60'
+                                    }
+          ${w.present && selectedWatch === w.code
+                                      ? 'ring-2 ring-orange-300'
+                                      : ''
+                                    }`}
+                                >
+                                  <span
+                                    className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'
+                                      }`}
                                   >
-                                    <span className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'}`}>
-                                      {w.icon}
-                                    </span>
+                                    {w.icon}
+                                  </span>
 
-                                    <span className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'}`}>
-                                      {isZh ? w.nameZh : w.name}
-                                    </span>
+                                  <span
+                                    className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'
+                                      }`}
+                                  >
+                                    {isZh ? w.nameZh : w.name}
+                                  </span>
+                                </button>
 
-                                  </button>
-                                );
-                              })}
-                            </div>
-
-                            {selectedWatchData?.present && !NUTRIENT_WATCH_CODES.has(selectedWatchData.code) && (
-                              <div className="absolute left-0 right-0 top-full z-30 mt-3">{renderWatchPopup()}</div>
-                            )}
-                          </div>
-                        )}
+                                {isSelected && (
+                                  <div className="absolute right-0 top-full z-50 mt-2">
+                                    {renderWatchPopup()}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
 
                         {nutrientWatch.length === 0 && ingredientWatch.length === 0 && (
                           <div className="rounded-[18px] bg-white/45 border border-white/70 px-4 py-5 mb-6">
