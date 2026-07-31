@@ -796,6 +796,7 @@ export default function FoodAnalyzer() {
 
   const growthBenefitsRef = useRef<HTMLElement>(null);
   const thingsToWatchRef = useRef<HTMLElement>(null);
+  const svgWidth = SK.width + 180;
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
@@ -1785,8 +1786,8 @@ export default function FoodAnalyzer() {
 
                       <h4 className="font-extrabold text-[#5b21b6] tracking-wide mb-1">{isZh ? '食物如何帮助成长' : isEs ? 'CÓMO AYUDA ESTE ALIMENTO' : 'HOW THIS FOOD HELPS'}</h4>
                       <p className="text-sm text-gray-400 mb-3">👆 {isZh ? '点击任意目标或营养素查看详情' : isEs ? 'Toca cualquier objetivo o nutriente para ver detalles' : 'Tap any goal or nutrient to see details'}</p>
-
-                      <svg viewBox={`0 0 ${SK.width} ${SK.height}`} className="w-full h-auto select-none">
+                      
+                      <svg viewBox={`0 0 ${svgWidth} ${SK.height}`} className="w-full h-auto select-none">
                         <defs>
                           {ribbons.map((r: any, i: number) => (
                             <linearGradient key={i} id={`flow-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
