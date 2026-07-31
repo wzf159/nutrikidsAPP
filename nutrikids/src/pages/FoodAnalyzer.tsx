@@ -1820,11 +1820,31 @@ export default function FoodAnalyzer() {
                           return (
                             <g key={n.id} className="cursor-pointer" onClick={() => toggleNutrient(n.id)}>
                               <rect x={SK.rightX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={color} opacity={selectedNutrient == null || selectedNutrient === n.id ? 1 : 0.3} className="transition-opacity" />
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="26" fontWeight="800" fill={color}>
-                                {isZh ? nt.nameZh ?? nt.name : nt.name}
-                              </text>
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14 } fontSize="18" fill={color}  textAnchor="middle">
-                                {levelLabel(nt.level)}
+                              <text
+                                x={SK.rightX + SK.nodeWidth + 12}
+                                y={(n.y0 + n.y1) / 2}
+                                textAnchor="start"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={SK.rightX + SK.nodeWidth + 12}
+                                  dy="-0.55em"
+                                  fontSize="26"
+                                  fontWeight="800"
+                                  fill={color}
+                                >
+                                  {isZh ? nt.nameZh ?? nt.name : nt.name}
+                                </tspan>
+
+                                <tspan
+                                  x={SK.rightX + SK.nodeWidth + 12}
+                                  dy="1.35em"
+                                  fontSize="18"
+                                  fontWeight="500"
+                                  fill={color}
+                                >
+                                  {levelLabel(nt.level)}
+                                </tspan>
                               </text>
                             </g>
                           );
