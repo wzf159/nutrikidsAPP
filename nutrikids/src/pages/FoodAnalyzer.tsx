@@ -670,6 +670,9 @@ export default function FoodAnalyzer() {
 
 
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
+  // Panel 3 summary only lights up: High added sugar/sodium/saturated fat,
+  // detected trans fat, and detected ingredient/additive groups.
+  const summaryWatch = view?.watch.filter(shouldHighlightWatch) ?? [];
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
   const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
@@ -763,17 +766,42 @@ export default function FoodAnalyzer() {
     'transfat',
   ]);
 
-  const watchLevel = (code: string, present: boolean) => {
-    if (!present) {
+  const WATCH_LIMIT_CODES = new Set(['added_sugar', 'sodium', 'satfat']);
+
+  const watchLevel = (code: string, present: boolean, dailyValue = 0) => {
+    // Trans fat has no moderate/low state: any detected amount is highlighted.
+    if (code === 'transfat') {
+      return present
+        ? {
+          key: 'high' as const,
+          label: isZh ? '高' : isEs ? 'ALTO' : 'HIGH',
+          color: '#dc2626',
+          bg: 'rgba(255,237,213,0.82)',
+        }
+        : {
+          key: 'low' as const,
+          label: isZh ? '低' : isEs ? 'BAJO' : 'LOW',
+          color: '#a7a7b7',
+          bg: 'rgba(255,255,255,0.38)',
+        };
+    }
+
+    const percent = Number.isFinite(Number(dailyValue))
+      ? Number(dailyValue)
+      : 0;
+
+    if (percent >= 20) {
       return {
-        label: isZh ? '低' : isEs ? 'BAJO' : 'LOW',
-        color: '#a7a7b7',
-        bg: 'rgba(255,255,255,0.38)',
+        key: 'high' as const,
+        label: isZh ? '高' : isEs ? 'ALTO' : 'HIGH',
+        color: '#dc2626',
+        bg: 'rgba(255,237,213,0.82)',
       };
     }
 
-    if (code === 'satfat') {
+    if (percent >= 10) {
       return {
+        key: 'moderate' as const,
         label: isZh ? '中等' : isEs ? 'MODERADO' : 'MODERATE',
         color: '#d97706',
         bg: 'rgba(255,247,237,0.82)',
@@ -781,10 +809,21 @@ export default function FoodAnalyzer() {
     }
 
     return {
-      label: isZh ? '高' : isEs ? 'ALTO' : 'HIGH',
-      color: '#dc2626',
-      bg: 'rgba(255,237,213,0.82)',
+      key: 'low' as const,
+      label: isZh ? '低' : isEs ? 'BAJO' : 'LOW',
+      color: '#a7a7b7',
+      bg: 'rgba(255,255,255,0.38)',
     };
+  };
+
+  const watchDailyValue = (w: AnalysisResult['view']['watch'][number]) =>
+    Number((w as typeof w & { dailyValue?: number }).dailyValue ?? 0);
+
+  const shouldHighlightWatch = (w: AnalysisResult['view']['watch'][number]) => {
+    if (!NUTRIENT_WATCH_CODES.has(w.code)) return w.present;
+    if (w.code === 'transfat') return w.present;
+    return WATCH_LIMIT_CODES.has(w.code) &&
+      watchLevel(w.code, w.present, watchDailyValue(w)).key === 'high';
   };
 
   const ingredientStatus = (present: boolean) => ({
@@ -1525,16 +1564,16 @@ export default function FoodAnalyzer() {
                     </div>
                     <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
-                        ? `${presentWatch.length} 项值得注意的成分${nova ? ` · NOVA ${view.product.novaScore} ${nova.zh}` : ''}`
-                        : `${presentWatch.length} ingredients worth noting${nova ? ` · NOVA ${view.product.novaScore} ${nova.en}` : ''}`}
+                        ? `${summaryWatch.length} 项需要高亮关注${nova ? ` · NOVA ${view.product.novaScore} ${nova.zh}` : ''}`
+                        : `${summaryWatch.length} highlighted concerns${nova ? ` · NOVA ${view.product.novaScore} ${nova.en}` : ''}`}
                     </p>
                     <div className="relative">
                       <div className="grid grid-cols-4 gap-1.5 mb-2.5">
-                        {/* 顶部只显示实际存在 / 需要注意的项目 */}
-                        {presentWatch.map(w => {
+                        {/* 仅显示需要高亮的项目：High营养素、检测到的反式脂肪和添加剂 */}
+                        {summaryWatch.map(w => {
                           const isNutrient = NUTRIENT_WATCH_CODES.has(w.code);
                           const status = isNutrient
-                            ? watchLevel(w.code, w.present)
+                            ? watchLevel(w.code, w.present, watchDailyValue(w))
                             : ingredientStatus(w.present);
 
                           return (
@@ -1583,11 +1622,14 @@ export default function FoodAnalyzer() {
                           ageLimitUnit?: string;
                           threshold?: number;
                           referenceBasis?: string;
+                          value100g?: number;
+                          categoryAverage?: number;
+                          categoryDifferencePercent?: number;
                         };
 
                         const isNutrient = NUTRIENT_WATCH_CODES.has(watchData.code);
                         const status = isNutrient
-                          ? watchLevel(watchData.code, true)
+                          ? watchLevel(watchData.code, true, Number(watchData.dailyValue ?? 0))
                           : ingredientStatus(true);
 
                         return (
@@ -1602,7 +1644,7 @@ export default function FoodAnalyzer() {
 
                                 <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
                                   {isNutrient
-                                    ? (isZh ? '每份含量与年龄适配信息' : 'Content per serving')
+                                    ? (isZh ? '每100g/100ml含量、每日上限与同品类对比' : 'Per-100g content, daily limit and category comparison')
                                     : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
                                 </p>
                               </div>
@@ -1619,59 +1661,69 @@ export default function FoodAnalyzer() {
                             <div className="px-4 py-2">
                               {isNutrient ? (
                                 <>
-                                  <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100">
-                                    <span className="text-[12px] font-semibold text-[#1a1040] truncate">
-                                      {isZh ? watchData.nameZh : watchData.name}
-                                    </span>
-                                    <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap text-right">
-                                      {Number.isFinite(Number(watchData.value))
-                                        ? `${Number(watchData.value).toLocaleString(undefined, {
-                                          maximumFractionDigits: 2,
+                                  <div className="py-3 border-b border-gray-100">
+                                    <p className="text-[12px] font-semibold text-[#1a1040]">
+                                      {isZh ? '每100g / 100ml 含量' : 'Per 100 g / 100 ml'}
+                                    </p>
+                                    <p className="mt-1 text-[13px] font-extrabold text-[#f97316]">
+                                      {Number.isFinite(Number(watchData.value100g ?? watchData.value))
+                                        ? `${Number(watchData.value100g ?? watchData.value).toLocaleString(undefined, {
+                                          maximumFractionDigits: 3,
                                         })}${watchData.unit ?? ''}`
                                         : (isZh ? '暂无数值' : 'Value unavailable')}
                                       <span className="ml-1 font-semibold text-[#1a1040]">
-                                        {isZh
-                                          ? `每 ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
-                                          : `for ${watchData.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
+                                        {isZh ? '每 100 g / 100 ml' : 'for 100 g / 100 ml'}
                                       </span>
-                                    </span>
+                                    </p>
                                   </div>
 
-                                  <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100">
-                                    <span className="text-[12px] font-semibold text-[#1a1040] truncate">
+                                  <div className="py-3 border-b border-gray-100">
+                                    <p className="text-[12px] font-semibold text-[#1a1040]">
                                       {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
-                                    </span>
-                                    <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap">
+                                    </p>
+                                    <p className="mt-1 text-[13px] font-extrabold" style={{ color: status.color }}>
                                       {Number(watchData.dailyValue ?? 0).toLocaleString(undefined, {
                                         maximumFractionDigits: 1,
                                       })}%, {status.label}
-                                    </span>
+                                    </p>
+                                    <p className="mt-1 text-[10px] leading-snug text-gray-400">
+                                      {watchData.ageLimit === null
+                                        ? (isZh ? '该年龄段暂无明确每日上限' : 'No established daily limit for this age group')
+                                        : (isZh
+                                          ? `每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}；基于标准化100g参考`
+                                          : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}; based on a standardized 100 g reference`)}
+                                    </p>
                                   </div>
-                                  <p className="pb-2 text-[10px] leading-snug text-gray-400">
-                                    {watchData.ageLimit === null
-                                      ? (isZh
-                                        ? '该年龄段暂无明确每日上限'
-                                        : 'No established daily limit for this age group')
-                                      : (isZh
-                                        ? `该年龄段每日参考上限：${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`
-                                        : `Daily reference limit: ${watchData.ageLimit ?? '—'}${watchData.ageLimitUnit ?? ''}`)}
-                                  </p>
 
-                                  <div className="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
-                                    <span className="text-[12px] font-semibold text-[#1a1040] truncate">
-                                      {isZh ? '评估基准' : 'Assessment Basis'}
-                                    </span>
-                                    <span className="text-[11px] font-bold text-[#f97316] whitespace-nowrap">
-                                      {isZh
-                                        ? `阈值 ${watchData.threshold ?? '—'}${watchData.unit ?? ''}`
-                                        : `Threshold ${watchData.threshold ?? '—'}${watchData.unit ?? ''}`}
-                                    </span>
+                                  <div className="py-3">
+                                    <p className="text-[12px] font-semibold text-[#1a1040]">
+                                      {isZh ? '同品类平均' : 'Category Average'}
+                                    </p>
+                                    {Number.isFinite(Number(watchData.categoryAverage)) ? (
+                                      <p className="mt-1 text-[13px] font-extrabold text-[#f97316]">
+                                        {Number(watchData.categoryAverage).toLocaleString(undefined, {
+                                          maximumFractionDigits: 3,
+                                        })}{watchData.unit ?? ''}
+                                        {Number.isFinite(Number(watchData.categoryDifferencePercent)) && (
+                                          <span className="ml-1">
+                                            {Number(watchData.categoryDifferencePercent) > 0
+                                              ? (isZh
+                                                ? `，高 ${Math.abs(Number(watchData.categoryDifferencePercent)).toFixed(0)}%`
+                                                : `, ${Math.abs(Number(watchData.categoryDifferencePercent)).toFixed(0)}% higher`)
+                                              : Number(watchData.categoryDifferencePercent) < 0
+                                                ? (isZh
+                                                  ? `，低 ${Math.abs(Number(watchData.categoryDifferencePercent)).toFixed(0)}%`
+                                                  : `, ${Math.abs(Number(watchData.categoryDifferencePercent)).toFixed(0)}% lower`)
+                                                : (isZh ? '，与平均值相同' : ', same as average')}
+                                          </span>
+                                        )}
+                                      </p>
+                                    ) : (
+                                      <p className="mt-1 text-[11px] text-gray-400">
+                                        {isZh ? 'Open Food Facts 暂无同品类平均数据' : 'No category average available from Open Food Facts'}
+                                      </p>
+                                    )}
                                   </div>
-                                  <p className="pb-3 text-[10px] leading-snug text-gray-400">
-                                    {isZh
-                                      ? '基于产品营养数据与孩子年龄阶段计算'
-                                      : 'Calculated from product nutrition data and the child’s age stage'}
-                                  </p>
                                 </>
                               ) : (
                                 <>
@@ -2021,9 +2073,12 @@ export default function FoodAnalyzer() {
                         ageLimit?: number | null;
                         ageLimitUnit?: string;
                         referenceBasis?: string;
+                        value100g?: number;
+                        categoryAverage?: number;
+                        categoryDifferencePercent?: number;
                       };
                       const status = isNutrient
-                        ? watchLevel(wd.code, true)
+                        ? watchLevel(wd.code, true, Number(wd.dailyValue ?? 0))
                         : ingredientStatus(true);
 
                       return (
@@ -2038,7 +2093,7 @@ export default function FoodAnalyzer() {
                               </h3>
                               <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
                                 {isNutrient
-                                  ? (isZh ? `每份${wd.nameZh ?? wd.name}含量` : `${wd.name} content per serving`)
+                                  ? (isZh ? '每100g/100ml含量、每日上限与同品类对比' : 'Per-100g content, daily limit and category comparison')
                                   : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
                               </p>
                             </div>
@@ -2058,21 +2113,21 @@ export default function FoodAnalyzer() {
                               <div className="flex items-start gap-2.5 py-2.5 border-b border-gray-100">
                                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
                                 <div>
-                                  <p className="text-[12px] font-semibold text-[#1a1040]">{isZh ? wd.nameZh : wd.name}</p>
+                                  <p className="text-[12px] font-semibold text-[#1a1040]">
+                                    {isZh ? '每100g / 100ml 含量' : 'Per 100 g / 100 ml'}
+                                  </p>
                                   <p className="mt-0.5 text-[13px] font-bold text-[#f97316]">
-                                    {Number.isFinite(Number(wd.value))
-                                      ? `${Number(wd.value).toLocaleString(undefined, { maximumFractionDigits: 2 })}${wd.unit ?? ''}`
+                                    {Number.isFinite(Number(wd.value100g ?? wd.value))
+                                      ? `${Number(wd.value100g ?? wd.value).toLocaleString(undefined, { maximumFractionDigits: 3 })}${wd.unit ?? ''}`
                                       : (isZh ? '暂无数值' : 'Value unavailable')}
                                     <span className="ml-1 font-semibold text-[#1a1040]">
-                                      {isZh
-                                        ? `每 ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`
-                                        : `for ${wd.referenceBasis ?? view.product.servingSize ?? '100 g / 100 ml'}`}
+                                      {isZh ? '每 100 g / 100 ml' : 'for 100 g / 100 ml'}
                                     </span>
                                   </p>
                                 </div>
                               </div>
 
-                              <div className="flex items-start gap-2.5 py-2.5">
+                              <div className="flex items-start gap-2.5 py-2.5 border-b border-gray-100">
                                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
                                 <div>
                                   <p className="text-[12px] font-semibold text-[#1a1040]">
@@ -2085,9 +2140,40 @@ export default function FoodAnalyzer() {
                                     {wd.ageLimit === null
                                       ? (isZh ? '该年龄段暂无明确每日上限' : 'No established daily limit for this age group')
                                       : (isZh
-                                        ? `该年龄段每日参考上限：${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`
-                                        : `Daily reference limit: ${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}`)}
+                                        ? `每日参考上限：${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}；基于标准化100g参考`
+                                        : `Daily reference limit: ${wd.ageLimit ?? '—'}${wd.ageLimitUnit ?? ''}; based on a standardized 100 g reference`)}
                                   </p>
+                                </div>
+                              </div>
+
+                              <div className="flex items-start gap-2.5 py-2.5">
+                                <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />
+                                <div>
+                                  <p className="text-[12px] font-semibold text-[#1a1040]">
+                                    {isZh ? '同品类平均' : 'Category Average'}
+                                  </p>
+                                  {Number.isFinite(Number(wd.categoryAverage)) ? (
+                                    <p className="mt-0.5 text-[13px] font-bold text-[#f97316]">
+                                      {Number(wd.categoryAverage).toLocaleString(undefined, { maximumFractionDigits: 3 })}{wd.unit ?? ''}
+                                      {Number.isFinite(Number(wd.categoryDifferencePercent)) && (
+                                        <span className="ml-1">
+                                          {Number(wd.categoryDifferencePercent) > 0
+                                            ? (isZh
+                                              ? `高 ${Math.abs(Number(wd.categoryDifferencePercent)).toFixed(0)}%`
+                                              : `${Math.abs(Number(wd.categoryDifferencePercent)).toFixed(0)}% higher`)
+                                            : Number(wd.categoryDifferencePercent) < 0
+                                              ? (isZh
+                                                ? `低 ${Math.abs(Number(wd.categoryDifferencePercent)).toFixed(0)}%`
+                                                : `${Math.abs(Number(wd.categoryDifferencePercent)).toFixed(0)}% lower`)
+                                              : (isZh ? '与平均值相同' : 'same as average')}
+                                        </span>
+                                      )}
+                                    </p>
+                                  ) : (
+                                    <p className="mt-0.5 text-[10px] text-gray-400">
+                                      {isZh ? 'Open Food Facts 暂无同品类平均数据' : 'No category average available from Open Food Facts'}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -2136,44 +2222,53 @@ export default function FoodAnalyzer() {
                         {/* ① Nutrients to Watch */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {nutrientWatch.map(w => {
-                            const level = watchLevel(w.code, w.present);
+                            const level = watchLevel(w.code, w.present, watchDailyValue(w));
+                            const nutrientData = w as typeof w & {
+                              value?: number;
+                              value100g?: number;
+                            };
+                            const canOpen =
+                              w.code === 'transfat'
+                                ? w.present
+                                : Number.isFinite(Number(nutrientData.value100g ?? nutrientData.value));
+                            const isHighlighted = shouldHighlightWatch(w);
                             const isSelected =
-                              w.present &&
+                              canOpen &&
                               selectedWatch === w.code &&
                               NUTRIENT_WATCH_CODES.has(w.code);
 
                             return (
                               <div key={w.code} className="relative">
                                 <button
-                                  disabled={!w.present}
+                                  disabled={!canOpen}
                                   onClick={() =>
-                                    w.present &&
+                                    canOpen &&
                                     setSelectedWatch(selectedWatch === w.code ? null : w.code)
                                   }
                                   className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
-          ${w.present
+          ${canOpen
                                       ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
                                       : 'cursor-default opacity-60'
                                     }
-          ${w.present && selectedWatch === w.code
+          ${isSelected
                                       ? 'ring-2 ring-orange-300'
                                       : ''
                                     }`}
                                   style={{
-                                    background: level.bg,
-                                    borderColor: w.present
+                                    background: isHighlighted ? level.bg : 'rgba(255,255,255,0.38)',
+                                    borderColor: isHighlighted
                                       ? 'rgba(251,146,60,0.42)'
                                       : 'rgba(255,255,255,0.65)',
                                   }}
                                 >
                                   <span
                                     className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
-            ${w.present ? '' : 'grayscale opacity-65'}`}
+            ${isHighlighted ? '' : 'grayscale opacity-65'}`}
                                     style={{
-                                      background: w.present
+                                      background: isHighlighted
                                         ? 'rgba(255,247,237,0.88)'
                                         : 'rgba(255,255,255,0.45)',
-                                      borderColor: w.present
+                                      borderColor: isHighlighted
                                         ? 'rgba(251,146,60,0.38)'
                                         : 'rgba(230,225,235,0.55)',
                                     }}
@@ -2182,10 +2277,17 @@ export default function FoodAnalyzer() {
                                   </span>
 
                                   <span
-                                    className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'
+                                    className={`text-[12px] font-extrabold text-center leading-tight ${isHighlighted ? 'text-[#29233f]' : 'text-[#6f6b85]'
                                       }`}
                                   >
                                     {isZh ? w.nameZh : w.name}
+                                  </span>
+
+                                  <span
+                                    className="text-[10px] font-extrabold tracking-wide"
+                                    style={{ color: level.color }}
+                                  >
+                                    {level.label}
                                   </span>
                                 </button>
 
@@ -2238,6 +2340,12 @@ export default function FoodAnalyzer() {
                                   >
                                     {isZh ? w.nameZh : w.name}
                                   </span>
+
+                                  {w.present && (
+                                    <span className="text-[10px] font-extrabold tracking-wide text-red-600">
+                                      {isZh ? '已检出' : isEs ? 'PRESENTE' : 'PRESENT'}
+                                    </span>
+                                  )}
                                 </button>
 
                                 {isSelected && (
