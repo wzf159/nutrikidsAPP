@@ -1823,8 +1823,8 @@ export default function FoodAnalyzer() {
                               <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="26" fontWeight="800" fill={color}>
                                 {isZh ? nt.nameZh ?? nt.name : nt.name}
                               </text>
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14} fontSize="15" fill="#6b7280">
-                                {levelLabel(nt.level)} · {nt.dailyValue}% DV
+                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14} fontSize="18" fill="#6b7280">
+                                {levelLabel(nt.level)}
                               </text>
                             </g>
                           );
@@ -2006,7 +2006,7 @@ export default function FoodAnalyzer() {
                         : ingredientStatus(true);
 
                       return (
-                        <div className="relative z-20 mb-5 max-w-[360px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 px-4 py-3 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
+                        <div className="relative z-20 w-[360px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
                           {/* Header */}
                           <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
                             <span className="text-[24px] leading-none">{wd.icon}</span>
@@ -2169,7 +2169,7 @@ export default function FoodAnalyzer() {
                                 </button>
 
                                 {isSelected && (
-                                  <div className="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2">
+                                  <div className="absolute left-1/2 top-full z-50 mt-2 w-[360px] -translate-x-1/2">
                                     {renderWatchPopup()}
                                   </div>
                                 )}
@@ -2220,7 +2220,7 @@ export default function FoodAnalyzer() {
                                 </button>
 
                                 {isSelected && (
-                                  <div className="absolute right-0 top-full z-50 mt-2">
+                                  <div className="absolute left-1/2 top-full z-50 mt-2 w-[360px] -translate-x-1/2">
                                     {renderWatchPopup()}
                                   </div>
                                 )}
