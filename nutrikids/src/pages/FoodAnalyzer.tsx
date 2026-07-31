@@ -1839,7 +1839,7 @@ export default function FoodAnalyzer() {
 
                       <h4 className="font-extrabold text-[#5b21b6] tracking-wide mb-1">{isZh ? '食物如何帮助成长' : isEs ? 'CÓMO AYUDA ESTE ALIMENTO' : 'HOW THIS FOOD HELPS'}</h4>
                       <p className="text-sm text-gray-400 mb-3">👆 {isZh ? '点击任意目标或营养素查看详情' : isEs ? 'Toca cualquier objetivo o nutriente para ver detalles' : 'Tap any goal or nutrient to see details'}</p>
-                      
+
                       <svg viewBox={`0 0 ${svgWidth} ${SK.height}`} className="w-full h-auto select-none">
                         <defs>
                           {ribbons.map((r: any, i: number) => (
@@ -2065,8 +2065,15 @@ export default function FoodAnalyzer() {
                     );
 
                     const renderWatchPopup = () => {
-                      if (!selectedWatchData?.present) return null;
+                      if (!selectedWatchData) return null;
+
                       const isNutrient = NUTRIENT_WATCH_CODES.has(selectedWatchData.code);
+
+                      // Added sugar / sodium / saturated fat remain clickable
+                      // even when their level is Moderate or Low. Ingredient
+                      // cards and trans fat still require present === true.
+                      if (!isNutrient && !selectedWatchData.present) return null;
+                      if (selectedWatchData.code === 'transfat' && !selectedWatchData.present) return null;
                       const wd = selectedWatchData as typeof selectedWatchData & {
                         value?: number;
                         unit?: string;
@@ -2079,8 +2086,8 @@ export default function FoodAnalyzer() {
                         categoryDifferencePercent?: number;
                       };
                       const status = isNutrient
-                        ? watchLevel(wd.code, true, Number(wd.dailyValue ?? 0))
-                        : ingredientStatus(true);
+                        ? watchLevel(wd.code, wd.present, Number(wd.dailyValue ?? 0))
+                        : ingredientStatus(wd.present);
 
                       return (
                         <div className="relative z-20 w-[360px] rounded-[18px] border border-[rgba(249,115,22,0.22)] bg-white/95 shadow-[0_10px_26px_rgba(80,40,120,0.15)]">
@@ -2221,17 +2228,25 @@ export default function FoodAnalyzer() {
                     return (
                       <>
                         {/* ① Nutrients to Watch */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="mb-7">
+                          <div className="mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded-full bg-[#f97316] flex-shrink-0" />
+                              <h3 className="text-[17px] font-extrabold tracking-wide text-[#c2410c] uppercase">
+                                {isZh ? '需要关注的营养素' : 'Nutrients to Watch'}
+                              </h3>
+                            </div>
+                            <div className="h-px bg-[rgba(249,115,22,0.28)] mt-3" />
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {nutrientWatch.map(w => {
                             const level = watchLevel(w.code, w.present, watchDailyValue(w));
-                            const nutrientData = w as typeof w & {
-                              value?: number;
-                              value100g?: number;
-                            };
+                           
                             const canOpen =
                               w.code === 'transfat'
                                 ? w.present
-                                : Number.isFinite(Number(nutrientData.value100g ?? nutrientData.value));
+                                : ['added_sugar', 'sodium', 'satfat'].includes(w.code);
                             const isHighlighted = shouldHighlightWatch(w);
                             const isSelected =
                               canOpen &&
@@ -2300,10 +2315,22 @@ export default function FoodAnalyzer() {
                               </div>
                             );
                           })}
+                          </div>
                         </div>
 
                         {/* ② Ingredients to Be Aware Of */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div className="mb-2">
+                          <div className="mb-4">
+                            <div className="flex items-center gap-2">
+                              <span className="w-3 h-3 rounded-full bg-[#a855f7] flex-shrink-0" />
+                              <h3 className="text-[17px] font-extrabold tracking-wide text-[#9333ea] uppercase">
+                                {isZh ? '需要留意的配料' : 'Ingredients to Be Aware Of'}
+                              </h3>
+                            </div>
+                            <div className="h-px bg-[rgba(168,85,247,0.28)] mt-3" />
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {ingredientWatch.map(w => {
                             const isSelected =
                               w.present &&
@@ -2357,6 +2384,7 @@ export default function FoodAnalyzer() {
                               </div>
                             );
                           })}
+                          </div>
                         </div>
 
                         {nutrientWatch.length === 0 && ingredientWatch.length === 0 && (
