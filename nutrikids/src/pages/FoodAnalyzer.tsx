@@ -1823,7 +1823,7 @@ export default function FoodAnalyzer() {
                               <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="26" fontWeight="800" fill={color}>
                                 {isZh ? nt.nameZh ?? nt.name : nt.name}
                               </text>
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14} fontSize="18" fill="#6b7280">
+                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8 } fontSize="18" fill="#6b7280">
                                 {levelLabel(nt.level)}
                               </text>
                             </g>
@@ -2169,7 +2169,7 @@ export default function FoodAnalyzer() {
                                 </button>
 
                                 {isSelected && (
-                                  <div className="absolute left-1/2 top-full z-50 mt-2 w-[360px] -translate-x-1/2">
+                                  <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
                                     {renderWatchPopup()}
                                   </div>
                                 )}
@@ -2220,7 +2220,7 @@ export default function FoodAnalyzer() {
                                 </button>
 
                                 {isSelected && (
-                                  <div className="absolute left-1/2 top-full z-50 mt-2 w-[360px] -translate-x-1/2">
+                                  <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
                                     {renderWatchPopup()}
                                   </div>
                                 )}
