@@ -796,7 +796,7 @@ export default function FoodAnalyzer() {
 
   const growthBenefitsRef = useRef<HTMLElement>(null);
   const thingsToWatchRef = useRef<HTMLElement>(null);
-  const svgWidth = SK.width + 180;
+  const svgWidth = SK.width + 10;
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
