@@ -669,10 +669,7 @@ export default function FoodAnalyzer() {
   } : null;
 
 
-  const presentWatch = view?.watch.filter(w => w.present) ?? [];
-  // Panel 3 summary only lights up: High added sugar/sodium/saturated fat,
-  // detected trans fat, and detected ingredient/additive groups.
-  const summaryWatch = view?.watch.filter(shouldHighlightWatch) ?? [];
+
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
   const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
@@ -825,6 +822,10 @@ export default function FoodAnalyzer() {
     return WATCH_LIMIT_CODES.has(w.code) &&
       watchLevel(w.code, w.present, watchDailyValue(w)).key === 'high';
   };
+  const presentWatch = view?.watch.filter(w => w.present) ?? [];
+  // Panel 3 summary only lights up: High added sugar/sodium/saturated fat,
+  // detected trans fat, and detected ingredient/additive groups.
+  const summaryWatch = view?.watch.filter(shouldHighlightWatch) ?? [];
 
   const ingredientStatus = (present: boolean) => ({
     label: present
