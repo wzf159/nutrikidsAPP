@@ -1823,7 +1823,7 @@ export default function FoodAnalyzer() {
                               <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8} fontSize="26" fontWeight="800" fill={color}>
                                 {isZh ? nt.nameZh ?? nt.name : nt.name}
                               </text>
-                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 - 8 } fontSize="18" fill="#6b7280">
+                              <text x={SK.rightX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 14 } fontSize="18" fill={color}  textAnchor="middle">
                                 {levelLabel(nt.level)}
                               </text>
                             </g>
