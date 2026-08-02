@@ -22,7 +22,7 @@ function RadioOption({ value: _value, label, selected, onSelect }: { value: stri
       onClick={onSelect}
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
-        padding: '12px 16px', borderRadius: 12, width: '100%', textAlign: 'left',
+        padding: '12px 16px', borderRadius: 12, width: '100%', textAlign: 'left', marginBottom: 8,
         border: `1.5px solid ${selected ? '#893ce3' : '#e5e7eb'}`,
         background: selected ? 'rgba(137,60,227,0.06)' : '#fff',
         fontFamily: ff, fontSize: 14, fontWeight: 600,
@@ -53,7 +53,7 @@ function CheckOption({ value: _value, label, selected, onToggle }: { value: stri
       background: selected ? 'rgba(137,60,227,0.06)' : '#fff',
       fontFamily: ff, fontSize: 14, fontWeight: 600,
       color: selected ? '#893ce3' : '#374151', cursor: 'pointer',
-      transition: 'all 0.15s', textAlign: 'left',
+      transition: 'all 0.15s', textAlign: 'left', marginBottom: 8,
     }}>
       <span style={{
         width: 18, height: 18, borderRadius: 4, border: `2px solid ${selected ? '#893ce3' : '#d1d5db'}`,
