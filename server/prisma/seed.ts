@@ -42,6 +42,7 @@ async function main() {
     { id: 31, name: 'Vitamin B6', nameZh: '维生素B6', icon: '🅱️', unit: 'mg' },
     { id: 32, name: 'Vitamin E', nameZh: '维生素E', icon: '🌰', unit: 'mg' },
     { id: 33, name: 'Vitamin K', nameZh: '维生素K', icon: '🥦', unit: 'μg' },
+    { id: 34, name: 'Added Sugars', nameZh: '添加糖', icon: '🍬', unit: 'g' },
   ];
   for (const n of nutrients) await prisma.nutrient.upsert({ where: { id: n.id }, create: n, update: n });
 

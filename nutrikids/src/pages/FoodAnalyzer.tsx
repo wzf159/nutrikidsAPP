@@ -484,6 +484,7 @@ export default function FoodAnalyzer() {
       });
     }
   }
+
   async function handleRecognized(recognition: Recognition, matches: ProductMatch[], source?: 'local' | 'openfoodfacts' | 'ai') {
     if (!recognition.isFood) {
       setPhase({ name: 'error', msg: isZh ? '图片中没有识别到食物，请重拍' : isEs ? 'No se detectó comida en la foto, vuelve a intentar' : 'No food detected in the photo' });
@@ -814,13 +815,27 @@ export default function FoodAnalyzer() {
   };
 
   const watchDailyValue = (w: AnalysisResult['view']['watch'][number]) =>
-    Number((w as typeof w & { dailyValue?: number }).dailyValue ?? 0);
+    Number(w.dailyValue ?? 0);
+
+  const watchStatus = (w: AnalysisResult['view']['watch'][number]) => {
+    if (w.available === false) {
+      return {
+        key: 'unknown' as const,
+        label: isZh ? '数据不可用' : isEs ? 'SIN DATOS' : 'DATA UNAVAILABLE',
+        color: '#a7a7b7',
+        bg: 'rgba(255,255,255,0.38)',
+      };
+    }
+
+    return watchLevel(w.code, w.present, watchDailyValue(w));
+  };
 
   const shouldHighlightWatch = (w: AnalysisResult['view']['watch'][number]) => {
+    if (w.available === false) return false;
     if (!NUTRIENT_WATCH_CODES.has(w.code)) return w.present;
     if (w.code === 'transfat') return w.present;
     return WATCH_LIMIT_CODES.has(w.code) &&
-      watchLevel(w.code, w.present, watchDailyValue(w)).key === 'high';
+      watchStatus(w).key === 'high';
   };
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
   // Panel 3 summary only lights up: High added sugar/sodium/saturated fat,
@@ -1574,7 +1589,7 @@ export default function FoodAnalyzer() {
                         {summaryWatch.map(w => {
                           const isNutrient = NUTRIENT_WATCH_CODES.has(w.code);
                           const status = isNutrient
-                            ? watchLevel(w.code, w.present, watchDailyValue(w))
+                            ? watchStatus(w)
                             : ingredientStatus(w.present);
 
                           return (
@@ -1630,7 +1645,7 @@ export default function FoodAnalyzer() {
 
                         const isNutrient = NUTRIENT_WATCH_CODES.has(watchData.code);
                         const status = isNutrient
-                          ? watchLevel(watchData.code, true, Number(watchData.dailyValue ?? 0))
+                          ? watchStatus(watchData)
                           : ingredientStatus(true);
 
                         return (
@@ -2086,7 +2101,7 @@ export default function FoodAnalyzer() {
                         categoryDifferencePercent?: number;
                       };
                       const status = isNutrient
-                        ? watchLevel(wd.code, wd.present, Number(wd.dailyValue ?? 0))
+                        ? watchStatus(wd)
                         : ingredientStatus(wd.present);
 
                       return (
@@ -2241,12 +2256,14 @@ export default function FoodAnalyzer() {
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                           {nutrientWatch.map(w => {
-                            const level = watchLevel(w.code, w.present, watchDailyValue(w));
+                            const level = watchStatus(w);
                            
                             const canOpen =
-                              w.code === 'transfat'
-                                ? w.present
-                                : ['added_sugar', 'sodium', 'satfat'].includes(w.code);
+                              w.available !== false && (
+                                w.code === 'transfat'
+                                  ? w.present
+                                  : ['added_sugar', 'sodium', 'satfat'].includes(w.code)
+                              );
                             const isHighlighted = shouldHighlightWatch(w);
                             const isSelected =
                               canOpen &&

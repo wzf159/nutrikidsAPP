@@ -11,9 +11,13 @@ export interface ProductFindInput {
   names?: string[];
 }
 
+export const TOTAL_SUGAR_NUTRIENT_ID = 15;
+export const ADDED_SUGAR_NUTRIENT_ID = 34;
+
 export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; unit: string; dvRef: number }[] = [
   { nutrientId: 13, offKey: 'proteins_100g', factor: 1, unit: 'g', dvRef: 30 },
-  { nutrientId: 15, offKey: 'sugars_100g', factor: 1, unit: 'g', dvRef: 25 },
+  { nutrientId: TOTAL_SUGAR_NUTRIENT_ID, offKey: 'sugars_100g', factor: 1, unit: 'g', dvRef: 25 },
+  { nutrientId: ADDED_SUGAR_NUTRIENT_ID, offKey: 'added-sugars_100g', factor: 1, unit: 'g', dvRef: 25 },
   { nutrientId: 16, offKey: 'energy-kcal_100g', factor: 1, unit: 'kcal', dvRef: 1600 },
   { nutrientId: 5, offKey: 'calcium_100g', factor: 1000, unit: 'mg', dvRef: 1000 },
   { nutrientId: 1, offKey: 'iron_100g', factor: 1000, unit: 'mg', dvRef: 10 },
@@ -60,10 +64,52 @@ const OFF_ALLERGEN_MAP: Record<string, string> = {
   'en:molluscs': 'molluscs',
 };
 
-async function findLocalByBarcode(barcode: string): Promise<ProductFindResult['product'] | null> {
+async function ensureAddedSugarNutrient(): Promise<void> {
+  await prisma.nutrient.upsert({
+    where: { id: ADDED_SUGAR_NUTRIENT_ID },
+    create: {
+      id: ADDED_SUGAR_NUTRIENT_ID,
+      name: 'Added Sugars',
+      nameZh: '添加糖',
+      icon: '🍬',
+      unit: 'g',
+    },
+    update: {
+      name: 'Added Sugars',
+      nameZh: '添加糖',
+      icon: '🍬',
+      unit: 'g',
+    },
+  });
+}
+
+type LocalBarcodeProduct = ProductFindResult['product'] & { updatedAt: Date };
+
+const DEFAULT_OFF_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function offCacheTtlMs(): number {
+  const configured = Number(process.env.OFF_PRODUCT_CACHE_TTL_MS);
+  return Number.isFinite(configured) && configured >= 0
+    ? configured
+    : DEFAULT_OFF_CACHE_TTL_MS;
+}
+
+function publicProduct(product: LocalBarcodeProduct): ProductFindResult['product'] {
+  const { updatedAt: _updatedAt, ...result } = product;
+  return result;
+}
+
+async function findLocalByBarcode(barcode: string): Promise<LocalBarcodeProduct | null> {
   return prisma.product.findUnique({
     where: { barcode },
-    select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },
+    select: {
+      id: true,
+      name: true,
+      nameZh: true,
+      imageUrl: true,
+      updatedAt: true,
+      brand: { select: { name: true } },
+    },
   });
 }
 
@@ -123,7 +169,51 @@ function getServingFactor(servingSize?: string): number {
   // 无法确定重量时，不要把 "1 slice" 当成 1g
   return 1;
 }
-async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResult['product'] | null> {
+
+export function buildOffNutrientRows(
+  nutriments: Record<string, number> | undefined,
+  servingSize?: string,
+) {
+  const servingFactor = getServingFactor(servingSize);
+
+  return OFF_NUTRIENT_MAP
+    .filter((mapping) => typeof nutriments?.[mapping.offKey] === 'number')
+    .map((mapping) => {
+      const rawOffValue100g = Number(nutriments![mapping.offKey]);
+      const valuePer100g = rawOffValue100g * mapping.factor;
+      const value = Math.round(valuePer100g * servingFactor * 100) / 100;
+
+      return {
+        nutrientId: mapping.nutrientId,
+        value,
+        // DevScore uses the original OFF unit, matching category statistics.
+        value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
+        unit: mapping.unit,
+        dailyValue: Math.round((value / mapping.dvRef) * 100),
+      };
+    });
+}
+
+export function resolveOffNovaGroup(product: {
+  nova_group?: number;
+  nutriments?: Record<string, number>;
+}): number | null {
+  const canonical = product.nova_group;
+  if (typeof canonical === 'number' && canonical >= 1 && canonical <= 4) {
+    return canonical;
+  }
+
+  const nutrimentFallback = product.nutriments?.['nova-group_100g'];
+  return typeof nutrimentFallback === 'number' &&
+    nutrimentFallback >= 1 &&
+    nutrimentFallback <= 4
+    ? nutrimentFallback
+    : null;
+}
+
+export async function syncProductFromOpenFoodFacts(
+  barcode: string,
+): Promise<ProductFindResult['product'] | null> {
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
@@ -144,6 +234,20 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
     };
     if (data.status !== 1 || !data.product?.product_name) return null;
     const p = data.product;
+    await ensureAddedSugarNutrient();
+    const canonicalNovaGroup = resolveOffNovaGroup(p);
+    const nutrimentNovaGroup = p.nutriments?.['nova-group_100g'];
+    if (
+      typeof p.nova_group === 'number' &&
+      typeof nutrimentNovaGroup === 'number' &&
+      p.nova_group !== nutrimentNovaGroup
+    ) {
+      console.warn(
+        `OFF NOVA fields disagree for barcode=${barcode}: ` +
+        `nova_group=${p.nova_group}, nutriments.nova-group_100g=${nutrimentNovaGroup}; ` +
+        'using canonical nova_group.',
+      );
+    }
     console.log('OFF barcode result:', barcode, '-> name:', p.product_name, '| nameZh:', p.product_name_zh);
     let brandId: number | undefined;
     const brandName = p.brands?.split(',')[0]?.trim();
@@ -152,24 +256,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       brandId = brand.id;
     }
 
-    const servingFactor = getServingFactor(p.serving_size);
-
-    const nutrients = OFF_NUTRIENT_MAP
-      .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
-      .map((m) => {
-        const rawOffValue100g = p.nutriments![m.offKey];  // OFF原始单位(通常是克),不做任何换算
-        const valuePer100g = rawOffValue100g * m.factor;  // 换算成展示用单位(比如毫克),给 value/dailyValue 用
-        const value = Math.round(valuePer100g * servingFactor * 100) / 100;  // ← 乘以份量比例
-        return {
-          nutrientId: m.nutrientId,
-          value,
-          // 每100g原始值,DevScore专用: 必须跟 category_nutrition_stats.json 同单位口径
-          // (那份表是直接从OFF原始克数算出来的P10/P90,不能在这里先乘factor换算单位)
-          value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
-          unit: m.unit,
-          dailyValue: Math.round((value / m.dvRef) * 100),
-        };
-      });
+    const nutrients = buildOffNutrientRows(p.nutriments, p.serving_size);
 
     const allergenCodes = (p.allergens_tags ?? [])
       .map((t) => OFF_ALLERGEN_MAP[t])
@@ -186,7 +273,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
         servingSize: p.serving_size ?? '100g',
-        novaScore: p.nova_group ?? null,
+        novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
           typeof p.nutriscore_score === 'number'
@@ -222,7 +309,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
         servingSize: p.serving_size ?? '100g',
-        novaScore: p.nova_group ?? null,
+        novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
           typeof p.nutriscore_score === 'number'
@@ -262,7 +349,7 @@ async function importFromOpenFoodFacts(barcode: string): Promise<ProductFindResu
       },
     });
   } catch (e) {
-    console.error(`searchOpenFoodFactsByName 失败 :`, e);
+    console.error(`syncProductFromOpenFoodFacts 失败 (barcode=${barcode}):`, e);
     return null;
   }
 }
@@ -295,6 +382,8 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
 
     if (!best?.product_name) return null;
     const p = best;
+    await ensureAddedSugarNutrient();
+    const canonicalNovaGroup = resolveOffNovaGroup(p);
     console.log('OFF search result:', name, '->', p.product_name, 'nutrients:', Object.keys(p.nutriments ?? {}));
     if (!p.product_name) return null;
 
@@ -305,22 +394,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
       brandId = brand.id;
     }
 
-    const servingFactor = getServingFactor(p.serving_size);
-
-    const nutrients = OFF_NUTRIENT_MAP
-      .filter((m) => typeof p.nutriments?.[m.offKey] === 'number')
-      .map((m) => {
-        const rawOffValue100g = p.nutriments![m.offKey];  // OFF原始单位(通常是克),不做任何换算
-        const valuePer100g = rawOffValue100g * m.factor;  // 换算成展示用单位(比如毫克),给 value/dailyValue 用
-        const value = Math.round(valuePer100g * servingFactor * 100) / 100;  // ← 乘以份量比例
-        return {
-          nutrientId: m.nutrientId,
-          value,
-          value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
-          unit: m.unit,
-          dailyValue: Math.round((value / m.dvRef) * 100),
-        };
-      });
+    const nutrients = buildOffNutrientRows(p.nutriments, p.serving_size);
     const allergenCodes = (p.allergens_tags ?? [])
       .map((t) => OFF_ALLERGEN_MAP[t])
       .filter((c): c is string => Boolean(c));
@@ -335,7 +409,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
         servingSize: p.serving_size ?? '100g',
-        novaScore: p.nova_group ?? null,
+        novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
           typeof p.nutriscore_score === 'number'
@@ -370,7 +444,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
         servingSize: p.serving_size ?? '100g',
-        novaScore: p.nova_group ?? null,
+        novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore: typeof p.nutriscore_score === 'number' ? p.nutriscore_score : null,
         verified: false,
@@ -435,9 +509,19 @@ export async function findProduct(input: ProductFindInput): Promise<ProductFindR
 
   if (barcode) {
     const local = await findLocalByBarcode(barcode);
-    if (local) return { product: local, source: 'local' };
+    if (local) {
+      const isStale = Date.now() - local.updatedAt.getTime() >= offCacheTtlMs();
+      if (!isStale) return { product: publicProduct(local), source: 'local' };
 
-    const off = await importFromOpenFoodFacts(barcode);
+      const refreshed = await syncProductFromOpenFoodFacts(barcode);
+      if (refreshed) return { product: refreshed, source: 'openfoodfacts' };
+
+      // OFF can be temporarily unavailable. Keep the product usable with the
+      // last known local snapshot rather than failing the lookup.
+      return { product: publicProduct(local), source: 'local' };
+    }
+
+    const off = await syncProductFromOpenFoodFacts(barcode);
     if (off) return { product: off, source: 'openfoodfacts' };
   }
 

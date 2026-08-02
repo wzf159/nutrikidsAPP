@@ -53,7 +53,24 @@ export interface AnalysisView {
   goals: { id: number; icon: string | null; label: string; labelZh: string | null; selected: boolean; tier: 'core' | 'important' | 'supporting' | null; supportDV: number }[];
   nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; unit: string | null; dailyValue: number; level: 'High' | 'Moderate' | 'Low' }[];
   flows: { goalId: number; nutrientId: number; value: number }[];
-  watch: { code: string; icon: string; name: string; nameZh: string; present: boolean; detail: string; detailZh: string }[];
+  watch: {
+    code: string;
+    icon: string;
+    name: string;
+    nameZh: string;
+    available?: boolean;
+    present: boolean;
+    value?: number | null;
+    value100g?: number | null;
+    unit?: string;
+    dailyValue?: number;
+    ageLimit?: number | null;
+    ageLimitUnit?: string;
+    threshold?: number;
+    referenceBasis?: string;
+    detail: string;
+    detailZh: string;
+  }[];
   additiveTags: { code: string; name: string; nameZh: string; type: string }[];  
 }
 

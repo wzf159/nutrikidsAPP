@@ -2,10 +2,13 @@ import { prisma } from './prisma.js';
 import { computeDevScoreV2, computeGoalScoresV2 } from './scoring/devScoreV2.js';
 import { computeAdditiveScoreV2 } from './scoring/additiveScoreV2.js';
 import { hasAdditiveCategory } from './scoring/additiveCategories.js';
-import { OFF_NUTRIENT_MAP } from './productFinder.js';
+import {
+  ADDED_SUGAR_NUTRIENT_ID,
+  OFF_NUTRIENT_MAP,
+  TOTAL_SUGAR_NUTRIENT_ID,
+} from './productFinder.js';
 
 // nutrients 字典 ID（见 seed.ts）
-const SUGAR_NUTRIENT_ID = 15;
 const ENERGY_NUTRIENT_ID = 16;
 const SATURATED_FAT_NUTRIENT_ID = 17;
 const SODIUM_NUTRIENT_ID = 18;
@@ -13,7 +16,8 @@ const SODIUM_NUTRIENT_ID = 18;
 // 前端正向营养素列表中排除的项目。
 // 总脂肪并不必然是儿童饮食中的负面营养素，因此这里只排除糖、能量、饱和脂肪和钠。
 const EXCLUDED_FROM_POSITIVE_NUTRIENTS = new Set<number>([
-  SUGAR_NUTRIENT_ID,
+  TOTAL_SUGAR_NUTRIENT_ID,
+  ADDED_SUGAR_NUTRIENT_ID,
   ENERGY_NUTRIENT_ID,
   SATURATED_FAT_NUTRIENT_ID,
   SODIUM_NUTRIENT_ID,
@@ -102,6 +106,31 @@ export interface ScoreInput {
   imagePath?: string | null;
 }
 
+export function resolveAddedSugar(
+  nutrients: Array<{
+    nutrientId: number;
+    value: number | null;
+    value100g?: number | null;
+    dailyValue: number | null;
+    unit?: string | null;
+  }>,
+) {
+  const nutrient = nutrients.find(
+    (item) => item.nutrientId === ADDED_SUGAR_NUTRIENT_ID,
+  );
+
+  return {
+    nutrient,
+    available: nutrient !== undefined,
+    value: Number(nutrient?.value ?? 0),
+    value100g:
+      nutrient === undefined
+        ? null
+        : Number(nutrient.value100g ?? nutrient.value ?? 0),
+    dailyValue: Number(nutrient?.dailyValue ?? 0),
+  };
+}
+
 function viewReferenceBasis(servingSize: string | null): string {
   return servingSize?.trim() || '100 g / 100 ml';
 }
@@ -141,18 +170,26 @@ export async function scoreFood(input: ScoreInput) {
   const prodNutr = product.nutrients;
   console.log('product nutrients length:', product?.nutrients?.length);
   
-  const sugarDV = prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.dailyValue ?? 0;
-  const sugarG = prodNutr.find((n: { nutrientId: number; value: number | null }) => n.nutrientId === SUGAR_NUTRIENT_ID)?.value ?? 0;
+  const addedSugar = resolveAddedSugar(prodNutr);
+  const addedSugarNutrient = addedSugar.nutrient;
+  const addedSugarAvailable = addedSugar.available;
+  const addedSugarDV = addedSugar.dailyValue;
+  const addedSugarG = addedSugar.value;
 
   // 1) 营养密度 (0..40)：糖/能量不计入
   const densityRaw = prodNutr
-    .filter((n: { nutrientId: number }) => n.nutrientId !== SUGAR_NUTRIENT_ID && n.nutrientId !== ENERGY_NUTRIENT_ID)
+    .filter(
+      (n: { nutrientId: number }) =>
+        n.nutrientId !== TOTAL_SUGAR_NUTRIENT_ID &&
+        n.nutrientId !== ADDED_SUGAR_NUTRIENT_ID &&
+        n.nutrientId !== ENERGY_NUTRIENT_ID
+    )
     .reduce((s: number, n: { dailyValue: number | null }) => s + Number(n.dailyValue ?? 0), 0);
   const nutrientDensity = clamp(Math.round(densityRaw * 0.5), 0, 40);
 
   // 2) 风险成分 (0..30)：满分起扣
   const badAdditives = product.additives.filter((a: { additive: { type: string | null } }) => a.additive.type !== 'beneficial');
-  const riskIngredients = clamp(30 - sugarDV * 0.6 - badAdditives.length * 2, 0, 30);
+  const riskIngredients = clamp(30 - addedSugarDV * 0.6 - badAdditives.length * 2, 0, 30);
 
   // 3) 加工程度 (0..20)：NOVA 越低越好
   const novaMap: Record<number, number> = { 1: 20, 2: 17, 3: 15, 4: 8 };
@@ -284,7 +321,9 @@ export async function scoreFood(input: ScoreInput) {
   const factors: { kind: 'positive' | 'negative'; label: string }[] = [];
   if (nutrientDensity >= 25) factors.push({ kind: 'positive', label: 'High Nutrient Density' });
   if (processingLevel >= 17) factors.push({ kind: 'positive', label: 'Minimally Processed' });
-  if (sugarDV >= 10) factors.push({ kind: 'negative', label: 'Added Sugar' });
+  if (addedSugarAvailable && addedSugarDV >= 10) {
+    factors.push({ kind: 'negative', label: 'Added Sugar' });
+  }
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
 
@@ -454,9 +493,6 @@ export async function scoreFood(input: ScoreInput) {
   const hasRawAdditive = (codes: string[]) =>
     codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
 
-  const sugarNutrient = prodNutr.find(
-    (n: any) => n.nutrientId === SUGAR_NUTRIENT_ID
-  );
   const sodiumNutrient = prodNutr.find(
     (n: any) => n.nutrientId === SODIUM_NUTRIENT_ID
   );
@@ -468,20 +504,26 @@ export async function scoreFood(input: ScoreInput) {
     // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
     {
       code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
-      present: sugarG >= sugarThreshold && (product.novaScore ?? 4) >= 2,
-      value: Number(sugarNutrient?.value ?? sugarG ?? 0),
-      unit: sugarNutrient?.unit ?? 'g',
-      dailyValue: Number(sugarNutrient?.dailyValue ?? 0),
+      available: addedSugarAvailable,
+      present: addedSugarAvailable && addedSugarG >= sugarThreshold,
+      value: addedSugarAvailable ? addedSugarG : null,
+      value100g: addedSugar.value100g,
+      unit: addedSugarNutrient?.unit ?? 'g',
+      dailyValue: addedSugarDV,
       ageLimit: sugarLimit,
       ageLimitUnit: 'g',
       threshold: sugarThreshold,
       referenceBasis: viewReferenceBasis(product.servingSize),
-      detail: sugarLimit === 0
-        ? `${sugarNutrient?.dailyValue ?? 0}% DV sugar per serving — added sugar is not recommended for this age group.`
-        : `${sugarNutrient?.dailyValue ?? 0}% of daily sugar limit per serving (limit: ${sugarLimit}g).`,
-      detailZh: sugarLimit === 0
-        ? `每份糖分占每日参考值的${sugarNutrient?.dailyValue ?? 0}%，该年龄段不建议摄入添加糖。`
-        : `每份糖分占每日上限的${sugarNutrient?.dailyValue ?? 0}%（上限：${sugarLimit}g）。`,
+      detail: !addedSugarAvailable
+        ? 'Open Food Facts does not provide added-sugar data for this product.'
+        : sugarLimit === 0
+          ? `${addedSugarDV}% DV added sugar per serving — added sugar is not recommended for this age group.`
+          : `${addedSugarDV}% of the added-sugar reference per serving (limit: ${sugarLimit}g).`,
+      detailZh: !addedSugarAvailable
+        ? 'Open Food Facts 暂未提供该产品的添加糖数据。'
+        : sugarLimit === 0
+          ? `每份添加糖占每日参考值的${addedSugarDV}%，该年龄段不建议摄入添加糖。`
+          : `每份添加糖占每日参考值的${addedSugarDV}%（参考上限：${sugarLimit}g）。`,
     },
     {
       code: 'flavors', icon: '🧪', name: 'Artificial Flavors', nameZh: '人工香精',
