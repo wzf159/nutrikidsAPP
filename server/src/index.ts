@@ -13,10 +13,29 @@ import feedbackRoutes from './routes/feedback.js';
 import adminRoutes from './routes/admin.js';
 import recognizeRoutes from './routes/recognize.js';
 import { registerFoodScoringRoutes } from "./scoring/food-scoring-routes.js";
+import { prisma } from './prisma.js';
 
-
+// A local-only testing mode. It must be explicitly enabled and is never
+// available when NODE_ENV is production.
+const devBypassAuth =
+  process.env.NODE_ENV !== 'production' && process.env.DEV_BYPASS_AUTH === 'true';
+const devUserId = 'local-dev-user';
 
 const app = Fastify({ logger: true, bodyLimit: 10 * 1024 * 1024 });
+
+if (devBypassAuth) {
+  await prisma.user.upsert({
+    where: { id: devUserId },
+    update: {},
+    create: {
+      id: devUserId,
+      email: 'local-dev@nutrikids.test',
+      name: 'Local Developer',
+      displayName: 'Local Developer',
+    },
+  });
+  app.log.warn('DEV_BYPASS_AUTH is enabled; all protected requests use the local test user.');
+}
 
 await app.register(cors, {
   origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:5173'],
@@ -30,6 +49,12 @@ await app.register(jwt, {
 });
 
 app.decorate('authenticate', async (req: any, reply: any) => {
+  if (devBypassAuth) {
+    req.userId = devUserId;
+    req.user = { sub: devUserId };
+    return;
+  }
+
   try {
     const session = await auth.api.getSession({ headers: req.headers as any });
     if (!session) {

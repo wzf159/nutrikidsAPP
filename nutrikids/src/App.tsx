@@ -15,6 +15,8 @@ import Login from './pages/Login';
 
 export default function App() {
   const { data: session, isPending } = useSession();
+  const devBypassAuth =
+    import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
 
   if (isPending) {
     return (
@@ -24,7 +26,7 @@ export default function App() {
     );
   }
 
-  if (!session) {
+  if (!session && !devBypassAuth) {
     return <Login />;
   }
 
