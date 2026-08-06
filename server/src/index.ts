@@ -11,6 +11,7 @@ import productRoutes from './routes/products.js';
 import analysisRoutes from './routes/analyses.js';
 import feedbackRoutes from './routes/feedback.js';
 import adminRoutes from './routes/admin.js';
+import adminAuthRoutes from './routes/admin-auth.js';
 import recognizeRoutes from './routes/recognize.js';
 import { registerFoodScoringRoutes } from "./scoring/food-scoring-routes.js";
 import { prisma } from './prisma.js';
@@ -69,6 +70,15 @@ app.decorate('authenticate', async (req: any, reply: any) => {
   }
 });
 
+app.decorate('authenticateAdmin', async (req: any, reply: any) => {
+  try {
+    await req.jwtVerify();
+    if (req.user.role !== 'admin') throw new Error('not admin');
+  } catch {
+    return reply.code(401).send({ error: '需要管理员登录。' });
+  }
+});
+
 app.addContentTypeParser('application/json', { parseAs: 'buffer' }, function (req, body, done) {
   // Better Auth 路由返回 buffer，其他路由正常解析
   if (req.url?.startsWith('/api/auth/')) {
@@ -116,6 +126,7 @@ await app.register(productRoutes, { prefix: '/api' });
 await app.register(analysisRoutes, { prefix: '/api' });
 await app.register(feedbackRoutes, { prefix: '/api' });
 await app.register(adminRoutes, { prefix: '/api' });
+await app.register(adminAuthRoutes, { prefix: '/api' });
 await app.register(recognizeRoutes, { prefix: '/api' });
 await app.register(authRoutes, { prefix: '/api' });
 

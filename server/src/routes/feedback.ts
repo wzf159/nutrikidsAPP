@@ -51,9 +51,7 @@ export default async function feedbackRoutes(app: FastifyInstance) {
     return reply.code(201).send({ ok: true });
   });
 
-  app.get('/admin/feedback', async (req, reply) => {
-    const session = await auth.api.getSession({ headers: req.headers as any });
-    if (!session) return reply.code(401).send({ error: '未登录' });
+  app.get('/admin/feedback', { onRequest: [app.authenticateAdmin] }, async (_req, reply) => {
 
     const feedbacks = await prisma.feedback.findMany({
       orderBy: { createdAt: 'desc' },
@@ -63,9 +61,7 @@ export default async function feedbackRoutes(app: FastifyInstance) {
     return reply.send({ feedbacks });
   });
 
-  app.get('/admin/feedback/stats', async (req, reply) => {
-    const session = await auth.api.getSession({ headers: req.headers as any });
-    if (!session) return reply.code(401).send({ error: '未登录' });
+  app.get('/admin/feedback/stats', { onRequest: [app.authenticateAdmin] }, async (_req, reply) => {
 
     const total = await prisma.feedback.count();
 

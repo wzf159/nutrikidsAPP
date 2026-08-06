@@ -10,7 +10,9 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset --force",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "refresh:off": "tsx refresh-off-product.ts",
+    "test": "tsx --test src/scoringRegression.test.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

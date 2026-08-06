@@ -178,10 +178,10 @@ async function probe(src: SourceMeta) {
 
 export default async function adminRoutes(app: FastifyInstance) {
   // 数据源元信息列表
-  app.get('/admin/datasources', async () => ({ sources: SOURCES }));
+  app.get('/admin/datasources', { onRequest: [app.authenticateAdmin] }, async () => ({ sources: SOURCES }));
 
   // 单个数据源连通性测试
-  app.get<{ Params: { id: string } }>('/admin/datasources/:id/test', async (req, reply) => {
+  app.get<{ Params: { id: string } }>('/admin/datasources/:id/test', { onRequest: [app.authenticateAdmin] }, async (req, reply) => {
     const src = SOURCES.find((s) => s.id === req.params.id);
     if (!src) return reply.code(404).send({ error: '未知数据源' });
     return probe(src);

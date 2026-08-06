@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useSession } from './lib/auth';
 import TopNav from './components/E1_Layout/TopNav';
 import Home from './pages/Home';
@@ -12,8 +12,13 @@ import Footer from './components/Footer';
 import About from './pages/About';
 import Support from './pages/Support';
 import Login from './pages/Login';
+import AdminPortal from './pages/AdminPortal';
 
 export default function App() {
+  return <BrowserRouter><Routes><Route path="/admin/*" element={<AdminPortal />} /><Route path="*" element={<ConsumerApp />} /></Routes></BrowserRouter>;
+}
+
+function ConsumerApp() {
   const { data: session, isPending } = useSession();
   const devBypassAuth =
     import.meta.env.DEV && import.meta.env.VITE_DEV_BYPASS_AUTH === 'true';
@@ -31,7 +36,6 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
       <div className="flex flex-col min-h-screen">
         <TopNav />
         <main className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
@@ -50,6 +54,5 @@ export default function App() {
         </main>
         <Footer />
       </div>
-    </BrowserRouter>
   );
 }

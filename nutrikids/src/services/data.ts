@@ -11,11 +11,13 @@ export const setToken = (t: string | null) =>
   t ? localStorage.setItem(TOKEN_KEY, t) : localStorage.removeItem(TOKEN_KEY);
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const adminToken = localStorage.getItem('nutrikids_admin_token');
   const res = await fetch(`${BASE}${path}`, {
     ...options,
     credentials: 'include', 
     headers: {
       'Content-Type': 'application/json',
+      ...(path.includes('/admin/') && adminToken ? { Authorization: `Bearer ${adminToken}` } : {}),
       ...options.headers,
     },
   });
@@ -91,9 +93,9 @@ export interface DataSourceTestResult {
   error: string | null;
 }
 export const fetchDataSources = () =>
-  request<{ sources: DataSourceMeta[] }>('/admin/datasources');
+  request<{ sources: DataSourceMeta[] }>('/api/admin/datasources');
 export const testDataSource = (id: string) =>
-  request<DataSourceTestResult>(`/admin/datasources/${id}/test`);
+  request<DataSourceTestResult>(`/api/admin/datasources/${id}/test`);
 
 // ---------- 反馈 ----------
 export interface FeedbackSubmission {

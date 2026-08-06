@@ -24,6 +24,7 @@ model User {
   passwordHash  String?   @map("password_hash")
   displayName   String?   @map("display_name")
   locale        String    @default("en")
+  role          String    @default("user")
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 

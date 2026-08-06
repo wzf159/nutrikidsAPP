@@ -1,320 +1,147 @@
-import React from 'react';
+/* eslint-disable react-refresh/only-export-components -- documentation pages share a small, colocated visual vocabulary */
+import { NavLink } from 'react-router-dom';
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="mb-6">
-      <h2 className="text-base font-bold text-gray-700 border-b border-gray-100 pb-1 mb-3">{title}</h2>
-      {children}
-    </div>
-  );
+type Tone = 'violet' | 'blue' | 'emerald' | 'amber' | 'rose' | 'slate';
+
+const toneStyles: Record<Tone, string> = {
+  violet: 'border-violet-200 bg-violet-50 text-violet-950',
+  blue: 'border-blue-200 bg-blue-50 text-blue-950',
+  emerald: 'border-emerald-200 bg-emerald-50 text-emerald-950',
+  amber: 'border-amber-200 bg-amber-50 text-amber-950',
+  rose: 'border-rose-200 bg-rose-50 text-rose-950',
+  slate: 'border-slate-200 bg-slate-50 text-slate-950',
+};
+
+export const analysisTabs = [
+  { to: '/admin/food-analysis/technical', label: '食品评估', no: '01' },
+  { to: '/admin/food-analysis/growth-benefits', label: '成长益处', no: '02' },
+  { to: '/admin/food-analysis/parent-guide', label: '家长须知', no: '03' },
+] as const;
+
+export function AnalysisTabs() {
+  return <nav className="mb-7 grid gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm sm:grid-cols-3">
+    {analysisTabs.map((tab) => <NavLink key={tab.to} to={tab.to} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-4 py-3 text-sm transition ${isActive ? 'bg-violet-600 font-semibold text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}>
+      <span className="text-xs opacity-70">{tab.no}</span><span>{tab.label}</span>
+    </NavLink>)}
+  </nav>;
 }
 
-function FlowStep({ num, title, desc, color }: { num: number; title: string; desc: string; color: string }) {
-  return (
-    <div className="flex gap-3">
-      <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm`} style={{ backgroundColor: color }}>
-        {num}
-      </div>
-      <div>
-        <p className="font-semibold text-gray-800 text-sm">{title}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-      </div>
-    </div>
-  );
+export function PageHero({ index, title, subtitle, accent = 'violet' }: { index: string; title: string; subtitle: string; accent?: Tone }) {
+  const gradients: Record<Tone, string> = {
+    violet: 'from-violet-700 via-purple-700 to-fuchsia-600',
+    blue: 'from-blue-700 via-indigo-700 to-violet-700',
+    emerald: 'from-emerald-700 via-teal-700 to-cyan-700',
+    amber: 'from-amber-600 via-orange-600 to-rose-600',
+    rose: 'from-rose-700 via-pink-700 to-violet-700',
+    slate: 'from-slate-800 via-slate-700 to-slate-600',
+  };
+  return <header className={`rounded-3xl bg-gradient-to-br ${gradients[accent]} p-7 text-white shadow-lg md:p-10`}>
+    <p className="text-xs font-bold tracking-[0.22em] text-white/70">食品分析算法 · {index}</p>
+    <h1 className="mt-3 text-3xl font-bold tracking-tight md:text-4xl">{title}</h1>
+    <p className="mt-4 max-w-3xl text-sm leading-7 text-white/80 md:text-base">{subtitle}</p>
+  </header>;
 }
 
-function FieldTable({ rows }: { rows: { field: string; type: string; desc: string; example: string }[] }) {
-  return (
-    <div className="overflow-x-auto rounded-xl border border-gray-100">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wide">
-            <th className="text-left px-4 py-2 font-semibold">字段</th>
-            <th className="text-left px-4 py-2 font-semibold">类型</th>
-            <th className="text-left px-4 py-2 font-semibold">说明</th>
-            <th className="text-left px-4 py-2 font-semibold">示例</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r, i) => (
-            <tr key={r.field} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-              <td className="px-4 py-2 font-mono text-xs text-green-700">{r.field}</td>
-              <td className="px-4 py-2 font-mono text-xs text-blue-600">{r.type}</td>
-              <td className="px-4 py-2 text-gray-600">{r.desc}</td>
-              <td className="px-4 py-2 font-mono text-xs text-gray-500">{r.example}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+export function Section({ eyebrow, title, children }: { eyebrow: string; title: string; children: React.ReactNode }) {
+  return <section className="mt-10">
+    <p className="text-xs font-bold tracking-[0.18em] text-violet-600">{eyebrow}</p>
+    <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{title}</h2>
+    <div className="mt-5">{children}</div>
+  </section>;
+}
+
+export function InfoCard({ title, children, tone = 'slate' }: { title: string; children: React.ReactNode; tone?: Tone }) {
+  return <article className={`rounded-2xl border p-5 ${toneStyles[tone]}`}>
+    <h3 className="font-bold">{title}</h3>
+    <div className="mt-2 text-sm leading-6 opacity-80">{children}</div>
+  </article>;
+}
+
+export function Formula({ children }: { children: React.ReactNode }) {
+  return <div className="overflow-x-auto rounded-2xl bg-slate-950 px-5 py-4 font-mono text-sm leading-7 text-emerald-300 shadow-inner">{children}</div>;
+}
+
+export function DataTable({ headers, rows }: { headers: string[]; rows: React.ReactNode[][] }) {
+  return <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table className="w-full min-w-[680px] text-left text-sm">
+      <thead className="bg-slate-50 text-xs font-bold uppercase tracking-wider text-slate-500"><tr>{headers.map((header) => <th key={header} className="px-4 py-3">{header}</th>)}</tr></thead>
+      <tbody className="divide-y divide-slate-100 text-slate-600">{rows.map((row, index) => <tr key={index}>{row.map((cell, cellIndex) => <td key={cellIndex} className="px-4 py-3 align-top leading-6">{cell}</td>)}</tr>)}</tbody>
+    </table>
+  </div>;
+}
+
+function Step({ number, title, detail }: { number: string; title: string; detail: React.ReactNode }) {
+  return <div className="flex gap-4">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">{number}</div>
+    <div><h3 className="font-bold text-slate-900">{title}</h3><div className="mt-1 text-sm leading-6 text-slate-600">{detail}</div></div>
+  </div>;
 }
 
 export default function FoodAnalysisDoc() {
-  return (
-    <div className="max-w-4xl">
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-1 flex-wrap">
-          <h1 className="text-2xl font-bold text-gray-800">食品分析功能</h1>
-          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">🍽️ 核心功能</span>
-        </div>
-        <p className="text-sm text-gray-500">NutriKids Food Analyzer — 个性化食品评估系统</p>
-        <p className="mt-2 text-sm text-gray-600 leading-relaxed">
-          食品分析是 NutriKids 的核心功能，支持多种输入方式（搜索、拍照、扫码、拖拽），
-          通过 AI 识别和个性化算法，为孩子提供针对性的食品评估报告。
-        </p>
+  return <div className="mx-auto max-w-6xl">
+    <AnalysisTabs />
+    <PageHero index="01" title="食品评估：总分到底怎么算" subtitle="这一页只解释最终 0–100 分、等级与过敏推荐结论。公式与当前服务端 scoring.ts 保持一致；旧版“40% 营养密度 + 30% 风险成分 + 20% 加工程度 + 10% 阶段匹配”仅作为页面摘要字段，不再冒充最终总分公式。" />
+
+    <Section eyebrow="INPUT" title="评分实际读取的字段">
+      <div className="grid gap-4 md:grid-cols-3">
+        <InfoCard title="产品营养事实" tone="blue">Nutri-Score 原始分与等级、每 100g 营养值、商品分类标签、添加剂标签、NOVA、每份大小和过敏原。</InfoCard>
+        <InfoCard title="儿童档案" tone="violet">年龄段、性别、已选择的成长目标、重点营养素与过敏原。年龄和性别会改变成长权重与提醒阈值。</InfoCard>
+        <InfoCard title="参考数据" tone="emerald">同类食品营养分布、年龄/性别/目标权重、目标—营养素映射，以及 ANSES/EFSA 有害添加剂标签集合。</InfoCard>
       </div>
+    </Section>
 
-      <Section title="整体流程图">
-        <div className="bg-gray-50 rounded-xl p-4 mb-4">
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-center gap-4 text-sm">
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center text-2xl">🔍</div>
-                <p className="text-xs text-gray-500 mt-1">搜索</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-purple-100 flex items-center justify-center text-2xl">📷</div>
-                <p className="text-xs text-gray-500 mt-1">拍照</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-2xl">📊</div>
-                <p className="text-xs text-gray-500 mt-1">扫码</p>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-2xl">🖱️</div>
-                <p className="text-xs text-gray-500 mt-1">拖拽</p>
-              </div>
-              <span className="text-2xl text-gray-300">→</span>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-indigo-100 flex items-center justify-center text-2xl">🤖</div>
-                <p className="text-xs text-gray-500 mt-1">识别/查询</p>
-              </div>
-              <span className="text-2xl text-gray-300">→</span>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-pink-100 flex items-center justify-center text-2xl">🧮</div>
-                <p className="text-xs text-gray-500 mt-1">评分分析</p>
-              </div>
-              <span className="text-2xl text-gray-300">→</span>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full bg-yellow-100 flex items-center justify-center text-2xl">📋</div>
-                <p className="text-xs text-gray-500 mt-1">报告展示</p>
-              </div>
-            </div>
+    <Section eyebrow="CORE FORMULA" title="两条总分分支">
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <p className="text-xs font-bold text-emerald-600">共同步骤</p>
+          <h3 className="mt-1 text-lg font-bold">先标准化 Nutri-Score</h3>
+          <Formula><span>NutriNorm = clip((55 − NutriScore原始分) / 72, 0, 1)</span></Formula>
+          <p className="mt-3 text-sm leading-6 text-slate-500">原始分越低越好。缺少原始分，或等级不是 A–E 时，接口返回 422，不生成一个猜测分数。</p>
+        </div>
+        <div className="space-y-4">
+          <InfoCard title="Nutri-Score 为 A / B：加入成长支持" tone="emerald"><Formula>总分 = 100 × (0.5 × NutriNorm + 0.5 × DevScore)</Formula></InfoCard>
+          <InfoCard title="Nutri-Score 为 C / D / E：扣除添加剂风险" tone="rose"><Formula>总分 = max(0, 100 × (0.5 × NutriNorm − 0.5 × AdditiveScore))</Formula></InfoCard>
+        </div>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-4">
+        {[[80, 'Excellent', '80–100', 'bg-emerald-500'], [60, 'Good', '60–79', 'bg-blue-500'], [40, 'Fair', '40–59', 'bg-amber-500'], [0, 'Poor', '0–39', 'bg-rose-500']].map(([key, label, range, color]) => <div key={key} className="rounded-xl border border-slate-200 bg-white p-4"><span className={`inline-block h-2.5 w-2.5 rounded-full ${color}`} /><p className="mt-2 font-bold text-slate-900">{label}</p><p className="text-xs text-slate-500">{range} 分</p></div>)}
+      </div>
+    </Section>
+
+    <Section eyebrow="SUB-SCORES" title="DevScore 与 AdditiveScore 的含义">
+      <DataTable headers={['子分', '范围', '计算口径', '何时进入总分']} rows={[
+        [<code>DevScore</code>, '0–1', '各成长目标得分按儿童年龄与性别权重加权平均；具体见“成长益处”。', '仅 A / B 产品，以 50% 权重加分'],
+        [<code>NutriNorm</code>, '0–1', '直接使用 Open Food Facts 提供的官方 Nutri-Score 原始分做线性换算。', '所有可评分产品，以 50% 权重进入'],
+        [<code>AdditiveScore</code>, '0–1', '产品命中的有害添加剂去重数 ÷ 参考集合总数（当前 135 个标签）。', '仅 C / D / E 产品，以 50% 权重扣分'],
+      ]} />
+    </Section>
+
+    <Section eyebrow="REPLAYABLE CASE" title="案例：一盒 Nutri-Score B 的谷物酸奶">
+      <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="space-y-5">
+            <Step number="1" title="产品与孩子" detail={<>Nutri-Score 原始分为 <b>5</b>、等级 B；儿童档案为 4–8 岁女孩。成长算法算得 <code>DevScore = 0.72</code>。</>} />
+            <Step number="2" title="标准化" detail={<><code>NutriNorm = (55 − 5) / 72 = 0.6944</code></>} />
+            <Step number="3" title="走 A/B 分支" detail={<><code>100 × (0.5 × 0.6944 + 0.5 × 0.72) = 70.72</code></>} />
+            <Step number="4" title="取整与分级" detail={<>数据库保存总分 <b>71</b>，对应 <b>Good</b>。</>} />
           </div>
         </div>
-      </Section>
-
-      <Section title="输入方式详解">
-        <div className="bg-blue-50/40 rounded-xl p-4 mb-4">
-          <p className="text-sm font-semibold text-blue-700 mb-2">🎯 统一搜索流程（所有输入方式共用）</p>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-bold bg-white px-2 py-1 rounded">本地数据库</span>
-            <span className="text-gray-400">→</span>
-            <span className="font-bold bg-white px-2 py-1 rounded">Open Food Facts</span>
-            <span className="text-gray-400">→</span>
-            <span className="font-bold bg-white px-2 py-1 rounded">AI 生成兜底</span>
-          </div>
-          <p className="text-xs text-gray-500 mt-2">输入方式仅决定"如何获取食品名称/条形码"，后续搜索逻辑完全一致</p>
+        <div className="flex flex-col justify-between rounded-2xl bg-slate-950 p-7 text-white">
+          <div><p className="text-xs font-bold tracking-widest text-slate-400">RESULT</p><p className="mt-4 text-7xl font-black">71</p><p className="mt-2 text-xl font-bold text-blue-300">GOOD</p></div>
+          <p className="mt-8 text-sm leading-6 text-slate-400">若同一产品命中孩子的过敏原，总分仍可为 71，但推荐结论会独立改为“不推荐”。评分与安全否决不混为一个数字。</p>
         </div>
+      </div>
+    </Section>
 
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { icon: '🔍', name: '搜索', desc: '用户在搜索框输入食品名称（防抖 250ms）→ GET /products/search?q=xxx → ①查本地 SQLite 库（name/nameZh 模糊匹配）→ ②未命中则调用 Open Food Facts 按名称搜索 → ③仍未命中则由大模型生成标准营养数据 → 返回产品供用户选择 → 选中后调用 POST /analyses 评分', api: 'GET /products/search', color: 'bg-blue-50 text-blue-700' },
-            { icon: '📷', name: '图片识别/拖拽', desc: '①点击拍照触发相机拍摄；②从网页拖拽图片。前端将图片发送到 POST /recognize/photo（URL 走 POST /recognize/url 代理下载）→ 后端调用 MiniMax-M3 多模态模型识别图片 → 解析出食品名称/品牌/条形码 → 交给统一搜索流程（本地→OFF→AI）→ 返回识别结果和匹配产品', api: 'POST /recognize/photo / POST /recognize/url', color: 'bg-purple-50 text-purple-700' },
-            { icon: '📊', name: '扫码/图片拖拽', desc: '扫描条形码（相机实时扫描）或拖图片到按钮（ZXing 从图片解码）→ 调用 GET /barcode/{code} → 统一搜索流程：①本地 SQLite 按 barcode 精确查找 → ②未命中调用 Open Food Facts API → ③仍未命中则用条形码对应的名称走 AI 生成 → 返回产品信息', api: 'GET /barcode/{code}', color: 'bg-green-50 text-green-700' },
-          ].map(({ icon, name, desc, api, color }) => (
-            <div key={name} className={`rounded-xl p-4 ${color}`}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">{icon}</span>
-                <span className="font-bold text-sm">{name}</span>
-              </div>
-              <p className="text-xs opacity-80 mb-2">{desc}</p>
-              <code className="text-[10px] bg-white/50 px-1.5 py-0.5 rounded">{api}</code>
-            </div>
-          ))}
-        </div>
-      </Section>
+    <Section eyebrow="DATA PROVENANCE" title="数据从哪里来">
+      <DataTable headers={['数据', '主要来源', '本地落点 / 用途', '缺失时']} rows={[
+        ['商品名、品牌、分类、营养、配料、添加剂、过敏原、NOVA、Nutri-Score', 'Open Food Facts 产品 API；已查询商品会缓存到本地 Product 及关联表', '形成产品事实，评分统一读取本地标准化字段', '可由 AI 兜底补全普通营养资料，但若最终没有 Nutri-Score 原始分与 A–E 等级，则不评分'],
+        ['儿童年龄、性别、目标、重点营养素、过敏原', '用户创建的儿童档案', 'Child 及关联表；用于个性化权重、提醒和安全匹配', '缺少儿童档案不能发起个性化分析'],
+        ['同类食品 p10 / p90', '基于 Open Food Facts 样本预计算的 category_nutrition_stats.json', '给 DevScore 做同类相对归一化', '该营养素跳过，不按 0 值惩罚'],
+        ['有害添加剂集合', 'ANSES / EFSA 评估整理后的 harmful_additives_reference.json', 'C/D/E 分支的 AdditiveScore', '集合为空时 AdditiveScore 为 0'],
+      ]} />
+    </Section>
 
-      <Section title="图片识别流程（AI 大模型）">
-        <div className="bg-purple-50/60 rounded-xl p-4">
-          <p className="text-sm font-semibold text-purple-700 mb-3">📷 拍照/上传图片 → MiniMax M3 多模态模型 → 统一搜索流程</p>
-          <div className="space-y-3">
-            {[
-              { num: 1, title: '图片上传', desc: '前端将图片文件通过 multipart/form-data 发送到 /recognize/photo', color: '#893ce3' },
-              { num: 2, title: 'AI 识别', desc: '后端调用 MiniMax-M3 模型，传入图片和提示词，返回 JSON 格式的识别结果', color: '#a855f7' },
-              { num: 3, title: '结果解析', desc: '模型返回：isFood、kind、nameEn、nameZh、brand、barcode、confidence、alternatives', color: '#c084fc' },
-              { num: 4, title: '统一搜索', desc: '将识别出的条形码和名称列表传入 productFinder 统一搜索流程', color: '#d8b4fe' },
-              { num: 5, title: '本地优先', desc: '优先查本地 SQLite 数据库（条形码精确匹配 / 名称模糊匹配）', color: '#e9d5ff' },
-              { num: 6, title: 'OFF 回退', desc: '本地未命中则调用 Open Food Facts API 按名称搜索', color: '#f3e8ff' },
-              { num: 7, title: 'AI 兜底', desc: 'OFF 也未命中则由大模型生成标准营养数据（见 generateProductNutrition）', color: '#f3e8ff' },
-              { num: 8, title: '返回结果', desc: '返回识别信息 + 匹配到的产品，标记来源（local/off/ai）', color: '#f3e8ff' },
-            ].map((step) => (
-              <FlowStep key={step.num} {...step} />
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section title="条形码查询流程（统一搜索）">
-        <div className="bg-green-50/60 rounded-xl p-4">
-          <p className="text-sm font-semibold text-green-700 mb-3">📊 扫码 → 统一搜索流程（本地 + OFF + AI 兜底）</p>
-          <p className="text-xs text-gray-500 mb-4">
-            <strong>前端入口：</strong>用户点击「扫码」按钮（摄像头实时扫描）或拖拽条形码照片到按钮上（ZXing 从图片解码）
-            <br />
-            <strong>后端接口：</strong>GET /barcode/{`{code}`}（见 server/src/routes/recognize.ts，底层调用 productFinder）
-          </p>
-          <div className="space-y-3">
-            {[
-              { num: 1, title: '获取条形码', desc: '方式A：摄像头实时扫描；方式B：拖拽图片到按钮，ZXing 从图片解码', color: '#22c55e' },
-              { num: 2, title: '调用后端接口', desc: 'GET /barcode/{code}，传入条形码数字', color: '#4ade80' },
-              { num: 3, title: '统一搜索入口', desc: '调用 productFinder.findProduct({ barcode }) 进入三层查找流程', color: '#86efac' },
-              { num: 4, title: '本地数据库查询', desc: '优先在 SQLite 的 Product 表中按 barcode 字段精确查找', color: '#86efac' },
-              { num: 5, title: '本地命中返回', desc: '找到则直接返回，标记 source: "local"', color: '#86efac' },
-              { num: 6, title: '本地未命中', desc: '调用 Open Food Facts API：GET https://world.openfoodfacts.org/api/v2/product/{barcode}.json', color: '#bbf7d0' },
-              { num: 7, title: 'OFF 命中', desc: '将 OFF 的 nutriments 映射到 NutriKids 营养素字典，写入本地库，标记 source: "openfoodfacts"', color: '#dcfce7' },
-              { num: 8, title: 'OFF 未命中', desc: '尝试用条形码对应的产品名称搜索 OFF，若仍失败则由大模型生成营养数据，标记 source: "ai"', color: '#f0fdf4' },
-              { num: 9, title: '返回结果', desc: '返回产品信息和来源标记', color: '#f0fdf4' },
-            ].map((step) => (
-              <FlowStep key={step.num} {...step} />
-            ))}
-          </div>
-        </div>
-      </Section>
-
-      <Section title="评分算法（后端 scoring.ts）">
-        <div className="grid grid-cols-4 gap-3 mb-4">
-          {[
-            { name: '营养密度', weight: '40%', desc: '非糖/能量营养素的 %DV 总和', color: 'bg-blue-50 text-blue-700' },
-            { name: '风险成分', weight: '30%', desc: '添加糖扣分 + 不良添加剂扣分', color: 'bg-red-50 text-red-700' },
-            { name: '加工程度', weight: '20%', desc: 'NOVA 分级：1=20分, 2=17分, 3=15分, 4=8分', color: 'bg-orange-50 text-orange-700' },
-            { name: '阶段匹配', weight: '10%', desc: '产品营养素与孩子关注营养素的重合度', color: 'bg-green-50 text-green-700' },
-          ].map(({ name, weight, desc, color }) => (
-            <div key={name} className={`rounded-xl p-3 ${color}`}>
-              <p className="text-xs font-bold opacity-70">{weight}</p>
-              <p className="font-semibold text-sm">{name}</p>
-              <p className="text-xs mt-1 opacity-80">{desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-gray-900 rounded-xl p-4 font-mono text-xs text-green-300 overflow-x-auto">
-          {`// 评分计算公式
-const overall = nutrientDensity + riskIngredients + processingLevel + stageMatch;
-
-// 等级映射
-grade = overall >= 80 ? 'Excellent'  // A 很棒
-      : overall >= 60 ? 'Good'      // B 不错
-      : overall >= 40 ? 'Fair'       // C 一般
-      : 'Poor';                      // D 较差`}
-        </div>
-      </Section>
-
-      <Section title="发育目标与营养素映射">
-        <p className="text-xs text-gray-400 mb-3">每个发育目标关联特定营养素，用于计算目标支持度和 Sankey 图</p>
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { id: 1, icon: '📚', name: '学习专注', nutrients: '铁(1)、Omega-3(3)、B族(4)、锌(2)' },
-            { id: 2, icon: '🦴', name: '骨骼健康', nutrients: '钙(5)、维生素D(6)、磷(7)、蛋白质(13)' },
-            { id: 3, icon: '⚡', name: '日常能量', nutrients: '复合碳水(8)、B族(4)、铁(1)、钾(14)' },
-            { id: 4, icon: '🛡️', name: '免疫力', nutrients: '维生素C(9)、维生素D(6)、锌(2)、维生素A(11)、硒(10)、B12(12)' },
-            { id: 5, icon: '🫀', name: '肠道健康', nutrients: '锌(2)、维生素B12(12)' },
-            { id: 6, icon: '🧠', name: '大脑发育', nutrients: 'Omega-3(3)、铁(1)、锌(2)、维生素B12(12)、B族(4)' },
-          ].map((goal) => (
-            <div key={goal.id} className="bg-gray-50 rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{goal.icon}</span>
-                <span className="font-semibold text-sm">{goal.name}</span>
-              </div>
-              <p className="text-xs text-gray-500">{goal.nutrients}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="前端展示结构（FoodAnalyzer 页面）">
-        <div className="space-y-3">
-          {[
-            { num: 1, title: '食物评估（Section 1）', desc: '产品图片、综合评分、等级字母（A-D）、过敏原检测结果、益处/留意摘要' },
-            { num: 2, title: '成长益处（Section 2）', desc: 'Sankey 流程图：发育目标 ↔ 营养素的流向关系，展示食物如何支持孩子成长' },
-            { num: 3, title: '家长须知（Section 3）', desc: '需要留意的成分卡片（添加糖、香精、色素等）、NOVA 加工程度进度条' },
-          ].map(({ num, title, desc }) => (
-            <div key={num} className="flex gap-3 items-start">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
-                {num}
-              </div>
-              <div>
-                <p className="font-semibold text-gray-800 text-sm">{title}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="关键 API 接口">
-        <FieldTable rows={[
-          { field: 'GET /products/search', type: 'Public', desc: '按名称搜索产品（前端搜索建议）', example: '/products/search?q=milk' },
-          { field: 'POST /recognize/photo', type: 'Public', desc: '上传图片识别食品（调用 MiniMax）', example: 'multipart/form-data' },
-          { field: 'POST /recognize/url', type: 'Public', desc: '按图片 URL 识别食品（跨域代理）', example: '{ "url": "https://..." }' },
-          { field: 'GET /barcode/{code}', type: 'Public', desc: '条形码查询（本地+OFF）', example: '/barcode/6901234567890' },
-          { field: 'POST /analyses', type: 'Auth', desc: '发起个性化评分（需要 JWT）', example: '{ "childId", "productId", "source" }' },
-          { field: 'GET /analyses', type: 'Auth', desc: '获取历史分析记录', example: '返回最近 50 条' },
-          { field: 'GET /analyses/{id}', type: 'Auth', desc: '获取单条分析详情', example: '/analyses/xxx-xxx' },
-        ]} />
-      </Section>
-
-      <Section title="数据流转图">
-        <div className="bg-blue-50/30 rounded-xl p-4">
-          <div className="flex flex-col gap-2 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-blue-700">前端输入</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-medium text-gray-700">识别/查询 API</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-medium text-gray-700">产品匹配</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-bold text-purple-700">分析 API</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-medium text-gray-700">评分计算</span>
-              <span className="text-gray-400">→</span>
-              <span className="font-bold text-green-700">报告展示</span>
-            </div>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-gray-400">📷 拍照</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-400">📊 扫码</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-400">🔍 搜索</span>
-              <span className="text-gray-300">|</span>
-              <span className="text-gray-400">🖱️ 拖拽</span>
-              <span className="text-gray-400 ml-auto">→</span>
-              <span className="text-gray-500">MiniMax AI</span>
-              <span className="text-gray-400">+</span>
-              <span className="text-gray-500">Open Food Facts</span>
-              <span className="text-gray-400">+</span>
-              <span className="text-gray-500">本地数据库</span>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-      <Section title="注意事项">
-        <div className="space-y-2">
-          {[
-            { type: '⚠️', text: '图片识别依赖 MiniMax API Key，需在后端配置 MINIMAX_API_KEY 环境变量', color: 'text-amber-600' },
-            { type: '⚠️', text: '条形码查询可能触发 Open Food Facts 调用，需确保服务器网络可访问外网', color: 'text-amber-600' },
-            { type: '✅', text: '所有 API 调用都有错误处理，失败时会显示友好的错误提示', color: 'text-green-600' },
-            { type: '✅', text: '分析结果会持久化到数据库，用户可查看历史记录', color: 'text-green-600' },
-            { type: '🔄', text: '前端支持中英文切换，所有文案都有 i18n 翻译', color: 'text-blue-600' },
-          ].map(({ type, text, color }, i) => (
-            <div key={`${type}-${i}`} className="flex items-start gap-2 text-sm">
-              <span className="font-bold" style={{ color }}>{type}</span>
-              <span className="text-gray-600">{text}</span>
-            </div>
-          ))}
-        </div>
-      </Section>
-    </div>
-  );
+    <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900"><b>解释边界：</b>NutriKids 分数是食品资料与儿童档案的决策辅助结果，不是医学诊断，也不代表实际食用量、全天膳食结构或个体临床需求。</div>
+  </div>;
 }

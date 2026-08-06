@@ -6,6 +6,22 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
+  const adminEmail = process.env.ADMIN_EMAIL?.trim() || 'admin@nutrikids.local';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@2026kid';
+  const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
+
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: { role: 'admin', passwordHash: adminPasswordHash },
+    create: {
+      email: adminEmail,
+      passwordHash: adminPasswordHash,
+      displayName: 'NutriKids Admin',
+      locale: 'zh',
+      role: 'admin',
+    },
+  });
+
   // ---------- 字典：营养素 ----------
   const nutrients = [
     { id: 1, name: 'Iron', nameZh: '铁', icon: '🩸', unit: 'mg' },
