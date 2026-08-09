@@ -176,37 +176,87 @@ function getServingFactor(servingSize?: string | null): number | null {
 
 export function buildOffNutrientRows(
   nutriments: Record<string, number> | undefined,
-  servingSize?: string | null,
+  servingSize?: string,
 ) {
   const servingFactor = getServingFactor(servingSize);
 
   return OFF_NUTRIENT_MAP
-    .filter((mapping) => typeof nutriments?.[mapping.offKey] === 'number')
+    .filter(
+      (mapping) =>
+        typeof nutriments?.[mapping.offKey] === 'number'
+    )
     .map((mapping) => {
-      const rawOffValue100g = Number(nutriments![mapping.offKey]);
-      const valuePer100g = rawOffValue100g * mapping.factor;
+      // 例如 proteins_100g → proteins_serving
+      const servingKey = mapping.offKey.replace(
+        /_100g$/,
+        '_serving'
+      );
 
-      // value = 每份实际含量。
-      // 只有 OFF 给了可解析的 serving size 时才计算；
-      // 否则保持 null，避免把 100 g / 100 ml 误当成“一份”。
-      const value =
-        servingFactor != null
-          ? Math.round(valuePer100g * servingFactor * 100) / 100
-          : null;
+      const rawValue100g = Number(
+        nutriments![mapping.offKey]
+      );
+
+      // 保留 OFF 原始 /100g 值
+      // DevScore 继续使用这个
+      const value100g =
+        Math.round(rawValue100g * 1e8) / 1e8;
+
+      let value: number | null = null;
+
+      // ==================================================
+      // ① 优先使用 OFF 自带的 *_serving
+      // ==================================================
+      const rawServingValue =
+        nutriments?.[servingKey];
+
+      if (
+        typeof rawServingValue === 'number' &&
+        Number.isFinite(rawServingValue)
+      ) {
+        value =
+          Math.round(
+            rawServingValue *
+            mapping.factor *
+            100
+          ) / 100;
+      }
+
+      // ==================================================
+      // ② OFF 没有 *_serving
+      //    才自己用 100g × servingFactor
+      // ==================================================
+      else if (servingFactor !== null) {
+        const convertedValue100g =
+          rawValue100g * mapping.factor;
+
+        value =
+          Math.round(
+            convertedValue100g *
+            servingFactor *
+            100
+          ) / 100;
+      }
+
+      // ==================================================
+      // ③ 两种方法都没有
+      // ==================================================
+      else {
+        value = null;
+      }
 
       return {
         nutrientId: mapping.nutrientId,
+
+        // 每份含量
         value,
 
-        // DevScore 专用：始终保留 OFF 原始每100g/100ml数值，
-        // 单位口径与 category_nutrition_stats.json 保持一致。
-        value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
+        // OFF 原始 /100g 数据
+        // DevScore/category statistics 用
+        value100g,
 
         unit: mapping.unit,
 
-        // 不再在导入阶段用 OFF_NUTRIENT_MAP.dvRef 计算“%DV”。
-        // 儿童每日参考占比应在 scoring.ts 中，拿真实 per-serving value
-        // 除以对应年龄/性别的 daily reference 后再计算。
+        // 不在 import 阶段计算
         dailyValue: null,
       };
     });

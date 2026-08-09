@@ -164,3 +164,25 @@ test('Houpu sample final-score formula remains 32.96 before UI rounding', () => 
     33,
   );
 });
+
+test('OFF *_serving value wins over calculated serving value', () => {
+  const rows = productFinder.buildOffNutrientRows(
+    {
+      proteins_100g: 10,
+
+      // 如果自己按 25g 算应该是 2.5g
+      // 但 OFF 明确给了 3g
+      proteins_serving: 3,
+    },
+    '25 g',
+  );
+
+  const protein = rows.find(
+    (row) => row.nutrientId === 13,
+  );
+
+  assert.equal(protein?.value100g, 10);
+
+  // 应该使用 OFF 的 3，而不是自己算出来的 2.5
+  assert.equal(protein?.value, 3);
+});
