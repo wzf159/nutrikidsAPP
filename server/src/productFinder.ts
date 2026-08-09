@@ -14,6 +14,9 @@ export interface ProductFindInput {
 export const TOTAL_SUGAR_NUTRIENT_ID = 15;
 export const ADDED_SUGAR_NUTRIENT_ID = 34;
 
+// NOTE:
+// dvRef 暂时保留在映射结构中以兼容现有引用，但 productFinder 不再使用它计算 dailyValue。
+// dailyValue / dailyReferencePercent 应由 scoring.ts 根据孩子年龄、性别和真实每份含量计算。
 export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: number; unit: string; dvRef: number }[] = [
   { nutrientId: 13, offKey: 'proteins_100g', factor: 1, unit: 'g', dvRef: 30 },
   { nutrientId: TOTAL_SUGAR_NUTRIENT_ID, offKey: 'sugars_100g', factor: 1, unit: 'g', dvRef: 25 },
@@ -132,8 +135,8 @@ async function findLocalByNames(names: string[]): Promise<ProductFindResult['pro
   }
   return null;
 }
-function getServingFactor(servingSize?: string): number {
-  if (!servingSize) return 1;
+function getServingFactor(servingSize?: string | null): number | null {
+  if (!servingSize) return null;
 
   // 例如：
   // "26 g"
@@ -166,13 +169,14 @@ function getServingFactor(servingSize?: string): number {
     }
   }
 
-  // 无法确定重量时，不要把 "1 slice" 当成 1g
-  return 1;
+  // 无法确定真实 serving 重量时，不做任何假设。
+  // 特别不要把 “1 slice” 当成 1 g，也不要把缺失 serving 当成 100 g。
+  return null;
 }
 
 export function buildOffNutrientRows(
   nutriments: Record<string, number> | undefined,
-  servingSize?: string,
+  servingSize?: string | null,
 ) {
   const servingFactor = getServingFactor(servingSize);
 
@@ -181,15 +185,29 @@ export function buildOffNutrientRows(
     .map((mapping) => {
       const rawOffValue100g = Number(nutriments![mapping.offKey]);
       const valuePer100g = rawOffValue100g * mapping.factor;
-      const value = Math.round(valuePer100g * servingFactor * 100) / 100;
+
+      // value = 每份实际含量。
+      // 只有 OFF 给了可解析的 serving size 时才计算；
+      // 否则保持 null，避免把 100 g / 100 ml 误当成“一份”。
+      const value =
+        servingFactor != null
+          ? Math.round(valuePer100g * servingFactor * 100) / 100
+          : null;
 
       return {
         nutrientId: mapping.nutrientId,
         value,
-        // DevScore uses the original OFF unit, matching category statistics.
+
+        // DevScore 专用：始终保留 OFF 原始每100g/100ml数值，
+        // 单位口径与 category_nutrition_stats.json 保持一致。
         value100g: Math.round(rawOffValue100g * 1e8) / 1e8,
+
         unit: mapping.unit,
-        dailyValue: Math.round((value / mapping.dvRef) * 100),
+
+        // 不再在导入阶段用 OFF_NUTRIENT_MAP.dvRef 计算“%DV”。
+        // 儿童每日参考占比应在 scoring.ts 中，拿真实 per-serving value
+        // 除以对应年龄/性别的 daily reference 后再计算。
+        dailyValue: null,
       };
     });
 }
@@ -272,7 +290,7 @@ export async function syncProductFromOpenFoodFacts(
         brandId,
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
-        servingSize: p.serving_size ?? '100g',
+        servingSize: p.serving_size ?? null,
         novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
@@ -308,7 +326,7 @@ export async function syncProductFromOpenFoodFacts(
         brandId,
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
-        servingSize: p.serving_size ?? '100g',
+        servingSize: p.serving_size ?? null,
         novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
@@ -408,7 +426,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         brandId,
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
-        servingSize: p.serving_size ?? '100g',
+        servingSize: p.serving_size ?? null,
         novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore:
@@ -443,7 +461,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         brandId,
         imageUrl: p.image_front_url ?? null,
         quantity: p.quantity ?? null,
-        servingSize: p.serving_size ?? '100g',
+        servingSize: p.serving_size ?? null,
         novaScore: canonicalNovaGroup,
         nutriGrade: p.nutriscore_grade?.toUpperCase() ?? null,
         nutriScore: typeof p.nutriscore_score === 'number' ? p.nutriscore_score : null,
@@ -476,7 +494,10 @@ export async function createProductByAI(nameEn: string, nameZh: string, brand: s
       nutrientId: n.nutrientId,
       value: n.value,
       unit: n.unit,
-      dailyValue: n.dailyValue,
+
+      // AI fallback 没有可靠的真实 serving size / age-specific reference，
+      // 因此这里不写伪造的 %DV。
+      dailyValue: null,
     }));
 
     const allergenRows = nutrition.allergens.length > 0
@@ -489,7 +510,7 @@ export async function createProductByAI(nameEn: string, nameZh: string, brand: s
         nameZh: nameZh || null,
         brandId,
         imageUrl: null,
-        servingSize: '100g',
+        servingSize: null,
         novaScore: nutrition.novaScore ?? null,
         nutriGrade: nutrition.nutriGrade ?? null,
         verified: false,

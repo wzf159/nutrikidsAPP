@@ -2,13 +2,10 @@ import { prisma } from './prisma.js';
 import { computeDevScoreV2, computeGoalScoresV2 } from './scoring/devScoreV2.js';
 import { computeAdditiveScoreV2 } from './scoring/additiveScoreV2.js';
 import { hasAdditiveCategory } from './scoring/additiveCategories.js';
-import {
-  ADDED_SUGAR_NUTRIENT_ID,
-  OFF_NUTRIENT_MAP,
-  TOTAL_SUGAR_NUTRIENT_ID,
-} from './productFinder.js';
+import { OFF_NUTRIENT_MAP, TOTAL_SUGAR_NUTRIENT_ID, ADDED_SUGAR_NUTRIENT_ID } from './productFinder.js';
 
-// nutrients 字典 ID（见 seed.ts）
+// nutrients 字典 ID（见 seed.ts / productFinder.ts）
+const SUGAR_NUTRIENT_ID = TOTAL_SUGAR_NUTRIENT_ID;
 const ENERGY_NUTRIENT_ID = 16;
 const SATURATED_FAT_NUTRIENT_ID = 17;
 const SODIUM_NUTRIENT_ID = 18;
@@ -16,8 +13,7 @@ const SODIUM_NUTRIENT_ID = 18;
 // 前端正向营养素列表中排除的项目。
 // 总脂肪并不必然是儿童饮食中的负面营养素，因此这里只排除糖、能量、饱和脂肪和钠。
 const EXCLUDED_FROM_POSITIVE_NUTRIENTS = new Set<number>([
-  TOTAL_SUGAR_NUTRIENT_ID,
-  ADDED_SUGAR_NUTRIENT_ID,
+  SUGAR_NUTRIENT_ID,
   ENERGY_NUTRIENT_ID,
   SATURATED_FAT_NUTRIENT_ID,
   SODIUM_NUTRIENT_ID,
@@ -50,6 +46,133 @@ function stageIdx(stageKey: string | null): number {
     '0-6m': 0, '7-12m': 1, '1-3y': 2, '4-8y': 3, '9-13y': 4, '14-18y': 5,
   };
   return map[stageKey ?? ''] ?? 3;
+}
+
+
+// ================================================================
+// 儿童每日参考量：严格按当前 NutriKids 参考表。
+// Added Sugar / Saturated Fat / Sodium 不在这里：它们继续走下方独立 watch limit。
+// 没有表格值时返回 null，不再 fallback 到 OFF_NUTRIENT_MAP.dvRef。
+// ================================================================
+
+type DailyRefKey =
+  | '6-11m'
+  | '12-23m'
+  | '2-3y'
+  | '4-8y'
+  | 'F9-13'
+  | 'F14-18'
+  | 'M9-13'
+  | 'M14-18';
+
+type DailyRefRow = Partial<Record<DailyRefKey, number>>;
+
+// 数值单位与 ProductNutrient.value 的展示单位一致。
+// Vitamin D：参考表为 600 IU；数据库展示单位为 μg，因此用 15 μg。
+const CHILD_DAILY_REFERENCE: Record<number, DailyRefRow> = {
+  // Macronutrients
+  13: { '6-11m': 11, '12-23m': 13, '2-3y': 13, '4-8y': 19, 'F9-13': 34, 'F14-18': 46, 'M9-13': 34, 'M14-18': 52 }, // Protein g
+  21: { '6-11m': 95, '12-23m': 130, '2-3y': 130, '4-8y': 130, 'F9-13': 130, 'F14-18': 130, 'M9-13': 130, 'M14-18': 130 }, // Carbohydrate g
+  20: { '12-23m': 19, '2-3y': 14, '4-8y': 17, 'F9-13': 22, 'F14-18': 25, 'M9-13': 25, 'M14-18': 31 }, // Fiber g
+  22: { '12-23m': 19, '2-3y': 14, '4-8y': 17, 'F9-13': 22, 'F14-18': 25, 'M9-13': 25, 'M14-18': 31 }, // Fiber alias
+
+  // Minerals
+  5: { '6-11m': 260, '12-23m': 700, '2-3y': 700, '4-8y': 1000, 'F9-13': 1300, 'F14-18': 1300, 'M9-13': 1300, 'M14-18': 1300 }, // Calcium mg
+  1: { '6-11m': 11, '12-23m': 7, '2-3y': 7, '4-8y': 10, 'F9-13': 8, 'F14-18': 15, 'M9-13': 8, 'M14-18': 11 }, // Iron mg
+  23: { '6-11m': 75, '12-23m': 80, '2-3y': 80, '4-8y': 130, 'F9-13': 240, 'F14-18': 360, 'M9-13': 240, 'M14-18': 410 }, // Magnesium mg
+  7: { '6-11m': 275, '12-23m': 460, '2-3y': 460, '4-8y': 500, 'F9-13': 1250, 'F14-18': 1250, 'M9-13': 1250, 'M14-18': 1250 }, // Phosphorus mg
+  14: { '6-11m': 860, '12-23m': 2000, '2-3y': 2000, '4-8y': 2300, 'F9-13': 2300, 'F14-18': 2300, 'M9-13': 2500, 'M14-18': 3000 }, // Potassium mg
+  2: { '6-11m': 3, '12-23m': 3, '2-3y': 3, '4-8y': 5, 'F9-13': 8, 'F14-18': 9, 'M9-13': 8, 'M14-18': 11 }, // Zinc mg
+
+  // Vitamins
+  11: { '6-11m': 500, '12-23m': 300, '2-3y': 300, '4-8y': 400, 'F9-13': 600, 'F14-18': 700, 'M9-13': 600, 'M14-18': 900 }, // Vitamin A μg RAE
+  32: { '6-11m': 5, '12-23m': 6, '2-3y': 6, '4-8y': 7, 'F9-13': 11, 'F14-18': 15, 'M9-13': 11, 'M14-18': 15 }, // Vitamin E mg AT
+  6: { '6-11m': 15, '12-23m': 15, '2-3y': 15, '4-8y': 15, 'F9-13': 15, 'F14-18': 15, 'M9-13': 15, 'M14-18': 15 }, // Vitamin D μg
+  9: { '6-11m': 50, '12-23m': 15, '2-3y': 15, '4-8y': 25, 'F9-13': 45, 'F14-18': 65, 'M9-13': 45, 'M14-18': 75 }, // Vitamin C mg
+  31: { '6-11m': 0.3, '12-23m': 0.5, '2-3y': 0.5, '4-8y': 0.6, 'F9-13': 1, 'F14-18': 1.2, 'M9-13': 1, 'M14-18': 1.3 }, // Vitamin B6 mg
+  12: { '6-11m': 0.5, '12-23m': 0.9, '2-3y': 0.9, '4-8y': 1.2, 'F9-13': 1.8, 'F14-18': 2.4, 'M9-13': 1.8, 'M14-18': 2.4 }, // Vitamin B12 μg
+  25: { '6-11m': 150, '12-23m': 200, '2-3y': 200, '4-8y': 250, 'F9-13': 375, 'F14-18': 400, 'M9-13': 375, 'M14-18': 550 }, // Choline mg
+  33: { '6-11m': 2.5, '12-23m': 30, '2-3y': 30, '4-8y': 55, 'F9-13': 60, 'F14-18': 75, 'M9-13': 60, 'M14-18': 75 }, // Vitamin K μg
+  28: { '6-11m': 80, '12-23m': 150, '2-3y': 150, '4-8y': 200, 'F9-13': 300, 'F14-18': 400, 'M9-13': 300, 'M14-18': 400 }, // Folate μg DFE
+};
+
+type ChildForReference = {
+  age: number | null;
+  ageMonths: number | null;
+  stageKey: string | null;
+  gender: string | null;
+};
+
+function dailyRefKey(child: ChildForReference): DailyRefKey | null {
+  // 当前提供的表没有完整的 0–6 month 数值列，因此不编造。
+  if (child.stageKey === '0-6m') return null;
+
+  if (child.stageKey === '7-12m') return '6-11m';
+
+  if (child.stageKey === '1-3y') {
+    if (child.ageMonths != null) {
+      return child.ageMonths < 24 ? '12-23m' : '2-3y';
+    }
+    return child.age != null && child.age >= 2 ? '2-3y' : '12-23m';
+  }
+
+  if (child.stageKey === '4-8y') return '4-8y';
+
+  const sex = child.gender === 'girl' ? 'F' : 'M';
+  if (child.stageKey === '9-13y') return sex === 'F' ? 'F9-13' : 'M9-13';
+  if (child.stageKey === '14-18y') return sex === 'F' ? 'F14-18' : 'M14-18';
+
+  return null;
+}
+
+function childDailyReference(
+  nutrientId: number,
+  child: ChildForReference
+): number | null {
+  const key = dailyRefKey(child);
+  if (!key) return null;
+
+  const ref = CHILD_DAILY_REFERENCE[nutrientId]?.[key];
+  return typeof ref === 'number' && Number.isFinite(ref) && ref > 0 ? ref : null;
+}
+
+// 只使用“真实每份 value ÷ 儿童年龄/性别 daily reference”。
+// value 为 null（OFF 没有可靠 serving size）时，不计算百分比。
+function childDailyPercent(
+  nutrient: { nutrientId: number; value: number | null },
+  child: ChildForReference
+): number | null {
+  if (nutrient.value == null) return null;
+
+  const amount = Number(nutrient.value);
+  const ref = childDailyReference(nutrient.nutrientId, child);
+
+  if (!Number.isFinite(amount) || ref == null) return null;
+  return (amount / ref) * 100;
+}
+
+function watchLimitPercent(
+  value: number | null | undefined,
+  limit: number | null
+): number | null {
+  if (value == null || limit == null || limit <= 0) return null;
+
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return null;
+
+  return (amount / limit) * 100;
+}
+
+// ProductNutrient.value100g 是 OFF 原始单位；UI 需要按 mapping.factor 转为展示单位。
+function displayValue100g(nutrientId: number, rawValue100g: number | null | undefined): number | null {
+  if (rawValue100g == null) return null;
+  const raw = Number(rawValue100g);
+  if (!Number.isFinite(raw)) return null;
+
+  const mapping = OFF_NUTRIENT_MAP.find((m) => m.nutrientId === nutrientId);
+  if (!mapping) return raw;
+
+  return raw * mapping.factor;
 }
 
 const WEIGHTS = {
@@ -106,33 +229,8 @@ export interface ScoreInput {
   imagePath?: string | null;
 }
 
-export function resolveAddedSugar(
-  nutrients: Array<{
-    nutrientId: number;
-    value: number | null;
-    value100g?: number | null;
-    dailyValue: number | null;
-    unit?: string | null;
-  }>,
-) {
-  const nutrient = nutrients.find(
-    (item) => item.nutrientId === ADDED_SUGAR_NUTRIENT_ID,
-  );
-
-  return {
-    nutrient,
-    available: nutrient !== undefined,
-    value: Number(nutrient?.value ?? 0),
-    value100g:
-      nutrient === undefined
-        ? null
-        : Number(nutrient.value100g ?? nutrient.value ?? 0),
-    dailyValue: Number(nutrient?.dailyValue ?? 0),
-  };
-}
-
 function viewReferenceBasis(servingSize: string | null): string {
-  return servingSize?.trim() || '100 g / 100 ml';
+  return servingSize?.trim() || 'serving unavailable';
 }
 
 // 结合"孩子档案 × 产品事实"计算个性化评分，写入 analyses 全套明细，返回结果 + 前端视图数据。
@@ -165,40 +263,55 @@ export async function scoreFood(input: ScoreInput) {
   if (!product) throw Object.assign(new Error('产品不存在'), { statusCode: 404 });
   if (!child) throw Object.assign(new Error('孩子不存在'), { statusCode: 404 });
 
-
+  // AI fallback 产品没有 barcode。它可以展示营养估算、发育目标和 watch 信息，
+  // 但不进入 Nutri-Score / FinalScore 评分流程。
+  const isAiGenerated = !product.verified && product.barcode === null;
 
   const prodNutr = product.nutrients;
-  console.log('product nutrients length:', product?.nutrients?.length);
-  
-  const addedSugar = resolveAddedSugar(prodNutr);
-  const addedSugarNutrient = addedSugar.nutrient;
-  const addedSugarAvailable = addedSugar.available;
-  const addedSugarDV = addedSugar.dailyValue;
-  const addedSugarG = addedSugar.value;
+  console.log('additivesJson:', product.additivesJson);
 
-  // 1) 营养密度 (0..40)：糖/能量不计入
-  const densityRaw = prodNutr
-    .filter(
-      (n: { nutrientId: number }) =>
-        n.nutrientId !== TOTAL_SUGAR_NUTRIENT_ID &&
-        n.nutrientId !== ADDED_SUGAR_NUTRIENT_ID &&
-        n.nutrientId !== ENERGY_NUTRIENT_ID
+  // 正向营养素不再读取数据库 dailyValue：
+  // productFinder 现在只存真实 per-serving value（有 serving size 时）和 value100g。
+  const positiveDailyPercents = prodNutr
+    .filter((n: { nutrientId: number }) =>
+      !EXCLUDED_FROM_POSITIVE_NUTRIENTS.has(n.nutrientId)
     )
-    .reduce((s: number, n: { dailyValue: number | null }) => s + Number(n.dailyValue ?? 0), 0);
+    .map((n) => childDailyPercent(n, child))
+    .filter((v): v is number => v != null && Number.isFinite(v));
+
+  // 这些 breakdown 只是旧 UI 明细，不参与新版 FinalScore；
+  // 仍保持可用，但来源改成真正的儿童年龄/性别参考占比。
+  const densityRaw = positiveDailyPercents.reduce((sum, v) => sum + v, 0);
   const nutrientDensity = clamp(Math.round(densityRaw * 0.5), 0, 40);
 
-  // 2) 风险成分 (0..30)：满分起扣
-  const badAdditives = product.additives.filter((a: { additive: { type: string | null } }) => a.additive.type !== 'beneficial');
-  const riskIngredients = clamp(30 - addedSugarDV * 0.6 - badAdditives.length * 2, 0, 30);
+  const badAdditives = product.additives.filter(
+    (a: { additive: { type: string | null } }) =>
+      a.additive.type !== 'beneficial'
+  );
 
-  // 3) 加工程度 (0..20)：NOVA 越低越好
+  // Added Sugar 的风险百分比在得到 ageIdx 和独立 sugarLimit 后再计算。
+  // 这里先只保留添加剂扣分，避免读取已废弃的数据库 dailyValue。
+  let riskIngredients = clamp(30 - badAdditives.length * 2, 0, 30);
+
+  // 加工程度 (0..20)：NOVA 越低越好
   const novaMap: Record<number, number> = { 1: 20, 2: 17, 3: 15, 4: 8 };
   const processingLevel = novaMap[product.novaScore ?? 4] ?? 8;
 
-  // 4) 阶段匹配 (0..10)：产品营养素与孩子关键营养素重合度
-  const childNutrIds = new Set(child.nutrients.map((c: { nutrientId: number }) => c.nutrientId));
-  const matched = prodNutr.filter((n: { nutrientId: number; dailyValue: number | null }) => childNutrIds.has(n.nutrientId) && Number(n.dailyValue ?? 0) >= 10).length;
-  const stageMatch = clamp(Math.round((matched / Math.max(childNutrIds.size, 1)) * 10), 0, 10);
+  // 阶段匹配：也改用 childDailyPercent，不再读取 ProductNutrient.dailyValue。
+  const childNutrIds = new Set(
+    child.nutrients.map((c: { nutrientId: number }) => c.nutrientId)
+  );
+  const matched = prodNutr.filter((n) => {
+    if (!childNutrIds.has(n.nutrientId)) return false;
+    const pct = childDailyPercent(n, child);
+    return pct != null && pct >= 10;
+  }).length;
+
+  const stageMatch = clamp(
+    Math.round((matched / Math.max(childNutrIds.size, 1)) * 10),
+    0,
+    10
+  );
 
 
   // Step A: DevScore
@@ -245,54 +358,85 @@ export async function scoreFood(input: ScoreInput) {
   );
   console.log(devScoreDebug.join('\n'));
 
-  // Step B: NutriNorm —— 还原 notebook 设计: 直接读 OFF 官方 nutriscore_score 换算,
-  // 不再自己手动重算 Nutri-Score 的正负分(之前那套手动实现缺了水果/蔬菜/坚果这个
-  // 维度,代码里自己也写了"暂缺,设0",精度不如 OFF 官方算好的分数)。
+  // Step B / C: NutriNorm + FinalScore
   //
-  // 跟 notebook 一致: nutriscore_score 缺失,或者 nutriscore_grade 不是 a~e 之一,
-  // 就判定这个产品"暂时没法评分",不再像之前那样硬凑一个退回值。
-  if (product.nutriScore === null || product.nutriScore === undefined) {
-    throw Object.assign(
-      new Error('此产品缺少 Nutri-Score 分数(nutriscore_score),暂时无法评分'),
-      { statusCode: 422 }
-    );
-  }
-  const nutriNorm = Math.max(0, Math.min(1, (55 - product.nutriScore) / 72));
-
-  // Step C: FinalScore —— 按 Nutri-Score 等级分支(还原 notebook 原始设计):
-  // A/B 用 DevScore 加分,C/D/E 用 additive_score 扣分。
+  // 规则：
+  // 1) AI fallback 产品：不使用 Nutri-Score，也不计算 FinalScore。
+  // 2) 非 AI 产品：严格按 notebook 原算法走 Nutri-Score 分支。
+  //    - A/B: NutriNorm + DevScore
+  //    - C/D/E: NutriNorm - AdditiveScore
   const alpha = 0.5;
-  const nutriGradeLower = (product.nutriGrade ?? '').toLowerCase();
 
-  let overallRaw: number;
+  let nutriNorm: number | null = null;
+  let overallRaw: number | null = null;
   let additiveScore: number | null = null;
 
-  if (nutriGradeLower === 'a' || nutriGradeLower === 'b') {
-    overallRaw = 100 * (alpha * nutriNorm + (1 - alpha) * devScore);
-  } else if (nutriGradeLower === 'c' || nutriGradeLower === 'd' || nutriGradeLower === 'e') {
-    const additiveDebug: string[] = [];
-    let additiveTagsForScore: string[] = [];
-    try {
-      additiveTagsForScore = product.additivesJson ? JSON.parse(product.additivesJson) : [];
-    } catch {
-      additiveTagsForScore = [];
+  if (!isAiGenerated) {
+    // 对真实/OFF 产品，Nutri-Score 是原评分公式的必要输入。
+    if (product.nutriScore === null || product.nutriScore === undefined) {
+      throw Object.assign(
+        new Error('此产品缺少 Nutri-Score 分数(nutriscore_score),暂时无法评分'),
+        { statusCode: 422 }
+      );
     }
-    additiveScore = computeAdditiveScoreV2(additiveTagsForScore, additiveDebug);
-    console.log(additiveDebug.join('\n'));
-    overallRaw = Math.max(0, 100 * (alpha * nutriNorm - (1 - alpha) * additiveScore));
+
+    const nutriGradeLower = (product.nutriGrade ?? '').toLowerCase();
+
+    nutriNorm = Math.max(
+      0,
+      Math.min(1, (55 - product.nutriScore) / 72)
+    );
+
+    if (nutriGradeLower === 'a' || nutriGradeLower === 'b') {
+      overallRaw =
+        100 * (
+          alpha * nutriNorm +
+          (1 - alpha) * devScore
+        );
+    } else if (
+      nutriGradeLower === 'c' ||
+      nutriGradeLower === 'd' ||
+      nutriGradeLower === 'e'
+    ) {
+      const additiveDebug: string[] = [];
+
+      let additiveTagsForScore: string[] = [];
+      try {
+        additiveTagsForScore = product.additivesJson
+          ? JSON.parse(product.additivesJson)
+          : [];
+      } catch {
+        additiveTagsForScore = [];
+      }
+
+      additiveScore = computeAdditiveScoreV2(
+        additiveTagsForScore,
+        additiveDebug
+      );
+
+      console.log(additiveDebug.join('\n'));
+
+      overallRaw = Math.max(
+        0,
+        100 * (
+          alpha * nutriNorm -
+          (1 - alpha) * additiveScore
+        )
+      );
+    } else {
+      throw Object.assign(
+        new Error(
+          `nutriGrade='${product.nutriGrade}' 不是 a~e 之一,暂时无法评分`
+        ),
+        { statusCode: 422 }
+      );
+    }
   } else {
-    // 等级既不是 a/b 也不是 c/d/e(比如缺失或者脏数据) —— 跟 notebook 一致,
-    // 判定这个产品没法评分,不再硬凑一个退回值
-    throw Object.assign(
-      new Error(`nutriGrade='${product.nutriGrade}' 不是 a~e 之一,暂时无法评分`),
-      { statusCode: 422 }
+    console.log(
+      'AI-generated product: skipping NutriScore, NutriNorm and FinalScore.'
     );
   }
 
-  console.log('DevScore:', devScore.toFixed(3));
-  console.log('NutriNorm:', nutriNorm.toFixed(3));
-  console.log('nutriGrade:', nutriGradeLower, 'additiveScore:', additiveScore);
-  console.log('FinalScore:', overallRaw.toFixed(1));
   // 每日上限
   const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25;
   const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5;
@@ -307,8 +451,55 @@ export async function scoreFood(input: ScoreInput) {
   const satfatThreshold = [1, 1, 2, 2.5, 3, 4][ageIdx];
   // 更严格，尤其婴幼儿
 
-  const overall = Math.round(overallRaw);
-  const grade = overall >= 80 ? 'Excellent' : overall >= 60 ? 'Good' : overall >= 40 ? 'Fair' : 'Poor';
+
+  // Added Sugar / Sodium / Saturated Fat 使用独立 watch-limit 表，
+  // 不使用 CHILD_DAILY_REFERENCE，也不使用数据库 dailyValue。
+  const addedSugarNutrient = prodNutr.find(
+    (n: { nutrientId: number }) => n.nutrientId === ADDED_SUGAR_NUTRIENT_ID
+  );
+
+  const addedSugarG =
+    addedSugarNutrient?.value == null
+      ? null
+      : Number(addedSugarNutrient.value);
+
+  const addedSugarDailyPercent =
+    sugarLimit > 0
+      ? watchLimitPercent(addedSugarG, sugarLimit)
+      : addedSugarG != null && addedSugarG > 0
+        ? 100
+        : 0;
+
+  // legacy breakdown only
+  riskIngredients = clamp(
+    30 - Number(addedSugarDailyPercent ?? 0) * 0.6 - badAdditives.length * 2,
+    0,
+    30
+  );
+
+  const overall: number | null =
+    overallRaw !== null ? Math.round(overallRaw) : null;
+
+  const grade: string | null =
+    overall === null
+      ? null
+      : overall >= 80
+        ? 'Excellent'
+        : overall >= 60
+          ? 'Good'
+          : overall >= 40
+            ? 'Fair'
+            : 'Poor';
+
+  console.log('DevScore:', devScore.toFixed(3));
+  console.log(
+    'NutriNorm:',
+    nutriNorm !== null ? nutriNorm.toFixed(3) : 'N/A'
+  );
+  console.log(
+    'FinalScore:',
+    overallRaw !== null ? overallRaw.toFixed(1) : 'N/A'
+  );
   // 过敏命中
   const childAllergIds = new Set(child.allergens.map((a: { allergenId: number }) => a.allergenId));
   const allergenFlags = product.allergens.map((a: { allergenId: number; present: boolean }) => ({
@@ -321,39 +512,53 @@ export async function scoreFood(input: ScoreInput) {
   const factors: { kind: 'positive' | 'negative'; label: string }[] = [];
   if (nutrientDensity >= 25) factors.push({ kind: 'positive', label: 'High Nutrient Density' });
   if (processingLevel >= 17) factors.push({ kind: 'positive', label: 'Minimally Processed' });
-  if (addedSugarAvailable && addedSugarDV >= 10) {
-    factors.push({ kind: 'negative', label: 'Added Sugar' });
-  }
+  if (Number(addedSugarDailyPercent ?? 0) >= 10) factors.push({ kind: 'negative', label: 'Added Sugar' });
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
 
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
-  console.table(
-    prodNutr.map(n => ({
-      id: n.nutrientId,
-      name: n.nutrient?.name,
-      dv: n.dailyValue,
-      value: n.value
-    }))
-  );
   const viewNutrients = prodNutr
     .filter(
       (n: { nutrientId: number }) =>
         !EXCLUDED_FROM_POSITIVE_NUTRIENTS.has(n.nutrientId)
     )
-    .map((n) => ({
-      id: n.nutrientId,
-      name: n.nutrient.name,
-      nameZh: n.nutrient.nameZh,
-      icon: n.nutrient.icon,
-      value: n.value,
-      unit: n.unit,
-      dailyValue: Number(n.dailyValue ?? 0),
-      level: Number(n.dailyValue ?? 0) >= 20 ? 'High' : Number(n.dailyValue ?? 0) >= 10 ? 'Moderate' : 'Low',
-    }))
-    .filter((n: { dailyValue: number }) => n.dailyValue > 0)
-    .sort((a: { dailyValue: number }, b: { dailyValue: number }) => b.dailyValue - a.dailyValue)
+    .map((n) => {
+      const dailyReference = childDailyReference(n.nutrientId, child);
+      const dailyReferencePercent = childDailyPercent(n, child);
+
+      return {
+        id: n.nutrientId,
+        name: n.nutrient.name,
+        nameZh: n.nutrient.nameZh,
+        icon: n.nutrient.icon,
+
+        // value = 真实每份含量；OFF 没有可靠 serving size 时为 null。
+        value: n.value,
+        value100g: displayValue100g(n.nutrientId, (n as any).value100g),
+        unit: n.unit,
+
+        // 暂时保留 dailyValue 字段名兼容现有 FoodAnalyzer；
+        // 语义现在是 child-specific daily reference percent，不是 FDA %DV。
+        dailyValue: dailyReferencePercent,
+        dailyReference,
+        dailyReferencePercent,
+
+        level:
+          dailyReferencePercent == null
+            ? 'Unavailable'
+            : dailyReferencePercent >= 20
+              ? 'High'
+              : dailyReferencePercent >= 10
+                ? 'Moderate'
+                : 'Low',
+      };
+    })
+    .filter(
+      (n): n is typeof n & { dailyValue: number; dailyReferencePercent: number } =>
+        n.dailyValue != null && n.dailyValue > 0
+    )
+    .sort((a, b) => b.dailyValue - a.dailyValue)
     .slice(0, 6);
   const viewNutrIds = new Set(viewNutrients.map((n: { id: number }) => n.id));
 
@@ -361,7 +566,12 @@ export async function scoreFood(input: ScoreInput) {
   // 再按门槛分 Core/Important/Supporting 档位——不再用"最大单项%DV≥15%"的旧判定方式。
   // flows(具体贡献了哪些营养素,给弹窗展示用)还是走 %DV,这个跟 tier 判定是两回事,没有改。
   const childGoalIds = new Set(child.goals.map((g: { goalId: number }) => g.goalId));
-  const dvOf = (nid: number) => Number(prodNutr.find((n: { nutrientId: number; dailyValue: number | null }) => n.nutrientId === nid)?.dailyValue ?? 0);
+  const dvOf = (nid: number) => {
+    const nutrient = prodNutr.find(
+      (n: { nutrientId: number }) => n.nutrientId === nid
+    );
+    return nutrient ? (childDailyPercent(nutrient, child) ?? 0) : 0;
+  };
 
   const flows: { goalId: number; nutrientId: number; value: number }[] = [];
   for (const goalId of childGoalIds) {
@@ -401,7 +611,7 @@ export async function scoreFood(input: ScoreInput) {
 
         if (!nutrient) return null;
 
-        const dailyValue = Number(nutrient.dailyValue ?? 0);
+        const dailyValue = childDailyPercent(nutrient, child) ?? 0;
         const value100g = Number((nutrient as any).value100g ?? NaN);
 
         // %DV >= 5 视为有实际每份贡献；
@@ -434,14 +644,17 @@ export async function scoreFood(input: ScoreInput) {
 
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
-  
-    const stageConfig = DEV_TIERS[goalId]?.[ageIdx];
-  
-    if (!stageConfig) return null;
-  
-    return genderKey === 'female'
-      ? stageConfig.female
-      : stageConfig.male;
+
+    const score = goalScores[goalId];
+    if (score === undefined || score <= 0) return null;
+
+    const evidenceCount = goalEvidence(goalId).count;
+
+    if (score >= 0.75 && evidenceCount >= 3) return 'core';
+    if (score >= 0.45 && evidenceCount >= 2) return 'important';
+    if (score >= 0.20 && evidenceCount >= 1) return 'supporting';
+
+    return null;
   };
 
   const viewGoals = allGoals.map((g) => {
@@ -464,14 +677,6 @@ export async function scoreFood(input: ScoreInput) {
       supportDV: Math.round(displaySupport * 100),
     };
   });
-  console.table(
-    allGoals.map(g => ({
-      id: g.id,
-      selected: childGoalIds.has(g.id),
-      tier: devTierOf(g.id),
-      score: goalScores[g.id],
-    }))
-  );
   // scoreFood 函数里，在 flows 计算之前加
   console.log('childGoalIds:', [...childGoalIds]);
   console.log('viewNutrIds:', [...viewNutrIds]);
@@ -500,36 +705,63 @@ export async function scoreFood(input: ScoreInput) {
     (n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID
   );
 
+  const sodiumDailyPercent = watchLimitPercent(
+    sodiumNutrient?.value,
+    sodiumLimit
+  );
+
+  const satfatDailyPercent = watchLimitPercent(
+    satfatNutrient?.value,
+    satfatLimit
+  );
+
   const watch = [
-    // NOVA 1（未加工天然食物）的糖是天然糖，不计为"添加糖"
     {
-      code: 'added_sugar', icon: '🍬', name: 'Added Sugar', nameZh: '添加糖',
-      available: addedSugarAvailable,
-      present: addedSugarAvailable && addedSugarG >= sugarThreshold,
-      value: addedSugarAvailable ? addedSugarG : null,
-      value100g: addedSugar.value100g,
+      code: 'added_sugar',
+      icon: '🍬',
+      name: 'Added Sugar',
+      nameZh: '添加糖',
+
+      // 没有真实 serving size -> value 为 null -> 不假装检测到 high。
+      present:
+        addedSugarG != null &&
+        addedSugarG >= sugarThreshold &&
+        (product.novaScore ?? 4) >= 2,
+
+      value: addedSugarG,
+      value100g: displayValue100g(
+        ADDED_SUGAR_NUTRIENT_ID,
+        (addedSugarNutrient as any)?.value100g
+      ),
       unit: addedSugarNutrient?.unit ?? 'g',
-      dailyValue: addedSugarDV,
+
+      // 这里的 dailyValue 是“每份占该年龄段独立 sugar limit 的百分比”
+      // 仅为了兼容现有前端字段名，不是 FDA %DV。
+      dailyValue: addedSugarDailyPercent,
       ageLimit: sugarLimit,
       ageLimitUnit: 'g',
       threshold: sugarThreshold,
       referenceBasis: viewReferenceBasis(product.servingSize),
-      detail: !addedSugarAvailable
-        ? 'Open Food Facts does not provide added-sugar data for this product.'
-        : sugarLimit === 0
-          ? `${addedSugarDV}% DV added sugar per serving — added sugar is not recommended for this age group.`
-          : `${addedSugarDV}% of the added-sugar reference per serving (limit: ${sugarLimit}g).`,
-      detailZh: !addedSugarAvailable
-        ? 'Open Food Facts 暂未提供该产品的添加糖数据。'
-        : sugarLimit === 0
-          ? `每份添加糖占每日参考值的${addedSugarDV}%，该年龄段不建议摄入添加糖。`
-          : `每份添加糖占每日参考值的${addedSugarDV}%（参考上限：${sugarLimit}g）。`,
+
+      detail:
+        addedSugarG == null
+          ? 'Serving size is unavailable, so per-serving added sugar cannot be calculated.'
+          : sugarLimit === 0
+            ? 'Added sugar is not recommended for this age group.'
+            : `${Number(addedSugarDailyPercent ?? 0).toFixed(1)}% of the age-specific daily added sugar limit per serving (limit: ${sugarLimit}g).`,
+
+      detailZh:
+        addedSugarG == null
+          ? '缺少可靠的每份重量，因此无法计算每份添加糖。'
+          : sugarLimit === 0
+            ? '该年龄段不建议摄入添加糖。'
+            : `每份添加糖约占该年龄段每日上限的${Number(addedSugarDailyPercent ?? 0).toFixed(1)}%（上限：${sugarLimit}g）。`,
     },
     {
-      code: 'flavors', icon: '🧪', name: 'Artificial Flavors', nameZh: '人工香精',
+      code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
       present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/) ||
         hasRawAdditive(['e620', 'e621', 'e622', 'e623', 'e624', 'e625', 'e635']),
-      detail: 'Contains artificial flavoring. Generally recognized as safe, but indicates processing.',
+      detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
     },
     {
@@ -546,33 +778,57 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present: Number(sodiumNutrient?.value ?? 0) > sodiumThreshold,
-      value: Number(sodiumNutrient?.value ?? 0),
+      present:
+        sodiumNutrient?.value != null &&
+        Number(sodiumNutrient.value) > sodiumThreshold,
+      value: sodiumNutrient?.value == null ? null : Number(sodiumNutrient.value),
+      value100g: displayValue100g(
+        SODIUM_NUTRIENT_ID,
+        (sodiumNutrient as any)?.value100g
+      ),
       unit: sodiumNutrient?.unit ?? 'mg',
-      dailyValue: Number(sodiumNutrient?.dailyValue ?? 0),
+      dailyValue: sodiumDailyPercent,
       ageLimit: sodiumLimit,
       ageLimitUnit: 'mg',
       threshold: sodiumThreshold,
       referenceBasis: viewReferenceBasis(product.servingSize),
-      detail: `${sodiumNutrient?.dailyValue ?? 0}% DV sodium per serving — daily limit for this age is ${sodiumLimit}mg.`,
-      detailZh: `每份钠含量占每日参考值的${sodiumNutrient?.dailyValue ?? 0}%，该年龄段每日上限为${sodiumLimit}mg。`
+      detail:
+        sodiumNutrient?.value == null
+          ? 'Serving size is unavailable, so per-serving sodium cannot be calculated.'
+          : `${Number(sodiumDailyPercent ?? 0).toFixed(1)}% of the age-specific daily sodium limit per serving (limit: ${sodiumLimit}mg).`,
+      detailZh:
+        sodiumNutrient?.value == null
+          ? '缺少可靠的每份重量，因此无法计算每份钠含量。'
+          : `每份钠约占该年龄段每日上限的${Number(sodiumDailyPercent ?? 0).toFixed(1)}%（上限：${sodiumLimit}mg）。`
     },
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-      present: Number(satfatNutrient?.value ?? 0) > satfatThreshold,
-      value: Number(satfatNutrient?.value ?? 0),
+      present:
+        satfatNutrient?.value != null &&
+        Number(satfatNutrient.value) > satfatThreshold,
+      value: satfatNutrient?.value == null ? null : Number(satfatNutrient.value),
+      value100g: displayValue100g(
+        SATURATED_FAT_NUTRIENT_ID,
+        (satfatNutrient as any)?.value100g
+      ),
       unit: satfatNutrient?.unit ?? 'g',
-      dailyValue: Number(satfatNutrient?.dailyValue ?? 0),
+      dailyValue: satfatDailyPercent,
       ageLimit: satfatLimit,
       ageLimitUnit: 'g',
       threshold: satfatThreshold,
       referenceBasis: viewReferenceBasis(product.servingSize),
-      detail: satfatLimit === null
-        ? `${satfatNutrient?.dailyValue ?? 0}% DV saturated fat per serving — limit not established for this age group.`
-        : `${satfatNutrient?.dailyValue ?? 0}% DV saturated fat per serving — daily limit for this age is ${satfatLimit}g.`,
-      detailZh: satfatLimit === null
-        ? `每份饱和脂肪占每日参考值的${satfatNutrient?.dailyValue ?? 0}%，该年龄段暂无明确上限。`
-        : `每份饱和脂肪占每日参考值的${satfatNutrient?.dailyValue ?? 0}%，该年龄段每日上限为${satfatLimit}g。`,
+      detail:
+        satfatNutrient?.value == null
+          ? 'Serving size is unavailable, so per-serving saturated fat cannot be calculated.'
+          : satfatLimit === null
+            ? 'No daily saturated fat limit is defined for this age group.'
+            : `${Number(satfatDailyPercent ?? 0).toFixed(1)}% of the age-specific daily saturated fat limit per serving (limit: ${satfatLimit}g).`,
+      detailZh:
+        satfatNutrient?.value == null
+          ? '缺少可靠的每份重量，因此无法计算每份饱和脂肪。'
+          : satfatLimit === null
+            ? '该年龄段暂无明确的每日饱和脂肪上限。'
+            : `每份饱和脂肪约占该年龄段每日上限的${Number(satfatDailyPercent ?? 0).toFixed(1)}%（上限：${satfatLimit}g）。`,
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
@@ -593,7 +849,7 @@ export async function scoreFood(input: ScoreInput) {
       detailZh: '含抗氧化剂类添加剂，常用于延缓氧化、延长保质期。',
     },
     {
-      code: 'acidity_regulators', icon: '🔮', name: 'Acidity Regulators', nameZh: '酸度调节剂',
+      code: 'acidity_regulators', icon: '🍋', name: 'Acidity Regulators', nameZh: '酸度调节剂',
       present: hasAdditiveCategory(rawAdditives, 'Acidity Regulator'),
       detail: 'Contains acidity regulator additives, used to control pH or stabilize flavor.',
       detailZh: '含酸度调节剂类添加剂，用于控制酸碱度或稳定风味。',
@@ -632,13 +888,37 @@ export async function scoreFood(input: ScoreInput) {
       imagePath: input.imagePath ?? null,
       overallScore: overall,
       grade,
-      whyText: `Scored ${overall}/100 for this child.`,
-      whyTextZh: `针对该孩子综合评分 ${overall}/100。`,
+      whyText:
+        overall !== null
+          ? `Scored ${overall}/100 for this child.`
+          : 'AI-estimated nutrition data; overall score is not calculated.',
+      whyTextZh:
+        overall !== null
+          ? `针对该孩子综合评分 ${overall}/100。`
+          : 'AI 估算营养数据，不计算综合评分。',
       breakdown: {
         create: [
-          { dimension: 'devScore', score: Math.round(devScore * 100), weight: alpha },
-          { dimension: 'nutriNorm', score: Math.round(nutriNorm * 100), weight: alpha },
-          { dimension: 'additiveScore', score: additiveScore !== null ? Math.round(additiveScore * 100) : null, weight: 1 - alpha },
+          {
+            dimension: 'devScore',
+            score: Math.round(devScore * 100),
+            weight: isAiGenerated ? null : alpha,
+          },
+          {
+            dimension: 'nutriNorm',
+            score:
+              nutriNorm !== null
+                ? Math.round(nutriNorm * 100)
+                : null,
+            weight: isAiGenerated ? null : alpha,
+          },
+          {
+            dimension: 'additiveScore',
+            score:
+              additiveScore !== null
+                ? Math.round(additiveScore * 100)
+                : null,
+            weight: isAiGenerated ? null : 1 - alpha,
+          },
         ],
       },
       factors: { create: factors },
@@ -646,35 +926,11 @@ export async function scoreFood(input: ScoreInput) {
     },
     select: { id: true },
   });
-  console.log('孩子过敏原:', child.allergens.map(
-    item => ({
-      id: item.allergen.id,
-      code: item.allergen.code,
-      name: item.allergen.name,
-    })
-  ));
-  
-  console.log('产品过敏原:', product.allergens.map(
-    item => ({
-      id: item.allergen.id,
-      code: item.allergen.code,
-      name: item.allergen.name,
-    })
-  ));
-  
-  console.log('匹配结果:', matchedAllergens);
+
   return {
     analysisId: analysis.id,
     overallScore: overall,
     grade,
-
-    isAllergenSafe: matchedAllergens.length === 0,
-    matchedAllergens,
-    recommendation:
-      matchedAllergens.length === 0
-        ? 'recommended'
-        : 'not_recommended',
-
     breakdown: { nutrientDensity, riskIngredients, processingLevel, stageMatch },
     factors,
     allergenFlags,
@@ -690,7 +946,7 @@ export async function scoreFood(input: ScoreInput) {
         novaScore: product.novaScore,
         servingSize: product.servingSize,
         verified: product.verified,
-        isAiGenerated: !product.verified && product.barcode === null,
+        isAiGenerated,
 
       },
       child: { id: child.id, name: child.name, age: child.age },
