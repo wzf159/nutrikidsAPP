@@ -391,7 +391,7 @@ export async function scoreFood(input: ScoreInput) {
       0,
       Math.min(
         1,
-        (55 - product.nutriScore) / 72
+        (55 - product.nutriScore!) / 72
       )
     );
 
