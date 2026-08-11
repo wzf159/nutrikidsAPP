@@ -463,6 +463,16 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
     }
 
     const nutrients = buildOffNutrientRows(p.nutriments, p.serving_size);
+
+
+
+    const unmappedAllergenTags = (p.allergens_tags ?? []).filter(
+      (tag) => !OFF_ALLERGEN_MAP[tag]
+    );
+    console.log('allergens_tags:', p.allergens_tags);
+    console.log('unmapped allergen tags:', unmappedAllergenTags);
+
+ 
     const allergenCodes = (p.allergens_tags ?? [])
       .map((t) => OFF_ALLERGEN_MAP[t])
       .filter((c): c is string => Boolean(c));
