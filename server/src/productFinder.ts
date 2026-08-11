@@ -330,12 +330,19 @@ export async function syncProductFromOpenFoodFacts(
     }
 
     const nutrients = buildOffNutrientRows(p.nutriments, p.serving_size);
-
+    console.log('allergens_tags:', p.allergens_tags);
+    const unmappedAllergenTags = (p.allergens_tags ?? []).filter(
+      (tag) => !OFF_ALLERGEN_MAP[tag]
+    );
+    console.log('unmapped allergen tags:', unmappedAllergenTags);
     const allergenCodes = (p.allergens_tags ?? [])
       .map((t) => OFF_ALLERGEN_MAP[t])
       .filter((c): c is string => Boolean(c));
     const allergenRows = await prisma.allergen.findMany({ where: { code: { in: allergenCodes } } });
 
+    console.log('OFF allergens_tags:', p.allergens_tags);
+    console.log('mapped allergenCodes:', allergenCodes);
+    //console.log('DB allergens found:', allergens);
     return prisma.product.upsert({
       where: { barcode },
 
