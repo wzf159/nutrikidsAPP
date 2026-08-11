@@ -365,35 +365,57 @@ export async function scoreFood(input: ScoreInput) {
   // 2) 非 AI 产品：严格按 notebook 原算法走 Nutri-Score 分支。
   //    - A/B: NutriNorm + DevScore
   //    - C/D/E: NutriNorm - AdditiveScore
+  // ======================================================
+  // Step B / C: NutriNorm + FinalScore
+  // ======================================================
+
   const alpha = 0.5;
+
+  const hasNutriScore =
+    product.nutriScore !== null &&
+    product.nutriScore !== undefined;
+
+  const nutriGradeLower =
+    (product.nutriGrade ?? '').toLowerCase();
 
   let nutriNorm: number | null = null;
   let overallRaw: number | null = null;
   let additiveScore: number | null = null;
 
-  if (!isAiGenerated) {
-    // 对真实/OFF 产品，Nutri-Score 是原评分公式的必要输入。
-    if (product.nutriScore === null || product.nutriScore === undefined) {
-      throw Object.assign(
-        new Error('此产品缺少 Nutri-Score 分数(nutriscore_score),暂时无法评分'),
-        { statusCode: 422 }
-      );
-    }
 
-    const nutriGradeLower = (product.nutriGrade ?? '').toLowerCase();
-
+  // ------------------------------------------------------
+  // 只有 OFF 提供了 Nutri-Score 时才计算 FinalScore
+  // ------------------------------------------------------
+  if (hasNutriScore) {
     nutriNorm = Math.max(
       0,
-      Math.min(1, (55 - product.nutriScore) / 72)
+      Math.min(
+        1,
+        (55 - product.nutriScore) / 72
+      )
     );
 
-    if (nutriGradeLower === 'a' || nutriGradeLower === 'b') {
+    // ====================================================
+    // Nutri-Score A / B
+    // FinalScore = NutriNorm + DevScore
+    // ====================================================
+    if (
+      nutriGradeLower === 'a' ||
+      nutriGradeLower === 'b'
+    ) {
       overallRaw =
-        100 * (
+        100 *
+        (
           alpha * nutriNorm +
           (1 - alpha) * devScore
         );
-    } else if (
+    }
+
+    // ====================================================
+    // Nutri-Score C / D / E
+    // FinalScore = NutriNorm - AdditiveScore
+    // ====================================================
+    else if (
       nutriGradeLower === 'c' ||
       nutriGradeLower === 'd' ||
       nutriGradeLower === 'e'
@@ -401,10 +423,12 @@ export async function scoreFood(input: ScoreInput) {
       const additiveDebug: string[] = [];
 
       let additiveTagsForScore: string[] = [];
+
       try {
-        additiveTagsForScore = product.additivesJson
-          ? JSON.parse(product.additivesJson)
-          : [];
+        additiveTagsForScore =
+          product.additivesJson
+            ? JSON.parse(product.additivesJson)
+            : [];
       } catch {
         additiveTagsForScore = [];
       }
@@ -418,24 +442,75 @@ export async function scoreFood(input: ScoreInput) {
 
       overallRaw = Math.max(
         0,
-        100 * (
+        100 *
+        (
           alpha * nutriNorm -
           (1 - alpha) * additiveScore
         )
       );
-    } else {
-      throw Object.assign(
-        new Error(
-          `nutriGrade='${product.nutriGrade}' 不是 a~e 之一,暂时无法评分`
-        ),
-        { statusCode: 422 }
-      );
     }
-  } else {
-    console.log(
-      'AI-generated product: skipping NutriScore, NutriNorm and FinalScore.'
-    );
+
+    // ====================================================
+    // 有 nutriScore，但 grade 不合法
+    // 不硬算分，也不报 422
+    // ====================================================
+    else {
+      console.warn(
+        `Nutri-Score exists but nutriGrade='${product.nutriGrade}' is invalid; FinalScore skipped.`
+      );
+
+      nutriNorm = null;
+      overallRaw = null;
+      additiveScore = null;
+    }
   }
+
+  // ======================================================
+  // 没有 Nutri-Score
+  // 包括：OFF 本身没有 Nutri-Score / AI 产品
+  // 不计算最终分，但其他分析继续
+  // ======================================================
+  else {
+    console.log(
+      'Nutri-Score unavailable: skipping NutriNorm and FinalScore.'
+    );
+
+    nutriNorm = null;
+    overallRaw = null;
+    additiveScore = null;
+  }
+
+
+
+  // ======================================================
+  // Debug
+  // ======================================================
+
+  console.log(
+    'DevScore:',
+    devScore.toFixed(3)
+  );
+
+  console.log(
+    'NutriNorm:',
+    nutriNorm !== null
+      ? nutriNorm.toFixed(3)
+      : 'N/A'
+  );
+
+  console.log(
+    'nutriGrade:',
+    nutriGradeLower || 'N/A',
+    'additiveScore:',
+    additiveScore
+  );
+
+  console.log(
+    'FinalScore:',
+    overallRaw !== null
+      ? overallRaw.toFixed(1)
+      : 'N/A'
+  );
 
   // 每日上限
   const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25;
@@ -477,10 +552,10 @@ export async function scoreFood(input: ScoreInput) {
     30
   );
 
-  const overall: number | null =
+  let overall: number | null =
     overallRaw !== null ? Math.round(overallRaw) : null;
 
-  const grade: string | null =
+  let grade: string | null =
     overall === null
       ? null
       : overall >= 80
