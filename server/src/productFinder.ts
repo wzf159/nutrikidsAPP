@@ -50,22 +50,138 @@ export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: num
   { nutrientId: 33, offKey: 'vitamin-k_100g', factor: 1e6, unit: 'μg', dvRef: 120 },
 ];
 
+// ======================================================
+// OFF allergen detection
+// allergens_tags = 直接过敏原标注
+// ingredients_tags / categories_tags = 补充检测
+// ======================================================
+
 const OFF_ALLERGEN_MAP: Record<string, string> = {
+  // Gluten / gluten-containing cereals
   'en:gluten': 'gluten',
+  'en:wheat': 'gluten',
+  'en:wheat-flour': 'gluten',
+  'en:whole-wheat-flour': 'gluten',
+  'en:durum-wheat': 'gluten',
+  'en:spelt': 'gluten',
+  'en:rye': 'gluten',
+  'en:barley': 'gluten',
+  'en:oats': 'gluten',
+
+  // Crustaceans
   'en:crustaceans': 'crustaceans',
+
+  // Eggs
   'en:eggs': 'eggs',
+  'en:egg': 'eggs',
+  'en:egg-white': 'eggs',
+  'en:egg-yolk': 'eggs',
+
+  // Fish
   'en:fish': 'fish',
+
+  // Peanuts
   'en:peanuts': 'peanuts',
+  'en:peanut': 'peanuts',
+  'en:peanut-butter': 'peanuts',
+  'en:peanut-oil': 'peanuts',
+
+  // Soy
   'en:soybeans': 'soybeans',
+  'en:soybean': 'soybeans',
+  'en:soy': 'soybeans',
+  'en:soya': 'soybeans',
+  'en:soy-protein': 'soybeans',
+  'en:soy-lecithin': 'soybeans',
+
+  // Milk / dairy
   'en:milk': 'milk',
+  'en:dairy': 'milk',
+  'en:cow-s-milk': 'milk',
+  'en:cream': 'milk',
+  'en:butter': 'milk',
+  'en:whey': 'milk',
+  'en:whey-protein': 'milk',
+  'en:casein': 'milk',
+  'en:caseinate': 'milk',
+
+  // Tree nuts
   'en:nuts': 'nuts',
+  'en:tree-nuts': 'nuts',
+  'en:almonds': 'nuts',
+  'en:almond': 'nuts',
+  'en:hazelnuts': 'nuts',
+  'en:hazelnut': 'nuts',
+  'en:walnuts': 'nuts',
+  'en:walnut': 'nuts',
+  'en:cashew-nuts': 'nuts',
+  'en:cashews': 'nuts',
+  'en:cashew': 'nuts',
+  'en:pecan-nuts': 'nuts',
+  'en:pecans': 'nuts',
+  'en:pecan': 'nuts',
+  'en:brazil-nuts': 'nuts',
+  'en:brazil-nut': 'nuts',
+  'en:pistachio-nuts': 'nuts',
+  'en:pistachios': 'nuts',
+  'en:pistachio': 'nuts',
+  'en:macadamia-nuts': 'nuts',
+  'en:macadamia-nut': 'nuts',
+
+  // Other major allergens
   'en:celery': 'celery',
   'en:mustard': 'mustard',
   'en:sesame-seeds': 'sesame-seeds',
+  'en:sesame': 'sesame-seeds',
   'en:sulphur-dioxide-and-sulphites': 'sulphur-dioxide-and-sulphites',
+  'en:sulphites': 'sulphur-dioxide-and-sulphites',
+  'en:sulfites': 'sulphur-dioxide-and-sulphites',
   'en:lupin': 'lupin',
   'en:molluscs': 'molluscs',
+  'en:mollusks': 'molluscs',
 };
+
+const NON_SPECIFIC_ALLERGEN_CATEGORY_TAGS = new Set<string>([
+  'en:nuts-and-their-products',
+  'en:legumes-and-their-products',
+]);
+
+function resolveOffAllergenCodes(product: {
+  allergens_tags?: string[];
+  ingredients_tags?: string[];
+  categories_tags?: string[];
+}): string[] {
+  const directTags = product.allergens_tags ?? [];
+
+  const ingredientTags = (product.ingredients_tags ?? [])
+    .filter((tag) => Boolean(OFF_ALLERGEN_MAP[tag]));
+
+  const categoryTags = (product.categories_tags ?? [])
+    .filter(
+      (tag) =>
+        !NON_SPECIFIC_ALLERGEN_CATEGORY_TAGS.has(tag) &&
+        Boolean(OFF_ALLERGEN_MAP[tag])
+    );
+
+  const uniqueCodes = [
+    ...new Set(
+      [...directTags, ...ingredientTags, ...categoryTags]
+        .map((tag) => OFF_ALLERGEN_MAP[tag])
+        .filter((code): code is string => Boolean(code))
+    ),
+  ];
+
+  console.log('========== ALLERGEN DETECTION ==========');
+  console.log('allergens_tags:', directTags);
+  console.log('ingredient allergen tags:', ingredientTags);
+  console.log('category allergen tags:', categoryTags);
+  console.log('final allergen codes:', uniqueCodes);
+  console.log('========================================');
+
+  return uniqueCodes;
+}
+
+
 
 async function ensureAddedSugarNutrient(): Promise<void> {
   await prisma.nutrient.upsert({
@@ -285,7 +401,7 @@ export async function syncProductFromOpenFoodFacts(
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
-      '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,additives_tags',
+      '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,ingredients_tags,additives_tags',
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -297,15 +413,12 @@ export async function syncProductFromOpenFoodFacts(
         nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        ingredients_tags?: string[];
         additives_tags?: string[];
       };
     };
     if (data.status !== 1 || !data.product?.product_name) return null;
     const p = data.product;
-
-    console.log('========== OFF ALLERGEN DEBUG ==========');
-    console.log('barcode:', barcode);
-    console.log('allergens_tags:', p.allergens_tags);
 
     await ensureAddedSugarNutrient();
     const canonicalNovaGroup = resolveOffNovaGroup(p);
@@ -330,19 +443,17 @@ export async function syncProductFromOpenFoodFacts(
     }
 
     const nutrients = buildOffNutrientRows(p.nutriments, p.serving_size);
-    console.log('allergens_tags:', p.allergens_tags);
-    const unmappedAllergenTags = (p.allergens_tags ?? []).filter(
-      (tag) => !OFF_ALLERGEN_MAP[tag]
-    );
-    console.log('unmapped allergen tags:', unmappedAllergenTags);
-    const allergenCodes = (p.allergens_tags ?? [])
-      .map((t) => OFF_ALLERGEN_MAP[t])
-      .filter((c): c is string => Boolean(c));
-    const allergenRows = await prisma.allergen.findMany({ where: { code: { in: allergenCodes } } });
+    const allergenCodes = resolveOffAllergenCodes(p);
+    const allergenRows = allergenCodes.length > 0
+      ? await prisma.allergen.findMany({
+          where: { code: { in: allergenCodes } },
+        })
+      : [];
 
-    console.log('OFF allergens_tags:', p.allergens_tags);
-    console.log('mapped allergenCodes:', allergenCodes);
-    //console.log('DB allergens found:', allergens);
+    console.log(
+      'DB allergens found:',
+      allergenRows.map((a) => ({ id: a.id, code: a.code, name: a.name }))
+    );
     return prisma.product.upsert({
       where: { barcode },
 
@@ -449,6 +560,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        ingredients_tags?: string[];
         additives_tags?: string[];
       }>;
     };
@@ -478,17 +590,17 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
 
 
 
-    const unmappedAllergenTags = (p.allergens_tags ?? []).filter(
-      (tag) => !OFF_ALLERGEN_MAP[tag]
+    const allergenCodes = resolveOffAllergenCodes(p);
+    const allergenRows = allergenCodes.length > 0
+      ? await prisma.allergen.findMany({
+          where: { code: { in: allergenCodes } },
+        })
+      : [];
+
+    console.log(
+      'DB allergens found:',
+      allergenRows.map((a) => ({ id: a.id, code: a.code, name: a.name }))
     );
-    console.log('allergens_tags:', p.allergens_tags);
-    console.log('unmapped allergen tags:', unmappedAllergenTags);
-
-
-    const allergenCodes = (p.allergens_tags ?? [])
-      .map((t) => OFF_ALLERGEN_MAP[t])
-      .filter((c): c is string => Boolean(c));
-    const allergenRows = await prisma.allergen.findMany({ where: { code: { in: allergenCodes } } });
 
     return prisma.product.upsert({
       where: { barcode: p.code ?? '' },
