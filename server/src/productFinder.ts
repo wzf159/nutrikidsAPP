@@ -302,6 +302,11 @@ export async function syncProductFromOpenFoodFacts(
     };
     if (data.status !== 1 || !data.product?.product_name) return null;
     const p = data.product;
+
+    console.log('========== OFF ALLERGEN DEBUG ==========');
+    console.log('barcode:', barcode);
+    console.log('allergens_tags:', p.allergens_tags);
+
     await ensureAddedSugarNutrient();
     const canonicalNovaGroup = resolveOffNovaGroup(p);
     const nutrimentNovaGroup = p.nutriments?.['nova-group_100g'];
@@ -472,7 +477,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
     console.log('allergens_tags:', p.allergens_tags);
     console.log('unmapped allergen tags:', unmappedAllergenTags);
 
- 
+
     const allergenCodes = (p.allergens_tags ?? [])
       .map((t) => OFF_ALLERGEN_MAP[t])
       .filter((c): c is string => Boolean(c));
