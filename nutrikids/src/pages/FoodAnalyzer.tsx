@@ -692,6 +692,7 @@ export default function FoodAnalyzer() {
   const isPositive = levelNum >= 3;
   //const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const hasAllergen = view?.allergenSafe === false;
+  console.log('allergens', hasAllergen);
   const highRiskAdditives =
     view?.additiveTags.filter(
       a => ADDITIVE_DICT[a.code]?.risk === "high"
