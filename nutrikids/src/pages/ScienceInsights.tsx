@@ -19,6 +19,64 @@ function DriChart({ ageIdx, isZh, isEs, gender }: { ageIdx: number; isZh: boolea
   const gap = W / DRI_NUTRIENTS.length;
   const barW = gap * 0.62;
 
+  const normalizeNutrientName = (name: string): string => {
+    const aliases: Record<string, string> = {
+      'Carbs': 'Carbohydrate',
+      'Fiber': 'Dietary Fiber',
+      'Vit A': 'Vitamin A',
+      'Vit D': 'Vitamin D',
+      'Vit C': 'Vitamin C',
+      'Vit E': 'Vitamin E',
+      'Vit K': 'Vitamin K',
+      'Vit B6': 'Vitamin B6',
+      'Vit B12': 'Vitamin B12',
+      'B12': 'Vitamin B12',
+      'Omega-3': 'DHA',
+    };
+
+    return aliases[name] ?? name;
+  };
+
+  const getGoalEmojis = (nutrientName: string): string[] => {
+    const target = normalizeNutrientName(nutrientName);
+
+    return DEV_GOALS
+      .filter((goal) => {
+        const nutrientData = goal.nutrientsByAge[ageIdx];
+        if (!nutrientData) return false;
+
+        const nutrients =
+          gender === 'boy'
+            ? nutrientData.male
+            : gender === 'girl'
+              ? nutrientData.female
+              : Array.from(new Set([...nutrientData.male, ...nutrientData.female]));
+
+        return nutrients.some((rawName) => {
+          // Normalize special labels used in the development matrix.
+          let normalized = normalizeNutrientName(rawName);
+
+          // "Calcium 1000mg/d" / "Calcium 1300mg/d" -> "Calcium"
+          if (normalized.startsWith('Calcium ')) {
+            normalized = 'Calcium';
+          }
+
+          // Fiber appears as both "Fiber" and "Dietary Fiber".
+          if (normalized === 'Fiber') {
+            normalized = 'Dietary Fiber';
+          }
+
+          // In the matrix, Omega-3 is represented by DHA in the DRI chart.
+          if (normalized === 'Omega-3') {
+            normalized = 'DHA';
+          }
+
+          return normalized === target;
+        });
+      })
+      .map((goal) => goal.emoji);
+  };
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto select-none">
       {/* 分类背景带 */}
@@ -63,7 +121,8 @@ function DriChart({ ageIdx, isZh, isEs, gender }: { ageIdx: number; isZh: boolea
         const eSize = Math.min(18, Math.max(11, barW * 0.6));
         const eRowH = eSize + 4;
         const maxEmoji = Math.floor(h / eRowH);
-        const visibleGoals = n.goals.slice(0, maxEmoji);
+        const goalEmojis = getGoalEmojis(n.name);
+        const visibleGoals = goalEmojis.slice(0, maxEmoji);
 
         return (
           <g key={n.name}>

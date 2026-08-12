@@ -289,12 +289,14 @@ export const TIER_CONFIG: Record<Tier, { color: string; bg: string; label: strin
  * ================================================================ */
 
 export interface DriNutrient {
-  name: string; nameZh: string; nameEs: string; unit: string;
+  name: string;
+  nameZh: string;
+  nameEs: string;
+  unit: string;
   category: 0 | 1 | 2;
   values: (number | null)[];        // 中性/男（ageIdx 0-5）；N/A 保留为 null
   valuesFemale?: (number | null)[]; // 女性专用（ageIdx 0-5），没有则同 values
   max: number;
-  goals: string[];
 }
 export const DRI_NUTRIENTS: DriNutrient[] = [
   // ── Macronutrients ──
@@ -303,26 +305,22 @@ export const DRI_NUTRIENTS: DriNutrient[] = [
     values:       [9.1, 13.5, 13, 19, 34, 52],
     valuesFemale: [9.1, 13.5, 13, 19, 34, 46],
     max: 55,
-    goals: ['🛡️', '💪', '🦴'],
   },
   {
     name: 'Carbs', nameZh: '碳水', nameEs: 'Carbohidratos', unit: 'g', category: 0,
     values: [60, 95, 130, 130, 130, 130],
     max: 140,
-    goals: ['💪'],
   },
   {
     name: 'Fiber', nameZh: '膳食纤维', nameEs: 'Fibra', unit: 'g', category: 0,
     values:       [null, null, 19, 25, 26, 38],
     valuesFemale: [null, null, 19, 25, 31, 26],
     max: 40,
-    goals: ['🦠', '❤️'],
   },
   {
     name: 'DHA', nameZh: 'DHA', nameEs: 'DHA', unit: 'mg', category: 0,
     values: [100, 100, null, null, 250, 250],
     max: 300,
-    goals: ['🧠', '👀', '❤️', '🛡️'],
   },
 
   // ── Minerals ──
@@ -330,58 +328,49 @@ export const DRI_NUTRIENTS: DriNutrient[] = [
     name: 'Calcium', nameZh: '钙', nameEs: 'Calcio', unit: 'mg', category: 1,
     values: [200, 260, 700, 1000, 1300, 1300],
     max: 1400,
-    goals: ['🦴', '🦷'],
   },
   {
     name: 'Iron', nameZh: '铁', nameEs: 'Hierro', unit: 'mg', category: 1,
     values:       [0.27, 11, 7, 10, 8, 11],
     valuesFemale: [0.27, 11, 7, 10, 8, 15],
     max: 16,
-    goals: ['🧠', '💪', '🛡️'],
   },
   {
     name: 'Magnesium', nameZh: '镁', nameEs: 'Magnesio', unit: 'mg', category: 1,
     values:       [30, 75, 80, 130, 240, 410],
     valuesFemale: [30, 75, 80, 130, 240, 360],
     max: 420,
-    goals: ['🦴', '💪', '🦠', '❤️', '🦷'],
   },
   {
     name: 'Phosphorus', nameZh: '磷', nameEs: 'Fósforo', unit: 'mg', category: 1,
     values: [100, 275, 460, 500, 1250, 1250],
     max: 1300,
-    goals: ['🦴', '🦷'],
   },
   {
     name: 'Potassium', nameZh: '钾', nameEs: 'Potasio', unit: 'mg', category: 1,
     values: [400, 700, 3000, 3800, 4500, 4700],
     max: 4800,
-    goals: ['❤️', '💪', '🦠'],
   },
   {
     name: 'Zinc', nameZh: '锌', nameEs: 'Zinc', unit: 'mg', category: 1,
     values:       [2, 3, 3, 5, 8, 11],
     valuesFemale: [2, 3, 3, 5, 8, 9],
     max: 12,
-    goals: ['🧠', '💪', '🛡️', '🦠', '👀'],
   },
   {
     name: 'Fluoride', nameZh: '氟', nameEs: 'Fluoruro', unit: 'mg', category: 1,
     values: [0.01, 0.5, 0.7, 1, 2, 3],
     max: 3.2,
-    goals: ['🦷'],
   },
   {
     name: 'Iodine', nameZh: '碘', nameEs: 'Yodo', unit: 'mcg', category: 1,
     values: [110, 130, 90, 90, 120, 150],
     max: 160,
-    goals: ['🧠'],
   },
   {
     name: 'Selenium', nameZh: '硒', nameEs: 'Selenio', unit: 'mcg', category: 1,
     values: [15, 20, 20, 30, 40, 55],
     max: 60,
-    goals: ['🛡️'],
   },
 
   // ── Vitamins / related micronutrients ──
@@ -390,58 +379,49 @@ export const DRI_NUTRIENTS: DriNutrient[] = [
     values:       [400, 500, 300, 400, 600, 900],
     valuesFemale: [400, 500, 300, 400, 600, 700],
     max: 950,
-    goals: ['🛡️', '👀'],
   },
   {
     name: 'Vit D', nameZh: '维生素D', nameEs: 'Vit D', unit: 'mcg', category: 2,
     values: [10, 10, 15, 15, 15, 15],
     max: 16,
-    goals: ['🦴', '💪', '🛡️', '🦠', '🦷'],
   },
   {
     name: 'Vit C', nameZh: '维生素C', nameEs: 'Vit C', unit: 'mg', category: 2,
     values:       [40, 50, 15, 25, 45, 75],
     valuesFemale: [40, 50, 15, 25, 45, 65],
     max: 80,
-    goals: ['🛡️', '🦷'],
   },
   {
     name: 'Vit E', nameZh: '维生素E', nameEs: 'Vit E', unit: 'mg', category: 2,
     values: [4, 5, 6, 7, 11, 15],
     max: 16,
-    goals: ['👀'],
   },
   {
     name: 'Vit K', nameZh: '维生素K', nameEs: 'Vit K', unit: 'mcg', category: 2,
     values: [2, 2.5, 30, 55, 60, 75],
     max: 80,
-    goals: ['🦴'],
   },
   {
     name: 'Vit B6', nameZh: '维生素B6', nameEs: 'Vit B6', unit: 'mg', category: 2,
     values:       [0.1, 0.3, 0.5, 0.6, 1, 1.3],
     valuesFemale: [0.1, 0.3, 0.5, 0.6, 1, 1.2],
     max: 1.4,
-    goals: ['🧠'],
   },
   {
     name: 'Vit B12', nameZh: '维生素B12', nameEs: 'Vit B12', unit: 'mcg', category: 2,
     values: [0.4, 0.5, 0.9, 1.2, 1.8, 2.4],
     max: 2.8,
-    goals: ['🧠'],
   },
   {
     name: 'Folate', nameZh: '叶酸', nameEs: 'Folato', unit: 'mcg', category: 2,
     values: [65, 80, 150, 200, 300, 400],
     max: 440,
-    goals: ['🧠'],
   },
   {
     name: 'Choline', nameZh: '胆碱', nameEs: 'Colina', unit: 'mg', category: 2,
     values:       [125, 150, 200, 250, 375, 550],
     valuesFemale: [125, 150, 200, 250, 375, 400],
     max: 560,
-    goals: ['🧠'],
   },
 
   // N/A / 无官方 DRI 的项目不塞 0：
