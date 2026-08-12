@@ -137,7 +137,7 @@ function DriChart({ ageIdx, isZh, isEs, gender }: { ageIdx: number; isZh: boolea
             {/* 数值 + 单位 */}
             {v > 0 && (
               <text x={cx} y={yTop - 4} textAnchor="middle" fontSize={8} fontWeight={700} fill={cat.colorDark}>
-                {v >= 10 ? Math.round(v) : v} {n.unit}
+               {v} {n.unit}
               </text>
             )}
 
