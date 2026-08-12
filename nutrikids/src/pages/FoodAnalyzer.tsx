@@ -5,8 +5,8 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { ADDITIVE_DICT, RISK_COLOR, WATCH_ADDITIVE_TYPES } from '../data/additives';
 import {
-  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts, createProductByNameEn,
-  type AnalysisResult, type ProductMatch, type Recognition,
+  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts, createProductByNameEn, fetchAnalysisHistory,
+  type AnalysisResult, type AnalysisHistoryItem, type ProductMatch, type Recognition,
 } from '../services/api';
 import { flushSync } from 'react-dom';
 import { type AISummary } from '../services/api';
@@ -342,6 +342,9 @@ export default function FoodAnalyzer() {
 
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<ProductMatch[]>([]);
+  const [history, setHistory] = useState<AnalysisHistoryItem[]>([]);
+  // 下拉是否展开：聚焦/输入时打开，选择或失焦后关闭
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [showScan, setShowScan] = useState(false);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
@@ -380,15 +383,23 @@ export default function FoodAnalyzer() {
     }, 50);
   };
 
+  const refreshHistory = () => {
+    fetchAnalysisHistory()
+      .then(setHistory)
+      .catch(() => setHistory([]));
+  };
+
   useEffect(() => {
     loadChild();
+    refreshHistory();
     window.addEventListener('nutrikids:child-updated', loadChild);
     return () => window.removeEventListener('nutrikids:child-updated', loadChild);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (suggestions.length === 0) { setDropdownRect(null); return; }
+    const showDropdown = dropdownOpen && (suggestions.length > 0 || (!query.trim() && history.length > 0));
+    if (!showDropdown) { setDropdownRect(null); return; }
     const updateRect = () => {
       const el = (desktopCapsuleRef.current?.offsetParent) ? desktopCapsuleRef.current : mobileCapsuleRef.current;
       if (!el) return;
@@ -402,7 +413,7 @@ export default function FoodAnalyzer() {
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect, true);
     };
-  }, [suggestions]);
+  }, [suggestions, query, history, dropdownOpen]);
 
   // 搜索建议（防抖）
   useEffect(() => {
@@ -472,6 +483,7 @@ export default function FoodAnalyzer() {
 
       setResult(r);
       setPhase({ name: 'idle' });
+      refreshHistory();
     } catch (e) {
       // 如果已经不是最新请求，也不要更新页面
       if (requestId !== analysisRequestRef.current) {
@@ -891,7 +903,9 @@ export default function FoodAnalyzer() {
             </span>
             <input
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => { setQuery(e.target.value); setDropdownOpen(true); }}
+              onFocus={() => setDropdownOpen(true)}
+              onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
               placeholder={isZh ? '搜索食品名称，或拖入图片…' : isEs ? 'Busca alimentos, o arrastra una imagen…' : 'Search a food, or drop an image…'}
               className="flex-1 min-w-40 bg-transparent outline-none text-[#0f0f1a] text-[16px] placeholder-gray-400 font-[Nunito,sans-serif]"
             />
@@ -927,22 +941,43 @@ export default function FoodAnalyzer() {
             </button>
 
             {
-              suggestions.length > 0 && dropdownRect && createPortal(
+              dropdownOpen && (suggestions.length > 0 || (!query.trim() && history.length > 0)) && dropdownRect && createPortal(
                 <div
                   className="fixed bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] overflow-hidden"
                   style={{ top: dropdownRect.top, left: dropdownRect.left, width: dropdownRect.width, zIndex: 9999 }}
                 >
-                  {suggestions.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => { setQuery(''); setSuggestions([]); runAnalysis(s.id, 'search'); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
-                    >
-                      <span>🍽️</span>
-                      <span className="font-medium truncate">{isZh ? s.nameZh ?? s.name : s.name}</span>
-                      {s.brand?.name && <span className="text-gray-400 text-xs flex-shrink-0">{s.brand.name}</span>}
-                    </button>
-                  ))}
+                  {!query.trim() && history.length > 0 ? (
+                    <>
+                      <div className="px-4 py-2 border-b border-purple-50">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('search.history')}</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {history.slice(0, 10).map(h => (
+                          <button
+                            key={h.id}
+                            onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(h.productId, 'search'); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
+                          >
+                            <span>🕐</span>
+                            <span className="font-medium truncate">{isZh ? h.product.nameZh ?? h.product.name : h.product.name}</span>
+                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}{h.grade ? ` · ${h.grade}` : ''}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    suggestions.map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(s.id, 'search'); }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
+                      >
+                        <span>🍽️</span>
+                        <span className="font-medium truncate">{isZh ? s.nameZh ?? s.name : s.name}</span>
+                        {s.brand?.name && <span className="text-gray-400 text-xs flex-shrink-0">{s.brand.name}</span>}
+                      </button>
+                    ))
+                  )}
                 </div>,
                 document.body
               )
@@ -960,24 +995,47 @@ export default function FoodAnalyzer() {
               <span className="text-sm flex-shrink-0">🔍</span>
               <input
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={e => { setQuery(e.target.value); setDropdownOpen(true); }}
+                onFocus={() => setDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                 placeholder={isZh ? '搜索食品，或拖入图片…' : isEs ? 'Busca o arrastra una imagen…' : 'Search or drop an image…'}
                 className="flex-1 min-w-0 bg-transparent outline-none text-[#0f0f1a] text-[16px] placeholder-gray-400 font-[Nunito,sans-serif]"
               />
 
-              {suggestions.length > 0 && (
+              {dropdownOpen && (suggestions.length > 0 || (!query.trim() && history.length > 0)) && (
                 <div className="absolute left-2 right-2 top-full mt-2 bg-white/96 backdrop-blur-xl rounded-[18px] shadow-[0_16px_56px_rgba(124,58,237,0.16),0_2px_12px_rgba(0,0,0,0.08)] border border-[rgba(124,58,237,0.15)] z-50 overflow-hidden">
-                  {suggestions.map(s => (
-                    <button
-                      key={s.id}
-                      onClick={() => { setQuery(''); setSuggestions([]); runAnalysis(s.id, 'search'); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
-                    >
-                      <span>🍽️</span>
-                      <span className="font-medium truncate">{isZh ? s.nameZh ?? s.name : s.name}</span>
-                      {s.brand?.name && <span className="text-gray-400 text-xs flex-shrink-0">{s.brand.name}</span>}
-                    </button>
-                  ))}
+                  {!query.trim() && history.length > 0 ? (
+                    <>
+                      <div className="px-4 py-2 border-b border-purple-50">
+                        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('search.history')}</span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto">
+                        {history.slice(0, 10).map(h => (
+                          <button
+                            key={h.id}
+                            onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(h.productId, 'search'); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
+                          >
+                            <span>🕐</span>
+                            <span className="font-medium truncate">{isZh ? h.product.nameZh ?? h.product.name : h.product.name}</span>
+                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}{h.grade ? ` · ${h.grade}` : ''}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    suggestions.map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(s.id, 'search'); }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-purple-50 text-sm text-gray-700 flex items-center gap-2"
+                      >
+                        <span>🍽️</span>
+                        <span className="font-medium truncate">{isZh ? s.nameZh ?? s.name : s.name}</span>
+                        {s.brand?.name && <span className="text-gray-400 text-xs flex-shrink-0">{s.brand.name}</span>}
+                      </button>
+                    ))
+                  )}
                 </div>
               )}
             </div>
