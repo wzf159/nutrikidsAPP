@@ -183,27 +183,6 @@ function resolveOffAllergenCodes(product: {
   return uniqueCodes;
 }
 
-
-
-async function ensureAddedSugarNutrient(): Promise<void> {
-  await prisma.nutrient.upsert({
-    where: { id: ADDED_SUGAR_NUTRIENT_ID },
-    create: {
-      id: ADDED_SUGAR_NUTRIENT_ID,
-      name: 'Added Sugars',
-      nameZh: '添加糖',
-      icon: '🍬',
-      unit: 'g',
-    },
-    update: {
-      name: 'Added Sugars',
-      nameZh: '添加糖',
-      icon: '🍬',
-      unit: 'g',
-    },
-  });
-}
-
 type LocalBarcodeProduct = ProductFindResult['product'] & { updatedAt: Date };
 
 const DEFAULT_OFF_CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
@@ -422,7 +401,6 @@ export async function syncProductFromOpenFoodFacts(
     if (data.status !== 1 || !data.product?.product_name) return null;
     const p = data.product;
 
-    await ensureAddedSugarNutrient();
     const canonicalNovaGroup = resolveOffNovaGroup(p);
     const nutrimentNovaGroup = p.nutriments?.['nova-group_100g'];
     if (
@@ -576,7 +554,6 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
 
     if (!best?.product_name) return null;
     const p = best;
-    await ensureAddedSugarNutrient();
     const canonicalNovaGroup = resolveOffNovaGroup(p);
     console.log('OFF search result:', name, '->', p.product_name, 'nutrients:', Object.keys(p.nutriments ?? {}));
     if (!p.product_name) return null;
