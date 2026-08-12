@@ -182,43 +182,114 @@ const WEIGHTS = {
   stageMatch: 0.1,
 } as const;
 
-// 发育目标 ↔ 营养素 静态映射（营养学常识，后续可由营养师校准/入库）
-export const GOAL_NUTRIENT_MAP: Record<number, number[]> = {
-  // 🧠 Brain
-  // DHA / Choline / Iron / Folate / B12 / B6 / Zinc / Iodine
-  1: [24, 25, 1, 28, 12, 31, 2, 29],
+// ================================================================
+// 发育目标 Priority + Key Nutrients
+// 严格对应 Children's Nutrition Development Matrix 的两列：
+//   Priority / Key Nutrients
+// stage index: 0=0–6m, 1=7–12m, 2=1–3y, 3=4–8y, 4=9–13y, 5=14–18y
+//
+// 说明：
+// - Omega-3 / DHA/EPA 统一映射到当前数据库已有 DHA nutrientId=24。
+// - Probiotics / Prebiotics / HMO / Zeaxanthin 当前没有对应 nutrientId，不能凭空映射，因此不进入 nutrient evidence。
+// - Fluoride 在表中明确标为 “Caution / limit, not a support nutrient”，因此不作为目标支持营养素。
+// - Creatine 虽标为 Unverified / no official DRI，但表中列于 Key Nutrients，且数据库已有 nutrientId=26，因此保留。
+// ================================================================
 
-  // 🦴 Bone
-  // Calcium / Vitamin D / Phosphorus / Magnesium / Protein / Vitamin K / Zinc
-  2: [5, 6, 7, 23, 13, 33, 2],
-
-  // ❤️ Heart Growth
-  // Fiber / Potassium / Magnesium / DHA
-  3: [22, 14, 23, 24],
-
-  // 💪 Muscle
-  // Protein / Iron / Zinc / Vitamin D / Magnesium /
-  // Carbohydrates / Potassium / Creatine
-  4: [13, 1, 2, 6, 23, 21, 14, 26],
-
-  // 🛡️ Immune
-  // Vitamin A / Vitamin C / Vitamin D / Zinc /
-  // Iron / Protein / Selenium / DHA
-  5: [11, 9, 6, 2, 1, 13, 10, 24],
-
-  // 🦠 Gut
-  // Fiber / Magnesium / Potassium / Carbohydrates / Vitamin D / Zinc
-  6: [22, 23, 14, 21, 6, 2],
-
-  // 👀 Vision
-  // Vitamin A / DHA / Zinc / Vitamin E / Lutein
-  7: [11, 24, 2, 32, 30],
-
-  // 🦷 Dental
-  // Calcium / Vitamin D / Phosphorus / Vitamin C /
-  // Magnesium / Fluoride
-  8: [5, 6, 7, 9, 23, 27],
+type StageGenderNutrients = {
+  male: number[];
+  female: number[];
 };
+
+export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
+  // 1 🧠 Brain Development
+  1: [
+    { male: [24, 25, 1, 12, 28], female: [24, 25, 1, 12, 28] },
+    { male: [24, 25, 1, 31, 12, 28], female: [24, 25, 1, 31, 12, 28] },
+    { male: [1, 25, 24, 12, 28, 2], female: [1, 25, 24, 12, 28, 2] },
+    { male: [1, 24, 25, 2, 29], female: [1, 24, 25, 2, 29] },
+    { male: [1, 24, 25, 12, 2], female: [1, 24, 25, 12, 2] },
+    { male: [24, 25, 1, 12, 28], female: [1, 24, 28, 25, 12] },
+  ],
+
+  // 2 🦴 Bone Development
+  2: [
+    { male: [5, 6, 7], female: [5, 6, 7] },
+    { male: [5, 6, 7, 23], female: [5, 6, 7, 23] },
+    { male: [5, 6, 23, 13, 33], female: [5, 6, 23, 13, 33] },
+    { male: [5, 6, 7, 23, 13], female: [5, 6, 7, 23, 13] },
+    { male: [5, 6, 23, 13, 33], female: [5, 6, 23, 13, 33] },
+    { male: [5, 6, 23, 13, 2], female: [5, 6, 23, 13, 2, 33] },
+  ],
+
+  // 3 ❤️ Heart Growth
+  3: [
+    { male: [], female: [] },
+    { male: [], female: [] },
+    { male: [22, 24, 14], female: [22, 24, 14] },
+    { male: [22, 24, 14, 23], female: [22, 24, 14, 23] },
+    { male: [22, 24, 14, 23], female: [22, 24, 14, 23] },
+    { male: [22, 24, 14, 23], female: [22, 24, 14, 23, 1] },
+  ],
+
+  // 4 💪 Muscle Development
+  4: [
+    { male: [], female: [] },
+    { male: [13, 1, 2, 6], female: [13, 1, 2, 6] },
+    { male: [13, 1, 2, 23, 21], female: [13, 1, 2, 23, 21] },
+    { male: [13, 1, 2, 6, 14, 21], female: [13, 1, 2, 6, 14, 21] },
+    { male: [13, 2, 1, 23, 6, 26, 21], female: [13, 1, 2, 23, 6, 21] },
+    { male: [13, 2, 1, 23, 6, 26, 14], female: [13, 1, 2, 23, 5, 6] },
+  ],
+
+  // 5 🛡️ Immune Development
+  5: [
+    { male: [11, 6, 2, 1, 13], female: [11, 6, 2, 1, 13] },
+    { male: [11, 9, 6, 2, 1, 13], female: [11, 9, 6, 2, 1, 13] },
+    { male: [11, 9, 6, 2, 1, 13], female: [11, 9, 6, 2, 1, 13] },
+    { male: [11, 9, 6, 2, 1, 13, 10], female: [11, 9, 6, 2, 1, 13, 10] },
+    { male: [11, 9, 6, 2, 1, 13, 10], female: [11, 9, 6, 2, 1, 13, 10] },
+    { male: [11, 9, 6, 2, 1, 13, 10, 24], female: [11, 9, 6, 2, 1, 13, 10, 24] },
+  ],
+
+  // 6 🦠 Gut Development
+  6: [
+    { male: [6], female: [6] },
+    { male: [22, 23, 14, 21], female: [22, 23, 14, 21] },
+    { male: [22, 23, 14], female: [22, 23, 14] },
+    { male: [22, 23, 14, 2], female: [22, 23, 14, 2] },
+    { male: [22, 23, 14], female: [22, 23, 14] },
+    { male: [22, 23, 14], female: [22, 23, 14, 1] },
+  ],
+
+  // 7 👀 Vision Development
+  7: [
+    { male: [24, 11, 30], female: [24, 11, 30] },
+    { male: [24, 11, 30, 2, 32], female: [24, 11, 30, 2, 32] },
+    { male: [11, 24, 32, 2, 30], female: [11, 24, 32, 2, 30] },
+    { male: [11, 2, 32, 30], female: [11, 2, 32, 30] },
+    { male: [11, 2], female: [11, 2] },
+    { male: [11, 2, 30], female: [11, 2, 30] },
+  ],
+
+  // 8 🦷 Dental Development
+  8: [
+    { male: [6], female: [6] },
+    { male: [5, 6, 7], female: [5, 6, 7] },
+    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
+    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
+    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
+    { male: [5, 6, 7, 9, 23], female: [5, 6, 7, 9, 23] },
+  ],
+};
+
+function goalNutrientIds(
+  goalId: number,
+  ageIdx: number,
+  genderKey: 'male' | 'female'
+): number[] {
+  return GOAL_NUTRIENT_MAP[goalId]?.[ageIdx]?.[genderKey] ?? [];
+}
+
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n));
 
 export interface ScoreInput {
@@ -637,9 +708,10 @@ export async function scoreFood(input: ScoreInput) {
     .slice(0, 6);
   const viewNutrIds = new Set(viewNutrients.map((n: { id: number }) => n.id));
 
-  // 目标支持度：用 DevScore 同一套算法算出每个目标单独的 goalScore(0~1),
-  // 再按门槛分 Core/Important/Supporting 档位——不再用"最大单项%DV≥15%"的旧判定方式。
-  // flows(具体贡献了哪些营养素,给弹窗展示用)还是走 %DV,这个跟 tier 判定是两回事,没有改。
+  // 目标分类与营养支持：
+  // - tier 直接来自 Development Matrix 的 Priority 列；
+  // - 对应营养素直接来自同一年龄/性别行的 Key Nutrients 列；
+  // - flows 仍用真实每份占儿童 daily reference 的百分比展示实际贡献。
   const childGoalIds = new Set(child.goals.map((g: { goalId: number }) => g.goalId));
   const dvOf = (nid: number) => {
     const nutrient = prodNutr.find(
@@ -650,7 +722,7 @@ export async function scoreFood(input: ScoreInput) {
 
   const flows: { goalId: number; nutrientId: number; value: number }[] = [];
   for (const goalId of childGoalIds) {
-    for (const nid of GOAL_NUTRIENT_MAP[goalId] ?? []) {
+    for (const nid of goalNutrientIds(goalId, ageIdx, genderKey)) {
       const dv = dvOf(nid);
       if (dv > 0 && viewNutrIds.has(nid)) {
         flows.push({ goalId, nutrientId: nid, value: Math.round(dv) });
@@ -676,7 +748,7 @@ export async function scoreFood(input: ScoreInput) {
   //
   // 这里不改变 DevScore，只约束 UI 不要把一个营养素夸大成支持全部目标。
   const goalEvidence = (goalId: number) => {
-    const mappedIds = GOAL_NUTRIENT_MAP[goalId] ?? [];
+    const mappedIds = goalNutrientIds(goalId, ageIdx, genderKey);
 
     const contributing = mappedIds
       .map((nutrientId) => {
@@ -720,16 +792,10 @@ export async function scoreFood(input: ScoreInput) {
   const devTierOf = (goalId: number): DevTier | null => {
     if (!childGoalIds.has(goalId)) return null;
 
-    const score = goalScores[goalId];
-    if (score === undefined || score <= 0) return null;
-
-    const evidenceCount = goalEvidence(goalId).count;
-
-    if (score >= 0.75 && evidenceCount >= 3) return 'core';
-    if (score >= 0.45 && evidenceCount >= 2) return 'important';
-    if (score >= 0.20 && evidenceCount >= 1) return 'supporting';
-
-    return null;
+    // Development goal classification comes directly from the matrix Priority column.
+    // Product nutrient evidence affects supportDV / active-vs-inactive display,
+    // but it does not redefine the developmental priority itself.
+    return DEV_TIERS[goalId]?.[ageIdx]?.[genderKey] ?? null;
   };
 
   const viewGoals = allGoals.map((g) => {
@@ -738,7 +804,7 @@ export async function scoreFood(input: ScoreInput) {
 
     // supportDV 是 UI 展示值，不参与最终 DevScore。
     // 使用证据覆盖率抑制“一个营养素让整个目标满分”的视觉误导。
-    const mappedCount = Math.max((GOAL_NUTRIENT_MAP[g.id] ?? []).length, 1);
+    const mappedCount = Math.max(goalNutrientIds(g.id, ageIdx, genderKey).length, 1);
     const evidenceCoverage = Math.min(1, evidence.count / Math.min(mappedCount, 3));
     const displaySupport = (goalScores[g.id] ?? 0) * evidenceCoverage;
 
@@ -756,11 +822,15 @@ export async function scoreFood(input: ScoreInput) {
   console.log('childGoalIds:', [...childGoalIds]);
   console.log('viewNutrIds:', [...viewNutrIds]);
   console.log('viewNutrients:', viewNutrients.map(n => ({ id: n.id, name: n.name, dv: n.dailyValue })));
-  console.log('GOAL_NUTRIENT_MAP check:', [...childGoalIds].map(gid => ({
-    goalId: gid,
-    mappedNutrients: GOAL_NUTRIENT_MAP[gid] ?? [],
-    matches: (GOAL_NUTRIENT_MAP[gid] ?? []).filter(nid => viewNutrIds.has(nid)),
-  })));
+  console.log('GOAL_NUTRIENT_MAP check:', [...childGoalIds].map(gid => {
+    const mappedNutrients = goalNutrientIds(gid, ageIdx, genderKey);
+    return {
+      goalId: gid,
+      priority: DEV_TIERS[gid]?.[ageIdx]?.[genderKey] ?? null,
+      mappedNutrients,
+      matches: mappedNutrients.filter(nid => viewNutrIds.has(nid)),
+    };
+  }));
   // 留意成分（8 固定槽位，规则可后续细化）
   const ingNames = product.ingredients.map((i: { ingredient: { name: string; nameZh: string | null } }) => `${i.ingredient.name} ${i.ingredient.nameZh ?? ''}`.toLowerCase());
   const hasIng = (re: RegExp) => ingNames.some((n: string) => re.test(n));
