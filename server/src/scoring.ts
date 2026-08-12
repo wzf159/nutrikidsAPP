@@ -359,19 +359,18 @@ function childDailyReference(
     : null;
 }
 
-// 只使用“真实每份 value ÷ 儿童年龄/性别 daily reference”。
-// value 为 null（OFF 没有可靠 serving size）或该营养素该年龄段为 N/A 时，不计算百分比。
+// 只使用"每 100 g / 100 mL 含量 ÷ 儿童年龄/性别 daily reference"。
+// value100g 为 null 时，不计算百分比。
 function childDailyPercent(
-  nutrient: { nutrientId: number; value: number | null },
+  nutrient: { nutrientId: number; value100g?: number | null },
   child: ChildForReference
 ): number | null {
-  if (nutrient.value == null) return null;
+  const amount100g = displayValue100g(nutrient.nutrientId, nutrient.value100g);
+  if (amount100g == null) return null;
 
-  const amount = Number(nutrient.value);
   const ref = childDailyReference(nutrient.nutrientId, child);
-
-  if (!Number.isFinite(amount) || ref == null) return null;
-  return (amount / ref) * 100;
+  if (ref == null) return null;
+  return (amount100g / ref) * 100;
 }
 
 function watchLimitPercent(

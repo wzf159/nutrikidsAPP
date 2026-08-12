@@ -1565,7 +1565,7 @@ export default function FoodAnalyzer() {
                                       {isZh ? g.labelZh ?? g.label : g.label}
                                     </h3>
                                     <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                      {isZh ? '每份贡献营养素' : 'Contributing nutrients per serving'}
+                                      {isZh ? '贡献营养素' : 'Contributing nutrients'}
                                     </p>
                                   </div>
                                   <button type="button" onClick={() => setGoalPopup(null)} className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5">✕</button>
@@ -1583,7 +1583,7 @@ export default function FoodAnalyzer() {
                                     </div>
                                   ))}
                                 </div>
-                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : isEs ? 'Fuente: ' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份的 DNC（每日营养贡献）` : isEs ? `DNC (Contribución Nutricional Diaria) por ración de ${view.product.servingSize ?? '100g'}` : `DNC (Daily Nutrient Contribution) per ${view.product.servingSize ?? '100g'} serving`}</p>
+                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : isEs ? 'Fuente: ' : 'Source: '}{productTitle} · {isZh ? 'DNC（每日营养贡献）' : isEs ? 'DNC (Contribución Nutricional Diaria)' : 'DNC (Daily Nutrient Contribution)'}</p>
                               </div>
                             );
                           })()}
@@ -2025,10 +2025,10 @@ export default function FoodAnalyzer() {
                               </p>
                               <p>
                                 {isZh
-                                  ? `每份约占每日营养贡献（Daily Nutrient Contribution, DNC）的 ${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%${selectedNutrientData.value != null ? `（${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}/份）` : ''}。`
+                                  ? `约占每日营养贡献（Daily Nutrient Contribution, DNC）的 ${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%${selectedNutrientData.value100g != null ? `（每100g含 ${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''}）` : ''}。`
                                   : isEs
-                                    ? `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Contribución Nutricional Diaria) por ración${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`
-                                    : `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Daily Nutrient Contribution) per serving${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`}
+                                    ? `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Contribución Nutricional Diaria)${selectedNutrientData.value100g != null ? ` (${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''} per 100g)` : ''}.`
+                                    : `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Daily Nutrient Contribution)${selectedNutrientData.value100g != null ? ` (${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''} per 100g)` : ''}.`}
                               </p>
                             </>
                           )}
@@ -2043,6 +2043,7 @@ export default function FoodAnalyzer() {
                         </div>
                         <div className="text-right text-xs text-gray-500">
                           <p className="font-bold text-gray-700 text-sm mb-0.5">% {isZh ? '每日营养贡献说明（DNC）' : isEs ? 'Guía de DNC' : 'DNC guide'}</p>
+                          <p className="mb-1">{isZh ? 'DNC = 每100g/100mL营养素含量 ÷ 该年龄段每日推荐摄入量 × 100' : isEs ? 'DNC = Cantidad de nutriente por 100g/100mL ÷ Ingesta diaria recomendada × 100' : 'DNC = Nutrient amount per 100g/100mL ÷ Age-specific daily recommended intake × 100'}</p>
                           <p>{isZh ? '高 ≥ 20% · 中等 10–19%' : 'High ≥ 20% · Moderate 10–19%'}</p>
                           <p>{isZh ? `低 < 10% · 基于${view.child.age ?? 8}岁儿童膳食参考摄入量` : `Low < 10% · based on age ${view.child.age ?? 8} DRI`}</p>
                         </div>
