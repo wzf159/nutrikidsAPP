@@ -414,7 +414,7 @@ const WEIGHTS = {
 // 说明：
 // - Omega-3 / DHA/EPA 统一映射到当前数据库已有 DHA nutrientId=24。
 // - Probiotics / Prebiotics / HMO / Zeaxanthin 当前没有对应 nutrientId，不能凭空映射，因此不进入 nutrient evidence。
-// - Fluoride 在表中明确标为 “Caution / limit, not a support nutrient”，因此不作为目标支持营养素。
+// - Fluoride 在当前 Development Matrix 的 Dental Key Nutrients 中明确列出，因此按 nutrientId=27 保留。
 // - Creatine 虽标为 Unverified / no official DRI，但表中列于 Key Nutrients，且数据库已有 nutrientId=26，因此保留。
 // ================================================================
 
@@ -495,13 +495,15 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
   ],
 
   // 8 🦷 Dental Development
+  // Matrix Key Nutrients includes Fluoride at every age.
+  // Fluoride = nutrientId 27.
   8: [
-    { male: [6], female: [6] },
-    { male: [5, 6, 7], female: [5, 6, 7] },
-    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
-    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
-    { male: [5, 6, 7, 9], female: [5, 6, 7, 9] },
-    { male: [5, 6, 7, 9, 23], female: [5, 6, 7, 9, 23] },
+    { male: [27, 6], female: [27, 6] },
+    { male: [27, 5, 6, 7], female: [27, 5, 6, 7] },
+    { male: [27, 5, 6, 7, 9], female: [27, 5, 6, 7, 9] },
+    { male: [27, 5, 6, 7, 9], female: [27, 5, 6, 7, 9] },
+    { male: [27, 5, 6, 7, 9], female: [27, 5, 6, 7, 9] },
+    { male: [27, 5, 6, 7, 9, 23], female: [27, 5, 6, 7, 9, 23] },
   ],
 };
 
