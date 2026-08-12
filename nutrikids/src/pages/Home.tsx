@@ -15,7 +15,7 @@ export default function Home() {
       <div className="relative z-10 flex flex-col items-center text-center max-w-xl mx-auto">
         <div className="flex flex-col items-center gap-0 mb-2">
           <div className="flex items-center gap-4 mb-2">
-            <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+            <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
             <div className="flex flex-col gap-1">
               <span
                 style={{

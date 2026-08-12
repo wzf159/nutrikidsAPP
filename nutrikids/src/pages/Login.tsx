@@ -33,7 +33,7 @@ export default function Login() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
         <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
           <div className="flex items-center gap-4 mb-2">
-            <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+            <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
             <div className="flex flex-col gap-1">
               <span
                 style={{
@@ -82,7 +82,7 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
         <div className="flex items-center gap-4 mb-2">
-          <img src="/images/logo21.png" alt="" className="h-32 w-auto" />
+          <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
           <div className="flex flex-col gap-1">
             <span
               style={{
