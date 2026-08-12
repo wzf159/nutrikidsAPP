@@ -51,7 +51,7 @@ export interface AnalysisView {
   allergenSafe: boolean;
   matchedAllergens: { code: string; name: string; nameZh: string | null; icon: string | null }[];
   goals: { id: number; icon: string | null; label: string; labelZh: string | null; selected: boolean; tier: 'core' | 'important' | 'supporting' | null; supportDV: number }[];
-  nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; unit: string | null; dailyValue: number; level: 'High' | 'Moderate' | 'Low' }[];
+  nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; unit: string | null; dailyValue: number; dailyReference: number | null; level: 'High' | 'Moderate' | 'Low' }[];
   flows: { goalId: number; nutrientId: number; value: number }[];
   watch: {
     code: string;

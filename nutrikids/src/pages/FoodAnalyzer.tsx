@@ -1984,7 +1984,9 @@ export default function FoodAnalyzer() {
                             {[
                               { label: isZh ? '每份含量' : 'Per Serving', value: selectedNutrientData.value != null ? `${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}` : '—' },
                               { label: '% DNC', value: `${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%` },
-                              { label: isZh ? '单位' : 'Unit', value: selectedNutrientData.unit ?? '—' },
+                              ...(selectedNutrientData.dailyReference != null
+                                ? [{ label: isZh ? '每日需求' : isEs ? 'Necesidad Diaria' : 'Daily Need', value: `${selectedNutrientData.dailyReference}${selectedNutrientData.unit ?? ''}` }]
+                                : []),
                             ].map(row => (
                               <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
                                 <div className="flex items-center gap-2">
