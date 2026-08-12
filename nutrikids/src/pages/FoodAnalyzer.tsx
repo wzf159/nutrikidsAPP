@@ -1982,7 +1982,7 @@ export default function FoodAnalyzer() {
                             </div>
 
                             {[
-                              { label: isZh ? '每份含量' : 'Per Serving', value: selectedNutrientData.value != null ? `${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}` : '—' },
+                              { label: isZh ? '每100g含量' : isEs ? 'Por 100g' : 'Per 100g', value: selectedNutrientData.value100g != null ? `${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''}` : '—' },
                               { label: '% DNC', value: `${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%` },
                               ...(selectedNutrientData.dailyReference != null
                                 ? [{ label: isZh ? '每日需求' : isEs ? 'Necesidad Diaria' : 'Daily Need', value: `${selectedNutrientData.dailyReference}${selectedNutrientData.unit ?? ''}` }]
