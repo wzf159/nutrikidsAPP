@@ -51,7 +51,7 @@ export interface AnalysisView {
   allergenSafe: boolean;
   matchedAllergens: { code: string; name: string; nameZh: string | null; icon: string | null }[];
   goals: { id: number; icon: string | null; label: string; labelZh: string | null; selected: boolean; tier: 'core' | 'important' | 'supporting' | null; supportDV: number }[];
-  nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; unit: string | null; dailyValue: number; dailyReference: number | null; level: 'High' | 'Moderate' | 'Low' }[];
+  nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; value100g: number | null; unit: string | null; dailyValue: number; dailyReference: number | null; level: 'High' | 'Moderate' | 'Low' }[];
   flows: { goalId: number; nutrientId: number; value: number }[];
   watch: {
     code: string;
@@ -199,6 +199,22 @@ export async function analyzeProduct(
       body: JSON.stringify({ childId, productId, source }),
     }),
   );
+}
+
+export interface AnalysisHistoryItem {
+  id: string;
+  productId: number;
+  source: string | null;
+  overallScore: number | null;
+  grade: string | null;
+  createdAt: string;
+  product: { name: string; nameZh: string | null; imageUrl: string | null };
+  child: { name: string };
+}
+
+/** 当前用户最近的搜索/分析记录（服务端 Analysis 表，含产品与孩子信息） */
+export async function fetchAnalysisHistory(): Promise<AnalysisHistoryItem[]> {
+  return asJson<AnalysisHistoryItem[]>(await authedFetch('/analyses'));
 }
 
 /* ================================================================
