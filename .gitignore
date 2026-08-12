@@ -54,3 +54,7 @@ Thumbs.db
 
 # Misc
 *.rar
+/todo
+/tmp
+/test
+/.trae
