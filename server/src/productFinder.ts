@@ -48,6 +48,8 @@ export const OFF_NUTRIENT_MAP: { nutrientId: number; offKey: string; factor: num
   { nutrientId: 31, offKey: 'vitamin-b6_100g', factor: 1000, unit: 'mg', dvRef: 1.7 },
   { nutrientId: 32, offKey: 'vitamin-e_100g', factor: 1000, unit: 'mg', dvRef: 15 },
   { nutrientId: 33, offKey: 'vitamin-k_100g', factor: 1e6, unit: 'μg', dvRef: 120 },
+  // 反式脂肪：营养标签出现即记录（判定见 scoring.ts transfat）
+  { nutrientId: 35, offKey: 'trans-fat_100g', factor: 1, unit: 'g', dvRef: 0 },
 ];
 
 // ======================================================

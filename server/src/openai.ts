@@ -102,6 +102,7 @@ const NUTRIENT_ID_MAP: Record<string, number> = {
   'saturated fat': 17, 'saturated fats': 17,
   'sodium': 18,
   'fat': 19, 'fats': 19, 'total fat': 19,
+  'trans fat': 35, 'trans-fat': 35, 'trans fats': 35,
   'fiber': 20, 'fibre': 20, 'dietary fiber': 20,
   'carbohydrates': 21, 'carbohydrate': 21, 'total carbohydrate': 21,
 };

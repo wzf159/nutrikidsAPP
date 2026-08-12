@@ -689,7 +689,7 @@ export default function FoodAnalyzer() {
   const productTitle = view ? (isZh ? view.product.nameZh ?? view.product.name : view.product.name) : '';
   const levelNum = result ? scoreToLevel(result.overallScore) : 1;
   const levelMeta = LEVEL_META[levelNum];
-  const isPositive = levelNum >= 3;
+  const isPositive = levelNum >= 4;
   //const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const hasAllergen = view?.allergenSafe === false;
   console.log('allergens', hasAllergen);
@@ -779,7 +779,7 @@ export default function FoodAnalyzer() {
         }
         : {
           key: 'low' as const,
-          label: isZh ? '低' : isEs ? 'BAJO' : 'LOW',
+          label: isZh ? '无' : isEs ? 'NO' : 'ABSENT',
           color: '#a7a7b7',
           bg: 'rgba(255,255,255,0.38)',
         };
@@ -839,6 +839,8 @@ export default function FoodAnalyzer() {
       watchStatus(w).key === 'high';
   };
   const presentWatch = view?.watch.filter(w => w.present) ?? [];
+  // 反式脂肪：只要出现（present）即高亮/标注
+  const transFatWatch = view?.watch.find((w) => w.code === 'transfat') ?? null;
   // Panel 3 summary only lights up: High added sugar/sodium/saturated fat,
   // detected trans fat, and detected ingredient/additive groups.
   const summaryWatch = view?.watch.filter(shouldHighlightWatch) ?? [];
@@ -1295,6 +1297,30 @@ export default function FoodAnalyzer() {
                           </div>
                         </div>
 
+                        {/* 反式脂肪：只要出现即标注，不依赖评分分支 */}
+                        {transFatWatch?.present && (
+                          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 mb-2 flex items-start gap-2">
+                            <span className="text-base">⛽</span>
+
+                            <div>
+                              <p className="text-[12px] font-extrabold text-red-700">
+                                {isZh ? '含反式脂肪' : isEs ? 'Contiene grasas trans' : 'Contains Trans Fat'}
+                              </p>
+
+                              <p
+                                className="text-[11px] text-red-600"
+                                style={{ fontFamily: 'Nunito, sans-serif' }}
+                              >
+                                {isZh
+                                  ? '配料或营养标签中检测到反式脂肪。'
+                                  : isEs
+                                    ? 'Se detectaron grasas trans en los ingredientes o en la etiqueta nutricional.'
+                                    : 'Trans fat detected in ingredients or on the nutrition label.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
                         {/* 安全风险优先 */}
                         {hasSafetyRisk ? (
                           <>
@@ -1552,12 +1578,12 @@ export default function FoodAnalyzer() {
                                         <span className="text-[12px] font-semibold text-[#1a1040] truncate">{isZh ? n.nameZh ?? n.name : n.name}</span>
                                       </div>
                                       <span className="text-[11px] font-bold text-[#893ce3] whitespace-nowrap">
-                                        {n.value != null ? `${n.value}${n.unit ?? ''}` : `${n.dailyValue}% DV`}
+                                        {n.value != null ? `${n.value}${n.unit ?? ''}` : `${Number(n.dailyValue ?? 0).toFixed(2)}% DNC`}
                                       </span>
                                     </div>
                                   ))}
                                 </div>
-                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份` : `Per ${view.product.servingSize ?? '100g'} serving`}</p>
+                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : isEs ? 'Fuente: ' : 'Source: '}{productTitle} · {isZh ? `每${view.product.servingSize ?? '100g'}份的 DNC（每日营养贡献）` : isEs ? `DNC (Contribución Nutricional Diaria) por ración de ${view.product.servingSize ?? '100g'}` : `DNC (Daily Nutrient Contribution) per ${view.product.servingSize ?? '100g'} serving`}</p>
                               </div>
                             );
                           })()}
@@ -1700,7 +1726,7 @@ export default function FoodAnalyzer() {
                                     </p>
                                     <p className="mt-1 text-[13px] font-extrabold" style={{ color: status.color }}>
                                       {Number(watchData.dailyValue ?? 0).toLocaleString(undefined, {
-                                        maximumFractionDigits: 1,
+                                        maximumFractionDigits: 2,
                                       })}%, {status.label}
                                     </p>
                                     <p className="mt-1 text-[10px] leading-snug text-gray-400">
@@ -1856,6 +1882,7 @@ export default function FoodAnalyzer() {
                       <h4 className="font-extrabold text-[#5b21b6] tracking-wide mb-1">{isZh ? '食物如何帮助成长' : isEs ? 'CÓMO AYUDA ESTE ALIMENTO' : 'HOW THIS FOOD HELPS'}</h4>
                       <p className="text-sm text-gray-400 mb-3">👆 {isZh ? '点击任意目标或营养素查看详情' : isEs ? 'Toca cualquier objetivo o nutriente para ver detalles' : 'Tap any goal or nutrient to see details'}</p>
 
+                      <div className="relative">
                       <svg viewBox={`0 0 ${svgWidth} ${SK.height}`} className="w-full h-auto select-none">
                         <defs>
                           {ribbons.map((r: any, i: number) => (
@@ -1921,13 +1948,14 @@ export default function FoodAnalyzer() {
                         })}
                       </svg>
                       {selectedNutrientData && (
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setSelectedNutrient(null)}
-                        >
+                        <>
                           <div
-                            className="absolute left-1/2 -translate-x-1/2 bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[300px]"
-                            style={{ top: '40%' }}
+                            className="fixed inset-0 z-40"
+                            onClick={() => setSelectedNutrient(null)}
+                          />
+                          <div
+                            className="absolute left-1/2 -translate-x-1/2 z-50 bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[300px]"
+                            style={{ top: 0 }}
                             onClick={e => e.stopPropagation()}
                           >
                             <div className="flex items-start justify-between mb-4">
@@ -1955,7 +1983,7 @@ export default function FoodAnalyzer() {
 
                             {[
                               { label: isZh ? '每份含量' : 'Per Serving', value: selectedNutrientData.value != null ? `${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}` : '—' },
-                              { label: '% DV', value: `${selectedNutrientData.dailyValue}%` },
+                              { label: '% DNC', value: `${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%` },
                               { label: isZh ? '单位' : 'Unit', value: selectedNutrientData.unit ?? '—' },
                             ].map(row => (
                               <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
@@ -1971,8 +1999,9 @@ export default function FoodAnalyzer() {
                               {isZh ? '来源：' : 'Source: '}{productTitle}
                             </p>
                           </div>
-                        </div>
+                        </>
                       )}
+                      </div>
                       {(selectedGoalData || selectedNutrientData) && (
                         <div className="mt-3 rounded-2xl bg-purple-50/70 border border-purple-100 px-4 py-3 text-sm text-gray-700 animate-fade-in-up">
                           {selectedGoalData && (
@@ -1996,8 +2025,10 @@ export default function FoodAnalyzer() {
                               </p>
                               <p>
                                 {isZh
-                                  ? `每份约占每日需求(Daily Value, DV)的 ${selectedNutrientData.dailyValue}%${selectedNutrientData.value != null ? `（${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}/份）` : ''}。`
-                                  : `~${selectedNutrientData.dailyValue}% DV per serving${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`}
+                                  ? `每份约占每日营养贡献（Daily Nutrient Contribution, DNC）的 ${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%${selectedNutrientData.value != null ? `（${selectedNutrientData.value}${selectedNutrientData.unit ?? ''}/份）` : ''}。`
+                                  : isEs
+                                    ? `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Contribución Nutricional Diaria) por ración${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`
+                                    : `~${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}% DNC (Daily Nutrient Contribution) per serving${selectedNutrientData.value != null ? ` (${selectedNutrientData.value}${selectedNutrientData.unit ?? ''})` : ''}.`}
                               </p>
                             </>
                           )}
@@ -2011,7 +2042,7 @@ export default function FoodAnalyzer() {
                           <p className="flex items-center gap-2"><span className="w-3.5 h-3.5 rounded" style={{ background: TIER_COLOR.supporting }} /> <span className="text-[#db2777]">{isZh ? '辅助目标' : 'Supporting Goals'}</span></p>
                         </div>
                         <div className="text-right text-xs text-gray-500">
-                          <p className="font-bold text-gray-700 text-sm mb-0.5">% {isZh ? '每日营养参考值说明' : 'Daily Value guide'}</p>
+                          <p className="font-bold text-gray-700 text-sm mb-0.5">% {isZh ? '每日营养贡献说明（DNC）' : isEs ? 'Guía de DNC' : 'DNC guide'}</p>
                           <p>{isZh ? '高 ≥ 20% · 中等 10–19%' : 'High ≥ 20% · Moderate 10–19%'}</p>
                           <p>{isZh ? `低 < 10% · 基于${view.child.age ?? 8}岁儿童膳食参考摄入量` : `Low < 10% · based on age ${view.child.age ?? 8} DRI`}</p>
                         </div>
@@ -2158,7 +2189,7 @@ export default function FoodAnalyzer() {
                                     {isZh ? '年龄对应每日上限' : 'Age-Specific Daily Limit'}
                                   </p>
                                   <p className="mt-0.5 text-[13px] font-bold" style={{ color: status.color }}>
-                                    {Number(wd.dailyValue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 1 })}%, {status.label}
+                                    {Number(wd.dailyValue ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}%, {status.label}
                                   </p>
                                   <p className="mt-0.5 text-[10px] text-gray-400">
                                     {wd.ageLimit === null

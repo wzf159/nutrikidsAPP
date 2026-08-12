@@ -907,9 +907,13 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
-      present: hasIng(/hydrogenated|氢化/) || hasRawAdditive(['e471', 'e472']),
-      detail: 'Contains hydrogenated oils.',
-      detailZh: '含氢化油脂。'
+      // 只要出现即判定：配料含氢化油脂 / 添加剂 e471/e472 / 营养标签反式脂肪 > 0
+      present:
+        hasIng(/hydrogenated|氢化/) ||
+        hasRawAdditive(['e471', 'e472']) ||
+        Number(prodNutr.find((n: any) => n.nutrient.name === 'Trans Fat')?.value ?? 0) > 0,
+      detail: 'Contains hydrogenated oils or trans fat.',
+      detailZh: '含氢化油脂或反式脂肪。'
     },
     {
       code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
@@ -1002,6 +1006,21 @@ export async function scoreFood(input: ScoreInput) {
     select: { id: true },
   });
 
+  // Benefit（成长益处）展示规则：Overall Assessment 为 Level 1–3 时不展示、不计算。
+  // 与前端 scoreToLevel 保持一致：≥75→5, ≥58→4, ≥44→3, ≥37→2, 其余→1。
+  const benefitLevel = overall === null
+    ? 0
+    : overall >= 75
+      ? 5
+      : overall >= 58
+        ? 4
+        : overall >= 44
+          ? 3
+          : overall >= 37
+            ? 2
+            : 1;
+  const computeBenefits = matchedAllergens.length === 0 && benefitLevel >= 4;
+
   return {
     analysisId: analysis.id,
     overallScore: overall,
@@ -1027,9 +1046,9 @@ export async function scoreFood(input: ScoreInput) {
       child: { id: child.id, name: child.name, age: child.age },
       allergenSafe: matchedAllergens.length === 0,
       matchedAllergens,
-      goals: viewGoals,
-      nutrients: viewNutrients,
-      flows,
+      goals: computeBenefits ? viewGoals : [],
+      nutrients: computeBenefits ? viewNutrients : [],
+      flows: computeBenefits ? flows : [],
       watch,
       additiveTags: (() => {
         try {
