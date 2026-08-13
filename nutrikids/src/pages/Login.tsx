@@ -1,11 +1,24 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { authClient } from '../lib/auth';
 
 export default function Login() {
   const { i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
   const isEs = i18n.language === 'es';
   const [loading, setLoading] = useState(false);
+
+  // 游客登录：无需注册，直接创建匿名账号进入应用（WebView 内也可用）
+  const handleGuestLogin = async () => {
+    setLoading(true);
+    try {
+      await authClient.signIn.anonymous();
+      window.location.href = '/';
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
@@ -31,7 +44,7 @@ export default function Login() {
   if (isWebView) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
-        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
+        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-xl">
           <div className="flex items-center gap-4 mb-2">
             <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
             <div className="flex flex-col gap-1">
@@ -61,7 +74,6 @@ export default function Login() {
               </span>
             </div>
           </div>
-          <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
           <p className="text-sm text-gray-600 text-center">
             {isZh ? '请在系统浏览器（Safari/Chrome）中打开此页面登录' : 'Please open this page in your system browser (Safari/Chrome) to sign in'}
           </p>
@@ -73,6 +85,13 @@ export default function Login() {
           >
             {isZh ? '在浏览器中打开' : 'Open in Browser'}
           </a>
+          <button
+            onClick={handleGuestLogin}
+            disabled={loading}
+            className="w-full px-6 py-3 rounded-full border border-gray-200 hover:bg-gray-50 transition font-semibold text-gray-600 disabled:opacity-50"
+          >
+            {isZh ? '以游客身份继续' : isEs ? 'Continuar como invitado' : 'Continue as Guest'}
+          </button>
         </div>
       </div>
     );
@@ -80,7 +99,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
-      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-sm">
+      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-md">
         <div className="flex items-center gap-4 mb-2">
           <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
           <div className="flex flex-col gap-1">
@@ -110,7 +129,6 @@ export default function Login() {
             </span>
           </div>
         </div>
-        <h1 className="text-2xl font-extrabold text-[#2d2a4a]">NutriKids</h1>
         <p className="text-sm text-gray-500 text-center">
           {isZh ? '追踪孩子的营养，科学喂养每一天' : isEs ? 'Rastrea la nutrición de tu hijo, alimentación inteligente cada día' : 'Track your childs nutrition, smart feeding every day'}
         </p>
@@ -126,6 +144,14 @@ export default function Login() {
             <img src="https://www.google.com/favicon.ico" className="w-4 h-4" alt="Google" />
           )}
           {isZh ? '使用 Google 账号登录' : isEs ? 'Iniciar sesión con Google' : 'Sign in with Google'}
+        </button>
+
+        <button
+          onClick={handleGuestLogin}
+          disabled={loading}
+          className="w-full px-6 py-3 rounded-full border border-gray-200 hover:bg-gray-50 transition font-semibold text-gray-600 disabled:opacity-50"
+        >
+          {isZh ? '以游客身份继续' : isEs ? 'Continuar como invitado' : 'Continue as Guest'}
         </button>
 
         <div className="flex gap-4 text-xs text-gray-400">

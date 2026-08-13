@@ -25,6 +25,7 @@ model User {
   displayName   String?   @map("display_name")
   locale        String    @default("en")
   role          String    @default("user")
+  isAnonymous   Boolean   @default(false) @map("is_anonymous") // better-auth 匿名插件标记：true 表示游客账号
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 

@@ -8,6 +8,19 @@ import { useSession, signOut } from '../../lib/auth';
 
 const ACTIVE_KEY = 'nutrikids_active_child_id';
 
+// 游客升级正式账号：携带当前游客 session 发起 Google 登录，
+// 服务端 onLinkAccount 会先把游客数据迁移到新账号
+const handleUpgrade = async () => {
+  const res = await fetch('/api/auth/sign-in/social', {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ provider: 'google', callbackURL: window.location.origin + '/' }),
+  });
+  const data = await res.json();
+  if (data.url) window.location.href = data.url;
+};
+
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
   { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
   { icon: '🌱', key: 'nav.scienceInsights', path: '/science-insights' },
@@ -270,19 +283,44 @@ export default function TopNav() {
 
                 <div className="h-px bg-purple-600/8" />
                 <div className="px-4 py-3 flex items-center gap-2.5">
-                  {user?.image && (
-                    <img src={user.image} className="w-7 h-7 rounded-full flex-shrink-0" alt="" />
+                  {(user as any)?.isAnonymous ? (
+                    <>
+                      <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-base flex-shrink-0">👤</div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-gray-700 truncate">
+                          {isZh ? '游客' : i18n.language === 'es' ? 'Invitado' : 'Guest'}
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleUpgrade}
+                        className="text-[11px] font-bold text-[#893ce3] hover:text-purple-700 whitespace-nowrap"
+                      >
+                        {isZh ? '升级账号' : i18n.language === 'es' ? 'Vincular cuenta' : 'Upgrade'}
+                      </button>
+                      <button
+                        onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
+                        className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
+                      >
+                        {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {user?.image && (
+                        <img src={user.image} className="w-7 h-7 rounded-full flex-shrink-0" alt="" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-bold text-gray-700 truncate">{user?.name}</p>
+                        <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
+                      </div>
+                      <button
+                        onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
+                        className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
+                      >
+                        {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
+                      </button>
+                    </>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-gray-700 truncate">{user?.name}</p>
-                    <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
-                  </div>
-                  <button
-                    onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
-                    className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
-                  >
-                    {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
-                  </button>
                 </div>
 
               </div>
@@ -393,17 +431,42 @@ export default function TopNav() {
 
               <div className="h-px bg-purple-600/8" />
               <div className="px-4 py-3 flex items-center gap-2.5">
-                {user?.image && <img src={user.image} className="w-7 h-7 rounded-full flex-shrink-0" alt="" />}
-                <div className="flex-1 min-w-0">
-                  <p className="text-[11px] font-bold text-gray-700 truncate">{user?.name}</p>
-                  <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
-                </div>
-                <button
-                  onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
-                  className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
-                >
-                  {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
-                </button>
+                {(user as any)?.isAnonymous ? (
+                  <>
+                    <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-base flex-shrink-0">👤</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-gray-700 truncate">
+                        {isZh ? '游客' : i18n.language === 'es' ? 'Invitado' : 'Guest'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleUpgrade}
+                      className="text-[11px] font-bold text-[#893ce3] hover:text-purple-700 whitespace-nowrap"
+                    >
+                      {isZh ? '升级账号' : i18n.language === 'es' ? 'Vincular cuenta' : 'Upgrade'}
+                    </button>
+                    <button
+                      onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
+                      className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
+                    >
+                      {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {user?.image && <img src={user.image} className="w-7 h-7 rounded-full flex-shrink-0" alt="" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[11px] font-bold text-gray-700 truncate">{user?.name}</p>
+                      <p className="text-[10px] text-gray-400 truncate">{user?.email}</p>
+                    </div>
+                    <button
+                      onClick={() => signOut({ fetchOptions: { onSuccess: () => { window.location.href = '/'; } } })}
+                      className="text-[11px] font-bold text-red-400 hover:text-red-600 whitespace-nowrap"
+                    >
+                      {isZh ? '退出' : i18n.language === 'es' ? 'Salir' : 'Sign out'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}
