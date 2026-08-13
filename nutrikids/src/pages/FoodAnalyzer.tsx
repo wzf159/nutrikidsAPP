@@ -1892,7 +1892,7 @@ export default function FoodAnalyzer() {
                       key={src}
                       type="button"
                       onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
-                      className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                      className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] cursor-pointer transition-colors"
                     >
                       {src}
                     </button>
@@ -1964,7 +1964,7 @@ export default function FoodAnalyzer() {
                             <g key={n.id} className="cursor-pointer" onClick={() => toggleGoal(n.id)}>
                               <rect x={SK.leftX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={TIER_COLOR[g.tier!]} opacity={selectedGoal == null || selectedGoal === n.id ? 1 : 0.3} className="transition-opacity" />
                               <text x={SK.leftX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 1} dominantBaseline="middle" fontSize="26" fontWeight="800" fill={TIER_COLOR[g.tier!]}>
-                                {g.icon} {isZh ? g.labelZh ?? g.label : g.label}
+                                {g.icon} {isZh ? g.labelZh ?? g.label : (g.label ?? '').replace('Development', 'Dev.')}
                               </text>
                             </g>
                           );
@@ -2105,41 +2105,43 @@ export default function FoodAnalyzer() {
                         <div className="text-right text-xs text-gray-500">
                           <p className="font-bold text-gray-700 text-sm mb-0.5">% {isZh ? '每日营养贡献说明（DNC）' : isEs ? 'Guía de DNC' : 'DNC guide'}</p>
                           <p className="mb-1">{isZh ? 'DNC = 每100g/100mL营养素含量 ÷ 该年龄段每日推荐摄入量 × 100' : isEs ? 'DNC = Cantidad de nutriente por 100g/100mL ÷ Ingesta diaria recomendada × 100' : 'DNC = Nutrient amount per 100g/100mL ÷ Age-specific daily recommended intake × 100'}</p>
-                          <p>{isZh ? '高 ≥ 20% · 中等 10–19%' : 'High ≥ 20% · Moderate 10–19%'}</p>
-                          <p>{isZh ? `低 < 10% · 基于${view.child.age ?? 8}岁儿童膳食参考摄入量` : `Low < 10% · based on age ${view.child.age ?? 8} DRI`}</p>
+                          <p>{isZh ? '高 ≥ 20%' : 'High ≥ 20%'}</p>
+                          <p>{isZh ? '中等 10–19%' : 'Moderate 10–19%'}</p>
+                          <p>{isZh ? '低 < 10%' : 'Low < 10%'}</p>
+                          <p>{isZh ? `基于${view.child.age ?? 8}岁儿童膳食参考摄入量` : `based on age ${view.child.age ?? 8} DRI`}</p>
                         </div>
                       </div>
-                      <p className="mt-3 text-[11px] text-gray-400 leading-relaxed">
-                        {isZh
-                          ? '数据来源：Dietary Reference Intakes (DRI)，美国医学研究所（IOM）· 发育目标基于 NIH ODS 营养学资料'
-                          : isEs
-                            ? 'Fuente: Dietary Reference Intakes (DRI), Instituto de Medicina · Objetivos de desarrollo basados en NIH ODS'
-                            : 'Source: Dietary Reference Intakes (DRI), Institute of Medicine · Development goals based on NIH ODS nutrition data'}
-                      </p>
                     </>
                   )}
                 </div>
-                <div className="border-t border-[rgba(160,120,210,0.25)] pt-3 pb-1 px-[18px] mb-5">
+                <div className="pt-4 pb-1 px-[18px] mb-5">
                   <div className="flex items-center flex-wrap gap-2 mb-1.5">
                     <span className="text-[9px] font-extrabold text-gray-400 tracking-wide mr-1">
                       {isZh ? '来源：' : 'SOURCES:'}
                     </span>
                     {[
-                      'WHO', 'CHLA', 'NCBI', 'NIH NCCIH', 'NIH ODS', 'PMC + NCBI', 'USPSTF',
+                      'NIH ODS', 'AAP', 'IOM · DRI',
                     ].map(src => (
                       <button
                         key={src}
                         type="button"
                         onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
-                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] cursor-pointer transition-colors"
                       >
                         {src}
                       </button>
                     ))}
+                    <span className="text-[11px] font-semibold text-gray-400">
+                      👆 {isZh ? '点击了解更多' : 'Tap to know more'}
+                    </span>
                   </div>
-                  <span className="text-[11px] font-semibold text-gray-400">
-                    👆 {isZh ? '点击了解更多' : 'Tap to know more'}
-                  </span>
+                  <p className="text-[11px] text-gray-400 leading-relaxed mb-1">
+                    {isZh
+                      ? 'DNC（每日营养贡献）依据 DRI（美国医学研究所 IOM）分龄推荐量；发育目标↔营养素映射依据 AAP 与 NIH ODS 营养学资料。'
+                      : isEs
+                        ? 'La DNC se basa en las DRI (Instituto de Medicina, IOM); el mapeo de objetivos de desarrollo se basa en AAP y NIH ODS.'
+                        : 'Daily Nutrient Contribution (DNC) is based on DRI (Institute of Medicine, IOM); development goal–nutrient mapping is based on AAP and NIH ODS.'}
+                  </p>
                 </div>
               </section>
 
@@ -2598,7 +2600,7 @@ export default function FoodAnalyzer() {
                         key={src}
                         type="button"
                         onClick={() => navigate('/about', { state: { tab: 'sources', source: src } })}
-                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] transition-colors"
+                        className="px-2.5 py-0.5 rounded-full bg-[rgba(137,60,227,0.08)] border border-[rgba(137,60,227,0.22)] text-[9px] font-bold text-[#7c3aed] hover:bg-[rgba(137,60,227,0.16)] cursor-pointer transition-colors"
                       >
                         {src}
                       </button>
