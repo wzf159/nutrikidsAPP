@@ -716,6 +716,8 @@ export default function FoodAnalyzer() {
   const levelNum = result ? scoreToLevel(result.overallScore) : 1;
   const levelMeta = LEVEL_META[levelNum];
   const isPositive = levelNum >= 4;
+  // level 1/2 为低分“垃圾食品”，只强调风险，不展示益处面板
+  const isLowLevel = levelNum <= 2;
   //const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const hasAllergen = view?.allergenSafe === false;
   console.log('allergens', hasAllergen);
@@ -1550,6 +1552,18 @@ export default function FoodAnalyzer() {
                         👆 {isZh ? '点击了解更多' : 'Tap to know more'}
                       </span>
                     </div>
+                    {isLowLevel ? (
+                      <div className="rounded-xl bg-white/55 border border-[rgba(137,60,227,0.12)] px-3 py-3 mb-3">
+                        <p className="text-[11px] font-bold text-[#6b6b8a] leading-relaxed">
+                          {isZh
+                            ? '该食品无明显营养益处，请重点关注右侧“需要留意”的内容。'
+                            : isEs
+                              ? 'Este alimento ofrece pocos beneficios nutricionales; presta atención a los aspectos a vigilar.'
+                              : 'This food offers little nutritional benefit; please focus on the things to watch.'}
+                        </p>
+                      </div>
+                    ) : (
+                      <>
                     {tierCounts && (
                       <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
                         {isZh ? `支持 ${tierCounts.core + tierCounts.important + tierCounts.supporting} 项目标` : `Supports ${tierCounts.core + tierCounts.important + tierCounts.supporting} goals`} ·{' '}
@@ -1662,6 +1676,8 @@ export default function FoodAnalyzer() {
                         </div>
                       );
                     })}
+                      </>
+                    )}
 
 
                   </div>
@@ -1930,7 +1946,9 @@ export default function FoodAnalyzer() {
                     <span className="text-gray-300 cursor-help" title={isZh ? '基于该食物营养成分与孩子发育目标的匹配' : isEs ? 'Basado en la coincidencia de los nutrientes de este alimento con los objetivos de desarrollo de tu hijo' : 'Based on matching this food’s nutrients to your child’s development goals'}>ⓘ</span>
                   </div>
 
-                  {ribbons.length === 0 ? (
+                  {isLowLevel ? (
+                    <p className="text-sm text-gray-500 py-6">{isZh ? '该食品营养益处有限，请重点关注「家长须知」中的风险提示。' : isEs ? 'Este alimento ofrece beneficios nutricionales limitados; consulta las advertencias para padres a continuación.' : 'This food offers limited nutritional benefit; please review the parental guidance below.'}</p>
+                  ) : ribbons.length === 0 ? (
                     <p className="text-sm text-gray-500 py-6">{isZh ? '该食物对孩子当前的发育目标没有明显的营养支持。' : isEs ? 'Este alimento ofrece poco apoyo nutricional para los objetivos de desarrollo seleccionados.' : 'This food offers little nutrient support for the selected development goals.'}</p>
                   ) : (
                     <>
@@ -2127,7 +2145,7 @@ export default function FoodAnalyzer() {
                     </>
                   )}
                 </div>
-                <div className="pt-4 pb-1 px-[18px] mb-5">
+                {!isLowLevel && (<div className="pt-4 pb-1 px-[18px] mb-5">
                   <div className="flex items-center flex-wrap gap-2 mb-1.5">
                     <span className="text-[9px] font-extrabold text-gray-400 tracking-wide mr-1">
                       {isZh ? '来源：' : 'SOURCES:'}
@@ -2156,6 +2174,7 @@ export default function FoodAnalyzer() {
                         : 'Daily Nutrient Contribution (DNC) is based on DRI (Institute of Medicine, IOM); development goal–nutrient mapping is based on AAP and NIH ODS.'}
                   </p>
                 </div>
+                )}
               </section>
 
               {/* ③ 家长须知 */}

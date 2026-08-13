@@ -1300,8 +1300,8 @@ export async function scoreFood(input: ScoreInput) {
     select: { id: true },
   });
 
-  // Benefit（成长益处）展示规则：Overall Assessment 为 Level 1–3 时不展示、不计算。
-  // 与前端 scoreToLevel 保持一致：≥75→5, ≥58→4, ≥44→3, ≥37→2, 其余→1。
+  // Benefit（成长益处）展示规则：Overall Assessment 为 Level 1–2 时不展示、不计算，
+  // Level 3–5 正常展示（与前端 isLowLevel = levelNum <= 2 保持一致）。
   const benefitLevel = overall === null
     ? 0
     : overall >= 75
@@ -1313,7 +1313,7 @@ export async function scoreFood(input: ScoreInput) {
           : overall >= 37
             ? 2
             : 1;
-  const computeBenefits = matchedAllergens.length === 0 && benefitLevel >= 4;
+  const computeBenefits = matchedAllergens.length === 0 && benefitLevel >= 3;
 
   return {
     analysisId: analysis.id,
