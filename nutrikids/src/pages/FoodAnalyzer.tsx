@@ -686,6 +686,7 @@ export default function FoodAnalyzer() {
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
   const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
+  const highNutrients = view?.nutrients.filter(n => n.level === 'High') ?? []; // 面板1：所有 %DNC 为 High 的营养元素
   const selectedGoalData = selectedGoal != null && view ? goalById(selectedGoal) : null;
   const selectedNutrientData = selectedNutrient != null && view ? nutrientById(selectedNutrient) : null;
   const selectedWatchData = selectedWatch != null && view ? view.watch.find(w => w.code === selectedWatch) : null;
@@ -1437,7 +1438,7 @@ export default function FoodAnalyzer() {
                             )}
                           </>
                         ) : isPositive ? (
-                          topNutrients.length > 0 && (
+                          highNutrients.length > 0 && (
                             <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
                               <span>⭐</span>
 
@@ -1449,7 +1450,7 @@ export default function FoodAnalyzer() {
                                   {isZh ? '富含 ' : isEs ? 'Buena fuente de ' : 'Good source of '}
                                 </span>
 
-                                {topNutrients.map((n, i) => (
+                                {highNutrients.map((n, i) => (
                                   <span
                                     key={n.id}
                                     className="font-extrabold"
@@ -1459,7 +1460,7 @@ export default function FoodAnalyzer() {
                                       ? n.nameZh ?? n.name
                                       : n.name}
 
-                                    {i < topNutrients.length - 1 ? ' & ' : ''}
+                                    {i < highNutrients.length - 1 ? ' & ' : ''}
                                   </span>
                                 ))}
                               </p>
