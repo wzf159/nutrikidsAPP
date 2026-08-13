@@ -715,7 +715,6 @@ export default function FoodAnalyzer() {
   const productTitle = view ? (isZh ? view.product.nameZh ?? view.product.name : view.product.name) : '';
   const levelNum = result ? scoreToLevel(result.overallScore) : 1;
   const levelMeta = LEVEL_META[levelNum];
-  const isPositive = levelNum >= 4;
   // level 1/2 为低分“垃圾食品”，只强调风险，不展示益处面板
   const isLowLevel = levelNum <= 2;
   //const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
@@ -1452,9 +1451,8 @@ export default function FoodAnalyzer() {
                               </div>
                             )}
                           </>
-                        ) : isPositive ? (
-                          highNutrients.length > 0 && (
-                            <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
+                        ) : highNutrients.length > 0 ? (
+                          <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
                               <span>⭐</span>
 
                               <p
@@ -1479,8 +1477,7 @@ export default function FoodAnalyzer() {
                                   </span>
                                 ))}
                               </p>
-                            </div>
-                          )
+                          </div>
                         ) : (
                           presentWatch.length > 0 && (
                             <div className="rounded-xl bg-amber-50 border border-amber-200 px-4 py-2.5 mb-2 flex items-center gap-2 flex-wrap">
