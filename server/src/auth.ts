@@ -8,7 +8,7 @@ import { prisma } from './prisma.js';
 // 生产环境保持 .env 里的 https baseURL（Secure + 固定 Domain）。
 const isProduction = process.env.NODE_ENV === 'production';
 const baseURL = isProduction
-  ? (process.env.BETTER_AUTH_BASE_URL ?? 'https://growtrition.sense-institute.org/')
+  ? (process.env.BETTER_AUTH_BASE_URL ?? 'https://growtrition.sense-institute.org')
   : (process.env.BETTER_AUTH_DEV_URL ?? 'http://localhost:8787');
 
 export const auth = betterAuth({
