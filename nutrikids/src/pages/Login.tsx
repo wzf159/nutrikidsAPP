@@ -78,7 +78,7 @@ export default function Login() {
             {isZh ? '请在系统浏览器（Safari/Chrome）中打开此页面登录' : 'Please open this page in your system browser (Safari/Chrome) to sign in'}
           </p>
           <a
-            href="https://nutrikids.sense-institute.org"
+            href="https://growtrition.sense-institute.org"
             target="_blank"
             rel="noopener noreferrer"
             className="w-full text-center px-6 py-3 rounded-full bg-[#893ce3] text-white font-semibold"

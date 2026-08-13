@@ -8,13 +8,13 @@ import { prisma } from './prisma.js';
 // 生产环境保持 .env 里的 https baseURL（Secure + 固定 Domain）。
 const isProduction = process.env.NODE_ENV === 'production';
 const baseURL = isProduction
-  ? (process.env.BETTER_AUTH_BASE_URL ?? 'https://nutrikids.sense-institute.org')
+  ? (process.env.BETTER_AUTH_BASE_URL ?? 'https://growtrition.sense-institute.org/')
   : (process.env.BETTER_AUTH_DEV_URL ?? 'http://localhost:8787');
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, { provider: 'sqlite' }),
   baseURL,
-  trustedOrigins: ['http://localhost:5173', 'http://localhost:5174', 'https://nutrikids.sense-institute.org'],
+  trustedOrigins: ['http://localhost:5173', 'http://localhost:5174', 'https://growtrition.sense-institute.org'],
   secret: process.env.BETTER_AUTH_SECRET!,
   socialProviders: {
     google: {
@@ -47,7 +47,7 @@ export const auth = betterAuth({
     disableOriginCheck: true,
     disableCSRFCheck: true,
     defaultCookieAttributes: isProduction
-      ? { sameSite: 'lax', httpOnly: true, secure: true, domain: 'nutrikids.sense-institute.org' }
+      ? { sameSite: 'lax', httpOnly: true, secure: true, domain: 'growtrition.sense-institute.org' }
       : { sameSite: 'lax', httpOnly: true },
   },
 });
