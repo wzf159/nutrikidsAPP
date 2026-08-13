@@ -390,6 +390,18 @@ export default function FoodAnalyzer() {
       .catch(() => setHistory([]));
   };
 
+  // 历史记录按产品去重：同一产品只保留最近一次分析，避免下拉里重复出现
+  const dedupedHistory = useMemo(() => {
+    const seen = new Set<number>();
+    return [...history]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .filter(h => {
+        if (seen.has(h.productId)) return false;
+        seen.add(h.productId);
+        return true;
+      });
+  }, [history]);
+
   useEffect(() => {
     loadChild();
     refreshHistory();
@@ -954,7 +966,7 @@ export default function FoodAnalyzer() {
                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('search.history')}</span>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {history.slice(0, 10).map(h => (
+                        {dedupedHistory.slice(0, 30).map(h => (
                           <button
                             key={h.id}
                             onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(h.productId, 'search'); }}
@@ -1012,7 +1024,7 @@ export default function FoodAnalyzer() {
                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">{t('search.history')}</span>
                       </div>
                       <div className="max-h-64 overflow-y-auto">
-                        {history.slice(0, 10).map(h => (
+                        {dedupedHistory.slice(0, 30).map(h => (
                           <button
                             key={h.id}
                             onClick={() => { setQuery(''); setSuggestions([]); setDropdownOpen(false); runAnalysis(h.productId, 'search'); }}
