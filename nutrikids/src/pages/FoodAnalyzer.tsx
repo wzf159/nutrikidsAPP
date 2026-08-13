@@ -72,7 +72,7 @@ const levelColors = ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a'];
 /* Sankey 布局（由接口数据驱动）                                       */
 /* ------------------------------------------------------------------ */
 
-const SK = { width: 1100, height: 750, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 16, gap: 30 };
+const SK = { width: 1100, height: 920, nodeWidth: 24, leftX: 10, rightX: 1100 - 150, padTop: 20, gap: 30 };
 
 interface NodeLayout { id: number; y0: number; y1: number }
 
@@ -161,27 +161,35 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       return empty;
     }
 
-    const rows = Math.max(
-      activeGoals.length,
-      activeNutrients.length
-    );
+    const goalIdsSorted = activeGoals
+      .map(goal => Number(goal.id))
+      .sort((a, b) => (goalTotals[b] ?? 0) - (goalTotals[a] ?? 0));
 
-    const availableHeight = Math.max(
-      SK.height -
-      SK.padTop * 2 -
-      SK.gap * Math.max(rows - 1, 0),
-      60
-    );
+    const nutrientIdsSorted = activeNutrients
+      .map(nutrient => Number(nutrient.id))
+      .sort((a, b) => (nutrientTotals[b] ?? 0) - (nutrientTotals[a] ?? 0));
 
-    const scale = availableHeight / total;
+    // 左右两列分别按自身节点数量计算缩放，扣除各自间隙后都铺满同一高度，
+    // 从而保证左侧（目标）与右侧（营养素）的整体高度一致。
+    const usableHeight = SK.height - SK.padTop * 2;
 
-    if (!Number.isFinite(scale) || scale <= 0) {
+    const goalScale =
+      (usableHeight - SK.gap * Math.max(goalIdsSorted.length - 1, 0)) / total;
+
+    const nutrientScale =
+      (usableHeight - SK.gap * Math.max(nutrientIdsSorted.length - 1, 0)) / total;
+
+    if (
+      !Number.isFinite(goalScale) || goalScale <= 0 ||
+      !Number.isFinite(nutrientScale) || nutrientScale <= 0
+    ) {
       return empty;
     }
 
     const stack = (
       ids: number[],
-      totals: Record<number, number>
+      totals: Record<number, number>,
+      scale: number
     ): NodeLayout[] => {
       const nodes: NodeLayout[] = [];
       let y = SK.padTop;
@@ -204,17 +212,9 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       return nodes;
     };
 
-    const goalIdsSorted = activeGoals
-      .map(goal => Number(goal.id))
-      .sort((a, b) => (goalTotals[b] ?? 0) - (goalTotals[a] ?? 0));
+    const goalNodes = stack(goalIdsSorted, goalTotals, goalScale);
 
-    const nutrientIdsSorted = activeNutrients
-      .map(nutrient => Number(nutrient.id))
-      .sort((a, b) => (nutrientTotals[b] ?? 0) - (nutrientTotals[a] ?? 0));
-
-    const goalNodes = stack(goalIdsSorted, goalTotals);
-
-    const nutrientNodes = stack(nutrientIdsSorted, nutrientTotals);
+    const nutrientNodes = stack(nutrientIdsSorted, nutrientTotals, nutrientScale);
 
     const goalOffsets: Record<number, number> = {};
     const nutrientOffsets: Record<number, number> = {};
@@ -232,7 +232,8 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
         return [];
       }
 
-      const height = Math.max(flow.value * scale, 1.5);
+      const goalHeight = Math.max(flow.value * goalScale, 1.5);
+      const nutrientHeight = Math.max(flow.value * nutrientScale, 1.5);
 
       const goalY =
         goalNode.y0 + (goalOffsets[flow.goalId] ?? 0);
@@ -242,10 +243,10 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
         (nutrientOffsets[flow.nutrientId] ?? 0);
 
       goalOffsets[flow.goalId] =
-        (goalOffsets[flow.goalId] ?? 0) + height;
+        (goalOffsets[flow.goalId] ?? 0) + goalHeight;
 
       nutrientOffsets[flow.nutrientId] =
-        (nutrientOffsets[flow.nutrientId] ?? 0) + height;
+        (nutrientOffsets[flow.nutrientId] ?? 0) + nutrientHeight;
 
       const x0 = SK.leftX + SK.nodeWidth;
       const x1 = SK.rightX;
@@ -254,8 +255,8 @@ function useSankeyLayout(view: AnalysisResult['view'] | null) {
       const path = [
         `M ${x0} ${goalY}`,
         `C ${cx} ${goalY}, ${cx} ${nutrientY}, ${x1} ${nutrientY}`,
-        `L ${x1} ${nutrientY + height}`,
-        `C ${cx} ${nutrientY + height}, ${cx} ${goalY + height}, ${x0} ${goalY + height}`,
+        `L ${x1} ${nutrientY + nutrientHeight}`,
+        `C ${cx} ${nutrientY + nutrientHeight}, ${cx} ${goalY + goalHeight}, ${x0} ${goalY + goalHeight}`,
         'Z',
       ].join(' ');
 
