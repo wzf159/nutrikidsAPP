@@ -147,12 +147,16 @@ export async function updateChild(id: string, input: Partial<ChildInput>) {
     body: JSON.stringify(input),
   }));
 }
+export interface AIConsideration {
+  title: string;
+  text: string;
+  type: 'positive' | 'caution';
+}
 
 export interface AISummary {
-  recommended: 'yes' | 'no' | 'caution';
-  benefits: string[];
-  concerns: string[];
-  summary: string;
+  recommendation: string;
+  recommendationLevel: 'recommended' | 'moderate' | 'limit';
+  considerations: AIConsideration[];
 }
 
 export async function getAISummary(productName: string, childId: string): Promise<AISummary> {

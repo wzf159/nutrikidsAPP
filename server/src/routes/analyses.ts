@@ -3,7 +3,10 @@ import { z } from 'zod';
 import { prisma } from '../prisma.js';
 import { scoreFood } from '../scoring.js';
 import OpenAI from 'openai';
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 const scoreSchema = z.object({
   childId: z.string().uuid(),
@@ -12,16 +15,51 @@ const scoreSchema = z.object({
   imagePath: z.string().optional(),
 });
 
+const aiSummarySchema = z.object({
+  productName: z.string().min(1),
+  childId: z.string().uuid(),
+});
+
+const aiSummaryResponseSchema = z.object({
+  recommendation: z.string().min(1),
+  recommendationLevel: z.enum([
+    'recommended',
+    'moderate',
+    'limit',
+  ]),
+  considerations: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        text: z.string().min(1),
+        type: z.enum(['positive', 'caution']),
+      }),
+    )
+    .length(3),
+});
+
 export default async function analysisRoutes(app: FastifyInstance) {
   app.addHook('onRequest', app.authenticate);
 
-  // 发起个性化评分
+  // ================================================================
+  // Standard Growtrition personalized scoring
+  // ================================================================
   app.post('/analyses', async (req, reply) => {
     const parsed = scoreSchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
-    const { childId, productId, source, imagePath } = parsed.data;
 
-    // 校验该孩子属于当前用户
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: parsed.error.flatten(),
+      });
+    }
+
+    const {
+      childId,
+      productId,
+      source,
+      imagePath,
+    } = parsed.data;
+
     const child = await prisma.child.findUnique({
       where: { id: childId },
       include: {
@@ -32,8 +70,12 @@ export default async function analysisRoutes(app: FastifyInstance) {
         },
       },
     });
-    if (!child || child.userId !== req.user.sub)
-      return reply.code(403).send({ error: '无权为该孩子打分' });
+
+    if (!child || child.userId !== req.user.sub) {
+      return reply.code(403).send({
+        error: '无权为该孩子打分',
+      });
+    }
 
     try {
       const result = await scoreFood({
@@ -42,85 +84,258 @@ export default async function analysisRoutes(app: FastifyInstance) {
         productId,
         source,
         imagePath,
-        
       });
+
       return reply.code(201).send(result);
     } catch (e) {
       const err = e as Error & { statusCode?: number };
-      return reply.code(err.statusCode ?? 500).send({ error: err.message });
+
+      return reply
+        .code(err.statusCode ?? 500)
+        .send({
+          error: err.message,
+        });
     }
   });
-  // AI 兜底分析（产品不在数据库时）
-  const aiSummarySchema = z.object({
-    productName: z.string().min(1),
-    childId: z.string().uuid(),
-  });
 
+  // ================================================================
+  // AI fallback summary
+  // Only for products unavailable in the Growtrition database.
+  // It must NOT generate a Growtrition score or grade.
+  // ================================================================
   app.post('/analyses/ai-summary', async (req, reply) => {
     const parsed = aiSummarySchema.safeParse(req.body);
-    if (!parsed.success) return reply.code(400).send({ error: parsed.error.flatten() });
+
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: parsed.error.flatten(),
+      });
+    }
+
     const { productName, childId } = parsed.data;
 
-    const child = await prisma.child.findUnique({ where: { id: childId } });
-    if (!child || child.userId !== req.user.sub)
-      return reply.code(403).send({ error: '无权访问' });
-
-    const ageLabel = child.age ? `${child.age}-year-old` : child.stageKey ?? 'young child';
-    const gender = child.gender === 'girl' ? 'girl' : 'boy';
-
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{
-        role: 'system',
-        content: 'You are a children\'s nutrition expert. Always respond with valid JSON only, no markdown.',
-      }, {
-        role: 'user',
-        content: `Analyze "${productName}" for a ${ageLabel} ${gender}.
-Respond with this JSON:
-{
-  "recommended": "yes" | "no" | "caution",
-  "benefits": ["up to 3 short benefit strings"],
-  "concerns": ["up to 3 short concern strings"],
-  "summary": "one sentence summary of whether this food is appropriate for this child"
-}`,
-      }],
-      max_tokens: 300,
-      temperature: 0.3,
+    const child = await prisma.child.findUnique({
+      where: { id: childId },
     });
 
+    if (!child || child.userId !== req.user.sub) {
+      return reply.code(403).send({
+        error: '无权访问',
+      });
+    }
+
+    const ageLabel =
+      child.ageMonths != null && child.ageMonths < 24
+        ? `${child.ageMonths}-month-old`
+        : child.age != null
+          ? `${child.age}-year-old`
+          : child.stageKey ?? 'young child';
+
+    const gender =
+      child.gender === 'girl'
+        ? 'girl'
+        : child.gender === 'boy'
+          ? 'boy'
+          : 'child';
+
     try {
-      const text = completion.choices[0].message.content ?? '{}';
-      const data = JSON.parse(text.replace(/```json|```/g, '').trim());
-      return reply.send(data);
-    } catch {
-      return reply.code(500).send({ error: 'AI response parsing failed' });
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `
+You generate general nutrition guidance for Growtrition,
+a child-focused food analysis application.
+
+The product being analyzed is NOT currently available in
+Growtrition's verified database.
+
+Therefore:
+- Do NOT generate a Growtrition score.
+- Do NOT generate a nutrition grade.
+- Do NOT describe the result as Growtrition's standard evidence-based evaluation.
+- Do NOT imply that nutrition facts, ingredient amounts, or nutrient quantities are verified unless explicitly known.
+- Do NOT invent exact nutrient quantities.
+- Do NOT make disease-prevention, diagnosis, or treatment claims.
+- Use cautious, parent-friendly language.
+- Always return valid JSON only.
+- Do not include markdown or code fences.
+            `.trim(),
+          },
+          {
+            role: 'user',
+            content: `
+Provide general nutrition guidance for:
+
+Product: "${productName}"
+Child: ${ageLabel} ${gender}
+
+Follow these rules:
+
+1. Write ONE concise recommendation sentence.
+The sentence should:
+- state whether this food is generally suitable for a child in this age group;
+- include a practical consumption-frequency suggestion;
+- use wording such as "regularly", "occasionally", "in moderation", or "best limited" unless a more specific frequency is clearly justified;
+- avoid inventing precise serving-frequency recommendations.
+
+2. Provide EXACTLY THREE key considerations.
+Choose the three most important nutritional factors for this child and product.
+
+Positive considerations may include:
+- nutrients the food is commonly a good source of;
+- developmental areas those nutrients may support;
+- useful nutritional characteristics.
+
+Caution considerations may include:
+- added sugar;
+- sodium;
+- saturated fat;
+- highly processed ingredients;
+- limited nutrient density;
+- other major nutritional concerns relevant to child growth and development.
+
+3. Each consideration must include:
+- a short title;
+- one concise parent-friendly explanation;
+- type = "positive" or "caution".
+
+4. If there is not enough reliable information about this specific branded product,
+use cautious wording such as "may", "can", "is commonly", or "depending on the formulation".
+
+5. Return JSON exactly in this structure:
+{
+  "recommendation": "one concise recommendation sentence",
+  "recommendationLevel": "recommended" | "moderate" | "limit",
+  "considerations": [
+    {
+      "title": "short title",
+      "text": "short explanation",
+      "type": "positive" | "caution"
+    },
+    {
+      "title": "short title",
+      "text": "short explanation",
+      "type": "positive" | "caution"
+    },
+    {
+      "title": "short title",
+      "text": "short explanation",
+      "type": "positive" | "caution"
+    }
+  ]
+}
+            `.trim(),
+          },
+        ],
+        max_tokens: 450,
+        temperature: 0.2,
+        response_format: {
+          type: 'json_object',
+        },
+      });
+
+      const text = completion.choices[0]?.message?.content ?? '{}';
+
+      let raw: unknown;
+
+      try {
+        raw = JSON.parse(text);
+      } catch (parseError) {
+        console.error('AI summary JSON parse failed:', parseError, text);
+
+        return reply.code(500).send({
+          error: 'AI response parsing failed',
+        });
+      }
+
+      const validated = aiSummaryResponseSchema.safeParse(raw);
+
+      if (!validated.success) {
+        console.error(
+          'Invalid AI summary response:',
+          validated.error.flatten(),
+          raw,
+        );
+
+        return reply.code(500).send({
+          error: 'AI response format invalid',
+        });
+      }
+
+      return reply.send(validated.data);
+    } catch (e) {
+      console.error('AI summary generation failed:', e);
+
+      return reply.code(500).send({
+        error: 'AI summary generation failed',
+      });
     }
   });
-  // 历史列表
+
+  // ================================================================
+  // History list
+  // ================================================================
   app.get('/analyses', async (req) => {
     return prisma.analysis.findMany({
       where: { userId: req.user.sub },
       orderBy: { createdAt: 'desc' },
       take: 50,
-      include: { product: { select: { name: true, nameZh: true, imageUrl: true } }, child: { select: { name: true } } },
+      include: {
+        product: {
+          select: {
+            name: true,
+            nameZh: true,
+            imageUrl: true,
+          },
+        },
+        child: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
   });
 
-  // 单条详情
+  // ================================================================
+  // Single analysis detail
+  // ================================================================
   app.get('/analyses/:id', async (req, reply) => {
     const { id } = req.params as { id: string };
+
     const analysis = await prisma.analysis.findUnique({
       where: { id },
       include: {
-        product: { select: { name: true, nameZh: true, imageUrl: true } },
+        product: {
+          select: {
+            name: true,
+            nameZh: true,
+            imageUrl: true,
+          },
+        },
         breakdown: true,
         factors: true,
-        exposure: { include: { concern: true } },
-        allergenFlags: { include: { allergen: true } },
+        exposure: {
+          include: {
+            concern: true,
+          },
+        },
+        allergenFlags: {
+          include: {
+            allergen: true,
+          },
+        },
       },
     });
-    if (!analysis || analysis.userId !== req.user.sub)
-      return reply.code(404).send({ error: '未找到' });
+
+    if (!analysis || analysis.userId !== req.user.sub) {
+      return reply.code(404).send({
+        error: '未找到',
+      });
+    }
+
     return analysis;
   });
 }

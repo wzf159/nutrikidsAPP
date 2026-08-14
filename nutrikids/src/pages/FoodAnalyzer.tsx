@@ -5,11 +5,10 @@ import { useNavigate, NavLink } from 'react-router-dom';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import { ADDITIVE_DICT, RISK_COLOR, WATCH_ADDITIVE_TYPES } from '../data/additives';
 import {
-  analyzeProduct, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts, createProductByNameEn, fetchAnalysisHistory,
-  type AnalysisResult, type AnalysisHistoryItem, type ProductMatch, type Recognition,
+  analyzeProduct, getAISummary, getChildren, lookupBarcode, recognizeImageUrl, recognizePhoto, searchProducts, fetchAnalysisHistory,
+  type AnalysisResult, type AnalysisHistoryItem, type ProductMatch, type Recognition, type AISummary,
 } from '../services/api';
 import { flushSync } from 'react-dom';
-import { type AISummary } from '../services/api';
 /* ------------------------------------------------------------------ */
 /* 常量与小工具                                                        */
 /* ------------------------------------------------------------------ */
@@ -456,6 +455,44 @@ export default function FoodAnalyzer() {
   const nutrientById = (id: number) => view!.nutrients.find(n => Number(n.id) === Number(id))!;
 
 
+  async function runAiSummary(productName: string) {
+    const activeChildId = childIdRef.current;
+    if (!activeChildId) return;
+
+    setResult(null);
+    setSelectedGoal(null);
+    setSelectedNutrient(null);
+    setSelectedWatch(null);
+    setTopWatchPopup(null);
+
+    setPhase({
+      name: 'busy',
+      msg: isZh
+        ? 'AI 正在生成一般性营养建议…'
+        : isEs
+          ? 'La IA está generando orientación nutricional general…'
+          : 'AI is generating general nutrition guidance…',
+    });
+
+    try {
+      const summary = await getAISummary(
+        productName,
+        activeChildId,
+      );
+
+      setPhase({
+        name: 'ai-result',
+        productName,
+        summary,
+      });
+    } catch (e) {
+      setPhase({
+        name: 'error',
+        msg: (e as Error).message,
+      });
+    }
+  }
+
   async function runAnalysis(
     productId: number,
     source: 'search' | 'barcode' | 'photo'
@@ -518,17 +555,16 @@ export default function FoodAnalyzer() {
     if (matches.length >= 1) {
       setPhase({ name: 'confirm', recognition, matches, source });
     } else {
-      setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
-      try {
-        const p = await createProductByNameEn(
-          recognition.nameEn,
-          recognition.nameZh ?? '',
-          recognition.brand ?? ''
-        );
-        await runAnalysis(p.id, 'photo');
-      } catch (e) {
-        setPhase({ name: 'error', msg: (e as Error).message });
-      }
+      const aiProductName = [
+        recognition.brand,
+        recognition.nameEn,
+      ]
+        .filter(Boolean)
+        .join(' · ');
+
+      await runAiSummary(
+        aiProductName || recognition.nameEn
+      );
     }
   }
   async function handleImage(file: File) {
@@ -1170,17 +1206,17 @@ export default function FoodAnalyzer() {
             <button
               onClick={async () => {
                 if (phase.name !== 'confirm') return;
-                setPhase({ name: 'busy', msg: isZh ? 'AI 正在分析该食品…' : 'AI is analyzing this product…' });
-                try {
-                  const p = await createProductByNameEn(
-                    phase.recognition.nameEn,
-                    phase.recognition.nameZh ?? '',
-                    phase.recognition.brand ?? ''
-                  );
-                  await runAnalysis(p.id, 'photo');
-                } catch (e) {
-                  setPhase({ name: 'error', msg: (e as Error).message });
-                }
+
+                const aiProductName = [
+                  phase.recognition.brand,
+                  phase.recognition.nameEn,
+                ]
+                  .filter(Boolean)
+                  .join(' · ');
+
+                await runAiSummary(
+                  aiProductName || phase.recognition.nameEn
+                );
               }}
               className="w-full py-3 mb-2 text-sm font-semibold text-gray-500 hover:text-[#893ce3] transition"
               style={{ fontFamily: 'Nunito, sans-serif' }}
@@ -1197,49 +1233,178 @@ export default function FoodAnalyzer() {
         )}
 
         {phase.name === 'ai-result' && (
-          <div className="bg-white rounded-3xl shadow-sm p-6 mb-5">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">🤖</span>
-              <h3 className="font-extrabold text-gray-800 text-lg">{phase.productName}</h3>
-              <span className="ml-auto text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-600">AI Generated</span>
-            </div>
-            <div className="bg-amber-50 border-l-4 border-amber-400 rounded-lg px-4 py-2.5 mb-4">
-              <p className="text-[12px] font-semibold text-amber-700">
-                {isZh
-                  ? 'NutriKids 数据库中暂无此产品。以下分析由 AI 生成，仅供参考。'
-                  : "This product isn't currently in the NutriKids database. The summary below is AI-generated and intended for general guidance only."}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 mb-3">
-              {phase.summary.recommended === 'yes' && <span className="text-[13px] font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">✅ {isZh ? '推荐' : 'Recommended'}</span>}
-              {phase.summary.recommended === 'caution' && <span className="text-[13px] font-bold text-amber-600 bg-amber-50 px-3 py-1 rounded-full">⚠️ {isZh ? '需谨慎' : 'Use with Caution'}</span>}
-              {phase.summary.recommended === 'no' && <span className="text-[13px] font-bold text-red-600 bg-red-50 px-3 py-1 rounded-full">❌ {isZh ? '不推荐' : 'Not Recommended'}</span>}
-            </div>
-            <p className="text-[13px] text-gray-600 leading-relaxed mb-4" style={{ fontFamily: 'Nunito, sans-serif' }}>{phase.summary.summary}</p>
-            {phase.summary.benefits.length > 0 && (
-              <div className="mb-3">
-                <p className="text-[11px] font-extrabold text-green-600 uppercase tracking-wide mb-1.5">✨ {isZh ? '营养益处' : 'Benefits'}</p>
-                <div className="flex flex-col gap-1">
-                  {phase.summary.benefits.map((b, i) => <p key={i} className="text-[12px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>• {b}</p>)}
+          <div className="bg-white/80 backdrop-blur-xl rounded-[24px] border border-white/80 shadow-[0_10px_36px_rgba(120,80,200,0.12)] p-5 sm:p-7 mb-5">
+            <div className="flex items-start gap-3 mb-5">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center text-2xl flex-shrink-0">
+                🤖
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3
+                    className="font-extrabold text-[#25233f] text-lg"
+                    style={{ fontFamily: 'Poppins, sans-serif' }}
+                  >
+                    {phase.productName}
+                  </h3>
+
+                  <span className="text-[10px] font-extrabold tracking-wide px-2.5 py-1 rounded-full bg-purple-100 text-purple-600">
+                    AI GENERATED
+                  </span>
                 </div>
               </div>
-            )}
-            {phase.summary.concerns.length > 0 && (
-              <div>
-                <p className="text-[11px] font-extrabold text-orange-600 uppercase tracking-wide mb-1.5">⚠️ {isZh ? '需要注意' : 'Concerns'}</p>
-                <div className="flex flex-col gap-1">
-                  {phase.summary.concerns.map((c, i) => <p key={i} className="text-[12px] text-gray-600" style={{ fontFamily: 'Nunito, sans-serif' }}>• {c}</p>)}
+            </div>
+
+            <div className="rounded-[18px] bg-[#fffaf0] border border-[#f3dfa4] px-4 sm:px-5 py-4 mb-5">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-full bg-[#fff1bd] flex items-center justify-center flex-shrink-0">
+                  💡
+                </div>
+
+                <div className="min-w-0">
+                  <p
+                    className="text-[13px] font-extrabold text-[#4d4434] leading-relaxed"
+                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                  >
+                    {isZh
+                      ? 'Growtrition 数据库中目前没有此产品。'
+                      : isEs
+                        ? 'Este producto no está disponible actualmente en la base de datos de Growtrition.'
+                        : "This product isn't currently available in the Growtrition database."}
+                  </p>
+
+                  <p
+                    className="text-[12px] text-[#6f6657] mt-1 leading-relaxed"
+                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                  >
+                    {isZh
+                      ? 'Growtrition 无法生成标准的循证评估。以下摘要由 AI 生成，仅用于一般性参考。'
+                      : isEs
+                        ? 'Growtrition no puede generar su evaluación estándar basada en evidencia. El resumen siguiente fue generado por IA y está destinado únicamente a orientación general.'
+                        : 'Growtrition cannot generate its standard evidence-based evaluation. The summary below is AI-generated and intended for general guidance only.'}
+                  </p>
                 </div>
               </div>
-            )}
-            <button
-              onClick={() => setPhase({ name: 'idle' })}
-              className="mt-5 w-full py-2 text-sm text-gray-500 hover:text-gray-700 font-medium"
+            </div>
+
+            <div
+              className={`rounded-[18px] border px-4 sm:px-5 py-4 mb-5 ${
+                phase.summary.recommendationLevel === 'recommended'
+                  ? 'bg-emerald-50/80 border-emerald-200'
+                  : phase.summary.recommendationLevel === 'moderate'
+                    ? 'bg-amber-50/80 border-amber-200'
+                    : 'bg-rose-50/80 border-rose-200'
+              }`}
             >
-              {isZh ? '重新搜索' : 'Search again'}
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white font-extrabold ${
+                    phase.summary.recommendationLevel === 'recommended'
+                      ? 'bg-emerald-500'
+                      : phase.summary.recommendationLevel === 'moderate'
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                  }`}
+                >
+                  {phase.summary.recommendationLevel === 'recommended'
+                    ? '✓'
+                    : phase.summary.recommendationLevel === 'moderate'
+                      ? '!'
+                      : '×'}
+                </div>
+
+                <p
+                  className="text-[14px] font-bold text-gray-700 leading-relaxed"
+                  style={{ fontFamily: 'Nunito, sans-serif' }}
+                >
+                  {phase.summary.recommendation}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-[20px] border border-gray-100 bg-white/75 p-4 sm:p-5">
+              <p
+                className="text-[14px] font-extrabold text-[#30304b] mb-3"
+                style={{ fontFamily: 'Poppins, sans-serif' }}
+              >
+                {isZh
+                  ? '3 个关键考虑因素'
+                  : isEs
+                    ? '3 aspectos clave'
+                    : '3 Key Considerations'}
+              </p>
+
+              <div className="flex flex-col gap-3">
+                {phase.summary.considerations.map((item, index) => {
+                  const positive = item.type === 'positive';
+
+                  return (
+                    <div
+                      key={`${item.title}-${index}`}
+                      className={`rounded-[16px] border px-4 py-3.5 ${
+                        positive
+                          ? 'bg-emerald-50/70 border-emerald-100'
+                          : 'bg-amber-50/70 border-amber-100'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[13px] font-extrabold ${
+                            positive
+                              ? 'bg-emerald-200/80 text-emerald-800'
+                              : 'bg-amber-200/80 text-amber-800'
+                          }`}
+                        >
+                          {index + 1}
+                        </div>
+
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p
+                              className={`text-[13px] font-extrabold ${
+                                positive
+                                  ? 'text-emerald-800'
+                                  : 'text-amber-800'
+                              }`}
+                            >
+                              {item.title}
+                            </p>
+
+                            <span className="text-[12px]">
+                              {positive ? '✓' : '⚠️'}
+                            </span>
+                          </div>
+
+                          <p
+                            className="text-[12px] text-gray-600 leading-relaxed"
+                            style={{ fontFamily: 'Nunito, sans-serif' }}
+                          >
+                            {item.text}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <button
+              onClick={() => {
+                setPhase({ name: 'idle' });
+                setCapturedPhotoUrl(null);
+              }}
+              className="mt-5 w-full py-2.5 text-sm text-gray-500 hover:text-[#893ce3] font-bold transition"
+            >
+              {isZh
+                ? '重新搜索'
+                : isEs
+                  ? 'Buscar de nuevo'
+                  : 'Search again'}
             </button>
           </div>
         )}
+
         {/* 空状态引导 */}
         {!result && phase.name === 'idle' && (
           <div className="bg-white rounded-3xl shadow-sm p-10 text-center text-gray-500">
@@ -2713,3 +2878,4 @@ export default function FoodAnalyzer() {
   );
 
 }
+
