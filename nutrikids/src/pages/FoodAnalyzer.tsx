@@ -1233,37 +1233,44 @@ export default function FoodAnalyzer() {
         )}
 
         {phase.name === 'ai-result' && (
-          <div className="bg-white/80 backdrop-blur-xl rounded-[24px] border border-white/80 shadow-[0_10px_36px_rgba(120,80,200,0.12)] p-5 sm:p-7 mb-5">
-            <div className="flex items-start gap-3 mb-5">
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center text-2xl flex-shrink-0">
+          <div className="bg-white rounded-[26px] shadow-sm p-5 sm:p-7 mb-5">
+            {/* Product + AI badge */}
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-xl">
                 🤖
               </div>
 
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h3
-                    className="font-extrabold text-[#25233f] text-lg"
-                    style={{ fontFamily: 'Poppins, sans-serif' }}
-                  >
-                    {phase.productName}
-                  </h3>
-
-                  <span className="text-[10px] font-extrabold tracking-wide px-2.5 py-1 rounded-full bg-purple-100 text-purple-600">
-                    AI GENERATED
-                  </span>
-                </div>
+                <h3
+                  className="font-extrabold text-[#273044] text-lg leading-tight"
+                  style={{ fontFamily: 'Poppins, sans-serif' }}
+                >
+                  {phase.productName}
+                </h3>
               </div>
+
+              <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-purple-100 text-purple-600 whitespace-nowrap">
+                AI GENERATED
+              </span>
             </div>
 
-            <div className="rounded-[18px] bg-[#fffaf0] border border-[#f3dfa4] px-4 sm:px-5 py-4 mb-5">
+            {/* Reference UI: yellow quick-tip style disclaimer */}
+            <div className="rounded-[24px] bg-[#fffbea] border border-[#f2dd84] px-5 py-4 mb-6">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-full bg-[#fff1bd] flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-[#fff3bd] flex items-center justify-center text-lg flex-shrink-0">
                   💡
                 </div>
 
                 <div className="min-w-0">
                   <p
-                    className="text-[13px] font-extrabold text-[#4d4434] leading-relaxed"
+                    className="text-[14px] font-extrabold text-[#6b5a2f] mb-1"
+                    style={{ fontFamily: 'Nunito, sans-serif' }}
+                  >
+                    {isZh ? 'AI 提示' : isEs ? 'Aviso de IA' : 'AI guidance'}
+                  </p>
+
+                  <p
+                    className="text-[13px] font-bold text-[#4b4639] leading-relaxed"
                     style={{ fontFamily: 'Nunito, sans-serif' }}
                   >
                     {isZh
@@ -1274,7 +1281,7 @@ export default function FoodAnalyzer() {
                   </p>
 
                   <p
-                    className="text-[12px] text-[#6f6657] mt-1 leading-relaxed"
+                    className="text-[12px] text-[#6f6857] leading-relaxed mt-1"
                     style={{ fontFamily: 'Nunito, sans-serif' }}
                   >
                     {isZh
@@ -1287,18 +1294,20 @@ export default function FoodAnalyzer() {
               </div>
             </div>
 
+            {/* Reference UI: large outlined recommendation card */}
             <div
-              className={`rounded-[18px] border px-4 sm:px-5 py-4 mb-5 ${
+              className={`rounded-[26px] border-2 p-4 sm:p-5 ${
                 phase.summary.recommendationLevel === 'recommended'
-                  ? 'bg-emerald-50/80 border-emerald-200'
+                  ? 'border-emerald-200'
                   : phase.summary.recommendationLevel === 'moderate'
-                    ? 'bg-amber-50/80 border-amber-200'
-                    : 'bg-rose-50/80 border-rose-200'
+                    ? 'border-amber-200'
+                    : 'border-rose-200'
               }`}
             >
-              <div className="flex items-start gap-3">
+              {/* Header like "Good choices of the day" */}
+              <div className="flex items-center gap-3 mb-4">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-white font-extrabold ${
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0 ${
                     phase.summary.recommendationLevel === 'recommended'
                       ? 'bg-emerald-500'
                       : phase.summary.recommendationLevel === 'moderate'
@@ -1307,33 +1316,51 @@ export default function FoodAnalyzer() {
                   }`}
                 >
                   {phase.summary.recommendationLevel === 'recommended'
-                    ? '✓'
+                    ? 'A'
                     : phase.summary.recommendationLevel === 'moderate'
-                      ? '!'
-                      : '×'}
+                      ? 'B'
+                      : 'C'}
                 </div>
 
+                <div className="min-w-0">
+                  <p
+                    className={`text-[18px] sm:text-[20px] font-extrabold leading-tight ${
+                      phase.summary.recommendationLevel === 'recommended'
+                        ? 'text-emerald-800'
+                        : phase.summary.recommendationLevel === 'moderate'
+                          ? 'text-amber-800'
+                          : 'text-rose-800'
+                    }`}
+                    style={{ fontFamily: 'Poppins, sans-serif' }}
+                  >
+                    {phase.summary.recommendationLevel === 'recommended'
+                      ? (isZh ? '适合选择' : isEs ? 'Buena opción' : 'Good choice')
+                      : phase.summary.recommendationLevel === 'moderate'
+                        ? (isZh ? '适量选择' : isEs ? 'Con moderación' : 'Choose in moderation')
+                        : (isZh ? '建议限制' : isEs ? 'Mejor limitar' : 'Best limited')}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recommendation sentence */}
+              <div
+                className={`rounded-[18px] px-4 py-3 mb-4 ${
+                  phase.summary.recommendationLevel === 'recommended'
+                    ? 'bg-emerald-50'
+                    : phase.summary.recommendationLevel === 'moderate'
+                      ? 'bg-amber-50'
+                      : 'bg-rose-50'
+                }`}
+              >
                 <p
-                  className="text-[14px] font-bold text-gray-700 leading-relaxed"
+                  className="text-[13px] sm:text-[14px] font-bold text-gray-700 leading-relaxed"
                   style={{ fontFamily: 'Nunito, sans-serif' }}
                 >
                   {phase.summary.recommendation}
                 </p>
               </div>
-            </div>
 
-            <div className="rounded-[20px] border border-gray-100 bg-white/75 p-4 sm:p-5">
-              <p
-                className="text-[14px] font-extrabold text-[#30304b] mb-3"
-                style={{ fontFamily: 'Poppins, sans-serif' }}
-              >
-                {isZh
-                  ? '3 个关键考虑因素'
-                  : isEs
-                    ? '3 aspectos clave'
-                    : '3 Key Considerations'}
-              </p>
-
+              {/* Exactly 3 numbered rows, matching reference layout */}
               <div className="flex flex-col gap-3">
                 {phase.summary.considerations.map((item, index) => {
                   const positive = item.type === 'positive';
@@ -1341,31 +1368,28 @@ export default function FoodAnalyzer() {
                   return (
                     <div
                       key={`${item.title}-${index}`}
-                      className={`rounded-[16px] border px-4 py-3.5 ${
-                        positive
-                          ? 'bg-emerald-50/70 border-emerald-100'
-                          : 'bg-amber-50/70 border-amber-100'
+                      className={`rounded-[22px] px-4 py-3.5 ${
+                        positive ? 'bg-[#e9fbf3]' : 'bg-[#fff4e8]'
                       }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-[13px] font-extrabold ${
+                          className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-[14px] flex-shrink-0 ${
                             positive
-                              ? 'bg-emerald-200/80 text-emerald-800'
-                              : 'bg-amber-200/80 text-amber-800'
+                              ? 'bg-[#bdf4da] text-emerald-700'
+                              : 'bg-[#ffe1b8] text-amber-700'
                           }`}
                         >
                           {index + 1}
                         </div>
 
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-0.5">
                             <p
-                              className={`text-[13px] font-extrabold ${
-                                positive
-                                  ? 'text-emerald-800'
-                                  : 'text-amber-800'
+                              className={`text-[14px] sm:text-[15px] font-extrabold leading-tight ${
+                                positive ? 'text-[#166b55]' : 'text-[#9a5a17]'
                               }`}
+                              style={{ fontFamily: 'Poppins, sans-serif' }}
                             >
                               {item.title}
                             </p>
@@ -1376,7 +1400,7 @@ export default function FoodAnalyzer() {
                           </div>
 
                           <p
-                            className="text-[12px] text-gray-600 leading-relaxed"
+                            className="text-[12px] sm:text-[13px] text-[#4f5c55] leading-relaxed"
                             style={{ fontFamily: 'Nunito, sans-serif' }}
                           >
                             {item.text}
@@ -1394,13 +1418,9 @@ export default function FoodAnalyzer() {
                 setPhase({ name: 'idle' });
                 setCapturedPhotoUrl(null);
               }}
-              className="mt-5 w-full py-2.5 text-sm text-gray-500 hover:text-[#893ce3] font-bold transition"
+              className="mt-5 w-full py-2 text-sm text-gray-400 hover:text-[#893ce3] font-bold transition"
             >
-              {isZh
-                ? '重新搜索'
-                : isEs
-                  ? 'Buscar de nuevo'
-                  : 'Search again'}
+              {isZh ? '重新搜索' : isEs ? 'Buscar de nuevo' : 'Search again'}
             </button>
           </div>
         )}
@@ -2878,4 +2898,3 @@ export default function FoodAnalyzer() {
   );
 
 }
-
