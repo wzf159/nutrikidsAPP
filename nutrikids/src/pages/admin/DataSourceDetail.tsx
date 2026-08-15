@@ -132,7 +132,7 @@ function NihOds() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           4 个数据源中<strong>唯一提供结构化 API</strong> 的。它为每种营养素（维生素、矿物质）提供一份
           Fact Sheet 页面，页面内含按年龄段、性别细分的 RDA（膳食推荐量）和 UL（可耐受最高摄入量）表格。
-          这是 NutriKids「分龄个性化评分」的<strong>核心参考数据</strong>。
+          这是 Growtrition「分龄个性化评分」的<strong>核心参考数据</strong>。
         </p>
         <a href="https://ods.od.nih.gov/factsheets/list-all/" target="_blank" rel="noreferrer"
           className="inline-block mt-1 text-xs text-green-600 hover:underline">
@@ -311,7 +311,7 @@ function Jecfa() {
             ['407', 'Carrageenan',        '卡拉胶',     'Not specified',  '2014 JECFA 79', '增稠剂'],
           ]}
         />
-        <p className="mt-2 text-xs text-gray-400">共约 2500+ 种物质收录于 JECFA 数据库；建议只导入 NutriKids 产品库实际出现的约 200-300 种。</p>
+        <p className="mt-2 text-xs text-gray-400">共约 2500+ 种物质收录于 JECFA 数据库；建议只导入 Growtrition 产品库实际出现的约 200-300 种。</p>
       </Section>
 
       <Section title="导入策略">
@@ -424,9 +424,9 @@ function Fda() {
 
       <Section title="FDA × JECFA × EFSA 三方对照的价值">
         <div className="bg-amber-50/60 rounded-xl p-4">
-          <p className="text-sm font-semibold text-amber-700 mb-2">🔁 三方不一致 = NutriKids 的差异化内容</p>
+          <p className="text-sm font-semibold text-amber-700 mb-2">🔁 三方不一致 = Growtrition 的差异化内容</p>
           <SampleTable
-            cols={['添加剂', 'JECFA ADI', 'FDA 状态', 'EFSA / EU 状态', 'NutriKids 标签建议']}
+            cols={['添加剂', 'JECFA ADI', 'FDA 状态', 'EFSA / EU 状态', 'Growtrition 标签建议']}
             rows={[
               ['诱惑红 E129',     '0-7 mg/kg', 'Approved', '须儿童警示标签',    '⚠️ EU要求警示 / AAP建议避免'],
               ['溴酸钾',          '无 ADI',    '禁用',     '禁用',              '🚫 国际主流均禁止'],
@@ -445,7 +445,7 @@ function Fda() {
             'FDA 状态：Approved（合法使用）',
             'EFSA 状态：EU 批准但须"可能对儿童的活动及注意力产生不良影响"警示标签',
             'AAP 添加剂报告：明确列为儿童应减少摄入的人工色素，childRiskFlag = true',
-            'NutriKids 输出：风险卡片显示「⚠️ 人工色素 · 美国合法 · EU须儿童警示 · AAP建议儿童避免」',
+            'Growtrition 输出：风险卡片显示「⚠️ 人工色素 · 美国合法 · EU须儿童警示 · AAP建议儿童避免」',
             '不直接扣分，但纳入风险维度扣 1-3 分，并附可信来源说明',
           ]}
         />
@@ -535,7 +535,7 @@ function Efsa() {
             'FDA 状态：美国 NOT approved（喹啉黄未获 FDA 批准），实际上是欧美分裂品种',
             'UK 状态：英国脱欧后已禁止（2022 年禁令生效）',
             'AAP 状态：未点名，但属于人工合成色素类别，childRiskFlag 视实施策略可选置位',
-            'NutriKids 输出：「⚠️ 合成色素 · EU批准中 · 美国不批准 · 英国已禁止 · 儿童慎选」',
+            'Growtrition 输出：「⚠️ 合成色素 · EU批准中 · 美国不批准 · 英国已禁止 · 儿童慎选」',
           ]}
         />
       </Section>

@@ -47,7 +47,7 @@ function NutriScore() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           由法国营养流行病学家 Serge Hercberg 开发，法国、德国、西班牙、比利时、荷兰、瑞士等多国已立法或自愿采用。
           算法完全公开，将食品营养质量以 A（深绿）到 E（深红）五色等级直观展示。
-          <strong>是 NutriKids 最应优先实现的模型</strong>，
+          <strong>是 Growtrition 最应优先实现的模型</strong>，
           原因：算法公开可复现、等级可视化家长一眼看懂、
           有大量 OpenFoodFacts 数据可交叉验证，且与个性化4维分角色互补。
         </p>
@@ -159,7 +159,7 @@ function NutriScore() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的实现与展示">
+      <Section title="在 Growtrition 中的实现与展示">
         <div className="grid gap-3">
           <RuleBox label="实现文件"
             text="新建 server/src/nutriScore.ts，导出纯函数 calcNutriScore(nutrition: NutritionFacts): { score: number; grade: 'A'|'B'|'C'|'D'|'E' }。输入为产品营养表对象，输出为分数和等级。" />
@@ -214,7 +214,7 @@ function Nrf() {
           由华盛顿大学 Adam Drewnowski 教授团队开发，是学术界和公共卫生领域最广泛使用的
           <strong>营养密度评分模型</strong>。最常用的变体 NRF9.3 对 9 种鼓励营养素打正分、
           3 种限制成分扣负分。
-          在 NutriKids 的核心应用是：将通用 DV（每日参考值）替换为
+          在 Growtrition 的核心应用是：将通用 DV（每日参考值）替换为
           <strong>NIH ODS 分龄 RDA 数据</strong>，得到儿童专属的分龄 NRF 分——
           这正是让我们的评分真正「个性化」的技术关键。
         </p>
@@ -345,7 +345,7 @@ function Nrf() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的用途">
+      <Section title="在 Growtrition 中的用途">
         <div className="grid gap-3">
           <RuleBox label="搜索结果排序"
             text="同类食品搜索结果按分龄 NRF 分从高到低排序。例如搜索「酸奶」返回10款，按当前孩子年龄段的 NRF 分排序，营养密度最高的排第一。" />
@@ -389,7 +389,7 @@ function FdaHealthy() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           FDA 于 2024 年更新了食品标签上使用「healthy」一词的法律标准（21 CFR 101.65）。
           该标准<strong>同时要求正面（含有足够的健康食物组）和负面（限制成分不超标）两个条件</strong>。
-          在 NutriKids 里实现为布尔资格判断，通过则显示「✓ 符合 FDA Healthy 标准」徽章，
+          在 Growtrition 里实现为布尔资格判断，通过则显示「✓ 符合 FDA Healthy 标准」徽章，
           三个模型中角色最简单、最权威背书性质最强。
         </p>
       </div>
@@ -526,7 +526,7 @@ function FdaHealthy() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的实现">
+      <Section title="在 Growtrition 中的实现">
         <div className="grid gap-3">
           <RuleBox label="实现文件"
             text="新建 server/src/fdaHealthy.ts，导出 meetsFdaHealthy(product): boolean。需要产品的食物组类别字段（谷物/乳制品/蛋白/蔬果）+ 营养成分表（添加糖/钠/饱和脂肪）。" />

@@ -142,6 +142,6 @@ export default function FoodAnalysisDoc() {
       ]} />
     </Section>
 
-    <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900"><b>解释边界：</b>NutriKids 分数是食品资料与儿童档案的决策辅助结果，不是医学诊断，也不代表实际食用量、全天膳食结构或个体临床需求。</div>
+    <div className="mt-10 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-6 text-amber-900"><b>解释边界：</b>Growtrition 分数是食品资料与儿童档案的决策辅助结果，不是医学诊断，也不代表实际食用量、全天膳食结构或个体临床需求。</div>
   </div>;
 }

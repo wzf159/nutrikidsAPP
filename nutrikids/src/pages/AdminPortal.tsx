@@ -26,7 +26,7 @@ function Overview({ summary }: { summary: Summary | null }) {
   const cards = summary ? [
     ['注册用户', summary.users], ['儿童档案', summary.children], ['食品分析', summary.analyses], ['用户反馈', summary.feedbacks],
   ] : [];
-  return <div><h2 className="text-3xl font-bold">运营概览</h2><p className="mt-2 text-slate-500">查看 NutriKids 当前的核心数据。</p>{summary ? <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([label, value]) => <article key={label as string} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">{label}</p><p className="mt-3 text-4xl font-bold">{value}</p></article>)}</div> : <p className="mt-8 text-slate-500">正在加载数据…</p>}</div>;
+  return <div><h2 className="text-3xl font-bold">运营概览</h2><p className="mt-2 text-slate-500">查看 Growtrition 当前的核心数据。</p>{summary ? <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">{cards.map(([label, value]) => <article key={label as string} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"><p className="text-sm text-slate-500">{label}</p><p className="mt-3 text-4xl font-bold">{value}</p></article>)}</div> : <p className="mt-8 text-slate-500">正在加载数据…</p>}</div>;
 }
 
 export default function AdminPortal() {
@@ -48,7 +48,7 @@ export default function AdminPortal() {
 
   return <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
     <aside className="h-screen w-64 shrink-0 overflow-y-auto bg-slate-950 px-4 py-6 text-white">
-      <div className="px-3"><p className="text-xs font-semibold tracking-widest text-violet-300">NUTRIKIDS</p><h1 className="mt-1 text-xl font-bold">管理端</h1></div>
+      <div className="px-3"><p className="text-xs font-semibold tracking-widest text-violet-300">GROWTRITION</p><h1 className="mt-1 text-xl font-bold">管理端</h1></div>
       <nav className="mt-8 space-y-6">{NAV_GROUPS.map((group) => <div key={group.label}><p className="mb-2 px-3 text-xs font-semibold text-slate-500">{group.label}</p><div className="space-y-1">{group.items.map(([path, label]) => <NavLink key={path} to={path} end={path === '/admin'} className={({ isActive }) => `block rounded-xl px-3 py-2.5 text-sm transition ${isActive ? 'bg-violet-600 font-semibold text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}>{label}</NavLink>)}</div></div>)}</nav>
       <button onClick={() => { clearAdminToken(); setAuthenticated(false); }} className="mt-10 w-full rounded-xl border border-slate-700 px-3 py-2 text-sm text-slate-300 hover:bg-slate-800">退出登录</button>
     </aside>

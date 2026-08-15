@@ -82,7 +82,7 @@ export default function OpenFoodFactsDoc() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           全球最大的开源食品数据库，收录超过 300 万种产品，涵盖营养成分、过敏原、添加剂、
           Nutri-Score、NOVA 加工分级等信息。无需 API Key，免费使用。
-          NutriKids 通过条形码查询自动从该数据库导入产品信息。
+          Growtrition 通过条形码查询自动从该数据库导入产品信息。
         </p>
         <a href="https://world.openfoodfacts.org" target="_blank" rel="noreferrer"
           className="inline-block mt-1 text-xs text-green-600 hover:underline">
@@ -169,7 +169,7 @@ export default function OpenFoodFactsDoc() {
       <Section title="nutriments 对象字段说明">
         <p className="text-xs text-gray-400 mb-3">营养成分以每 100g 为单位存储，字段命名规则：{`{nutrient}_{unit}_100g`}</p>
         <SampleTable
-          cols={['OFF 字段名', 'NutriKids 营养素 ID', '中文名称', '单位', '儿童每日参考值']}
+          cols={['OFF 字段名', 'Growtrition 营养素 ID', '中文名称', '单位', '儿童每日参考值']}
           rows={[
             ['proteins_100g',       '13', '蛋白质',   'g',   '30'],
             ['sugars_100g',         '15', '糖',       'g',   '25'],
@@ -191,9 +191,9 @@ export default function OpenFoodFactsDoc() {
       </Section>
 
       <Section title="allergens_tags 过敏原映射">
-        <p className="text-xs text-gray-400 mb-3">OFF 使用 en: 前缀的标准化标签，需要映射到 NutriKids 的内部过敏原代码</p>
+        <p className="text-xs text-gray-400 mb-3">OFF 使用 en: 前缀的标准化标签，需要映射到 Growtrition 的内部过敏原代码</p>
         <SampleTable
-          cols={['OFF 标签', 'NutriKids 代码', '中文名称']}
+          cols={['OFF 标签', 'Growtrition 代码', '中文名称']}
           rows={[
             ['en:gluten', 'gluten', '麸质'],
             ['en:crustaceans', 'crustaceans', '甲壳类'],
@@ -262,7 +262,7 @@ export default function OpenFoodFactsDoc() {
         </div>
         <p className="mt-3 text-sm text-gray-600">
           推荐做法：用户扫描条形码 → 查询本地数据库 → 未命中时调用 OFF API → 
-          将返回数据转换为 NutriKids 数据模型（见 OFF_NUTRIENT_MAP 映射）→ 
+          将返回数据转换为 Growtrition 数据模型（见 OFF_NUTRIENT_MAP 映射）→ 
           写入 Product、ProductNutrient、ProductAllergen 表 → 标记 verified=false。
         </p>
       </Section>

@@ -71,7 +71,7 @@ function Who() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           WHO 健康饮食指南是<strong>全球通用基准</strong>，面向所有年龄段（成人与儿童），
           给出糖、盐、脂肪和蔬果摄入的核心阈值。
-          在 NutriKids 里，它作为<strong>警示标签的默认基准线</strong>——
+          在 Growtrition 里，它作为<strong>警示标签的默认基准线</strong>——
           产品某项营养素超过 WHO 阈值即触发高糖/高盐/高脂红色标签。
           用户可在儿童档案中切换到更严格的 AHA 阈值（见 AHA 条目）。
         </p>
@@ -98,7 +98,7 @@ function Who() {
         ]} />
       </Section>
 
-      <Section title="在 NutriKids 中的转化规则">
+      <Section title="在 Growtrition 中的转化规则">
         <div className="grid gap-3">
           <RuleBox label="高糖标签触发条件"
             text="产品每份含游离糖 > 该年龄段 WHO 每日上限的 20%，触发「高糖⚠️」红色标签（例如4岁：单份 >6g）。超过 40% 触发「极高糖🚫」。" />
@@ -143,7 +143,7 @@ function Dga() {
           美国农业部（USDA）和卫生与公共服务部（HHS）联合发布，每5年更新，
           最新版 2020–2025。<strong>最重要的儿童特异规则</strong>是：
           2岁以下禁止添加糖，以及各年龄段的钠限值比 WHO 更细化。
-          这是 NutriKids <strong>年龄分层规则</strong>的主要依据——同一产品对不同年龄孩子的评分结果不同。
+          这是 Growtrition <strong>年龄分层规则</strong>的主要依据——同一产品对不同年龄孩子的评分结果不同。
         </p>
       </div>
 
@@ -180,7 +180,7 @@ function Dga() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的转化规则">
+      <Section title="在 Growtrition 中的转化规则">
         <div className="grid gap-3">
           <RuleBox label="年龄门控（Age Gate）规则"
             text="对 0-2 岁档案：含任何添加糖的产品直接评为「不推荐」，无论糖量多少。前端显示红色警示「DGA：2岁以下不应摄入添加糖」。" />
@@ -199,7 +199,7 @@ function Dga() {
             '档案A：18个月宝宝 → DGA 规则：添加糖=0上限 → 直接「不推荐」🚫，评分维度扣满，卡片显示「DGA/AAP：2岁以下禁止添加糖」',
             '档案B：5岁孩子（1200kcal/天，上限30g）→ 6g = 20% → 触发「高糖」⚠️ 警示，扣5分',
             '档案C：12岁孩子（1800kcal/天，上限45g）→ 6g = 13% → 提示「含添加糖」ℹ️，轻微扣分',
-            '三个档案，三个结论——这是 NutriKids 个性化评分的核心差异化',
+            '三个档案，三个结论——这是 Growtrition 个性化评分的核心差异化',
           ]}
         />
       </Section>
@@ -223,7 +223,7 @@ function AapNutrition() {
           与 WHO/DGA 的公共卫生视角互补。
           AAP 建议更具体（如果汁的毫升数上限、全脂/低脂奶的切换年龄），
           且专门针对儿童发育阶段的营养需求。
-          在 NutriKids 里驱动<strong>发育目标 ↔ 关键营养素的映射</strong>。
+          在 Growtrition 里驱动<strong>发育目标 ↔ 关键营养素的映射</strong>。
         </p>
       </div>
 
@@ -302,7 +302,7 @@ function AapAdditives() {
           </div>
         </div>
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
-          2018年 AAP 在《儿科学》期刊发表的政策声明，是 NutriKids
+          2018年 AAP 在《儿科学》期刊发表的政策声明，是 Growtrition
           <strong>「儿童慎用」标签（childRiskFlag）的唯一权威来源</strong>。
           点名了5类对儿童健康有潜在风险的添加剂，
           并要求 FDA 更新食品添加剂安全标准（考虑儿童特有的暴露风险）。
@@ -374,7 +374,7 @@ function AapAdditives() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的实现">
+      <Section title="在 Growtrition 中的实现">
         <div className="grid gap-3">
           <RuleBox label="childRiskFlag 字段"
             text="Additive 表中凡属以上 5 类的物质，childRiskFlag = true。产品配料表命中任一此类物质，即在「风险成分」卡片中以红色高亮显示，并附 AAP 声明出处。" />
@@ -417,7 +417,7 @@ function Aha() {
         <p className="mt-2 text-sm text-gray-600 leading-relaxed">
           美国心脏协会从<strong>心血管长期健康</strong>视角给出的儿童饮食建议。
           核心特点是对糖的限制<strong>比 WHO 更严格</strong>（25g vs 30g），
-          且2岁以下同样强调零添加糖。在 NutriKids 里作为「严格模式（Strict Mode）」的阈值来源，
+          且2岁以下同样强调零添加糖。在 Growtrition 里作为「严格模式（Strict Mode）」的阈值来源，
           让关注心血管风险的家长可以切换到更严格的评分标准。
         </p>
       </div>
@@ -454,7 +454,7 @@ function Aha() {
         </div>
       </Section>
 
-      <Section title="在 NutriKids 中的转化规则">
+      <Section title="在 Growtrition 中的转化规则">
         <div className="grid gap-3">
           <RuleBox label="严格模式（Strict Mode）开关"
             text="儿童档案中有 strictMode: boolean 字段。默认 false（WHO 基准）；家长开启后，所有糖/钠/脂肪阈值切换为 AHA 版本，评分更严格。适合有心血管疾病家族史的家庭。" />
@@ -497,7 +497,7 @@ function Nova() {
           NOVA 不是传统意义上的"数据库"，而是一套<strong>食品加工程度分类方法</strong>，
           由圣保罗大学 Carlos Monteiro 教授团队提出，已被 WHO、PAHO、FAO 等国际组织采纳。
           将食品分为 1-4 级，超加工食品（NOVA 4）与多种慢性病风险显著相关。
-          在 NutriKids 里直接对应「加工程度」卡片（ProcessingLevelCard）的算法来源。
+          在 Growtrition 里直接对应「加工程度」卡片（ProcessingLevelCard）的算法来源。
         </p>
       </div>
 
