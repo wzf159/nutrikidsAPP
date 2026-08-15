@@ -2,7 +2,9 @@ import { prisma } from './prisma.js';
 import { computeDevScoreV2, computeGoalScoresV2 } from './scoring/devScoreV2.js';
 import { computeAdditiveScoreV2 } from './scoring/additiveScoreV2.js';
 import { hasAdditiveCategory } from './scoring/additiveCategories.js';
-import { OFF_NUTRIENT_MAP, TOTAL_SUGAR_NUTRIENT_ID, ADDED_SUGAR_NUTRIENT_ID } from './productFinder.js';
+import { ADDED_SUGAR_NUTRIENT_ID, OFF_NUTRIENT_MAP, TOTAL_SUGAR_NUTRIENT_ID } from './productFinder.js';
+import { containsFlavorIngredient } from './scoring/ingredientDetection.js';
+import { p3WatchReference, per100gWatchMetric, resolveAddedSugar100g } from './scoring/watchMetrics.js';
 
 // nutrients 字典 ID（见 seed.ts / productFinder.ts）
 const SUGAR_NUTRIENT_ID = TOTAL_SUGAR_NUTRIENT_ID;
@@ -373,18 +375,6 @@ function childDailyPercent(
   return (amount100g / ref) * 100;
 }
 
-function watchLimitPercent(
-  value: number | null | undefined,
-  limit: number | null
-): number | null {
-  if (value == null || limit == null || limit <= 0) return null;
-
-  const amount = Number(value);
-  if (!Number.isFinite(amount)) return null;
-
-  return (amount / limit) * 100;
-}
-
 // ProductNutrient.value100g 是 OFF 原始单位；UI 需要按 mapping.factor 转为展示单位。
 function displayValue100g(nutrientId: number, rawValue100g: number | null | undefined): number | null {
   if (rawValue100g == null) return null;
@@ -524,10 +514,6 @@ export interface ScoreInput {
   imagePath?: string | null;
 }
 
-function viewReferenceBasis(servingSize: string | null): string {
-  return servingSize?.trim() || 'serving unavailable';
-}
-
 // 结合"孩子档案 × 产品事实"计算个性化评分，写入 analyses 全套明细，返回结果 + 前端视图数据。
 export async function scoreFood(input: ScoreInput) {
   const { userId, childId, productId } = input;
@@ -584,7 +570,7 @@ export async function scoreFood(input: ScoreInput) {
       a.additive.type !== 'beneficial'
   );
 
-  // Added Sugar 的风险百分比在得到 ageIdx 和独立 sugarLimit 后再计算。
+  // Added Sugar 的风险百分比在得到 ageIdx 和表格分龄参考值后再计算。
   // 这里先只保留添加剂扣分，避免读取已废弃的数据库 dailyValue。
   let riskIngredients = clamp(30 - badAdditives.length * 2, 0, 30);
 
@@ -807,42 +793,31 @@ export async function scoreFood(input: ScoreInput) {
       : 'N/A'
   );
 
-  // 每日上限
-  const sugarLimit = ageIdx === 0 ? 0 : ageIdx === 1 ? 0 : ageIdx === 2 ? 12 : 25;
-  const sugarThreshold = ageIdx <= 1 ? 1 : ageIdx === 2 ? 3 : 5;
+  // P3 的添加糖、钠和饱和脂肪统一使用数据源表中的每 100 g / 100 mL 分龄口径。
+  const addedSugarReference = p3WatchReference(ageIdx, 'added_sugar');
+  const sodiumReference = p3WatchReference(ageIdx, 'sodium');
+  const satfatReference = p3WatchReference(ageIdx, 'satfat');
 
-  // Sodium: WHO/CDC 建议
-  const sodiumLimit = [200, 370, 800, 1200, 1500, 1800][ageIdx];
-  const sodiumThreshold = [50, 100, 200, 300, 400, 500][ageIdx];
-  // 0-6m: 50mg  7-12m: 100mg  1-3y: 200mg  4-8y: 300mg  9-13y: 400mg  14-18y: 500mg
-
-  // Saturated Fat: 占每日热量 <10%，按年龄热量需求换算
-  const satfatLimit = [null, null, 8, 10, 13, 16][ageIdx];
-  const satfatThreshold = [1, 1, 2, 2.5, 3, 4][ageIdx];
-  // 更严格，尤其婴幼儿
-
-
-  // Added Sugar / Sodium / Saturated Fat 使用独立 watch-limit 表，
-  // 不使用 CHILD_DAILY_REFERENCE，也不使用数据库 dailyValue。
   const addedSugarNutrient = prodNutr.find(
     (n: { nutrientId: number }) => n.nutrientId === ADDED_SUGAR_NUTRIENT_ID
   );
-
-  const addedSugarG =
-    addedSugarNutrient?.value == null
-      ? null
-      : Number(addedSugarNutrient.value);
-
-  const addedSugarDailyPercent =
-    sugarLimit > 0
-      ? watchLimitPercent(addedSugarG, sugarLimit)
-      : addedSugarG != null && addedSugarG > 0
-        ? 100
-        : 0;
+  const totalSugarNutrient = prodNutr.find(
+    (n: { nutrientId: number }) => n.nutrientId === TOTAL_SUGAR_NUTRIENT_ID
+  );
+  const resolvedAddedSugar = resolveAddedSugar100g(
+    (addedSugarNutrient as any)?.value100g,
+    (totalSugarNutrient as any)?.value100g,
+  );
+  const addedSugarMetric = per100gWatchMetric(
+    resolvedAddedSugar.value100g,
+    1,
+    addedSugarReference.dailyLimit,
+    addedSugarReference.highMin,
+  );
 
   // legacy breakdown only
   riskIngredients = clamp(
-    30 - Number(addedSugarDailyPercent ?? 0) * 0.6 - badAdditives.length * 2,
+    30 - Number(addedSugarMetric.dailyPercent ?? 0) * 0.6 - badAdditives.length * 2,
     0,
     30
   );
@@ -882,7 +857,7 @@ export async function scoreFood(input: ScoreInput) {
   const factors: { kind: 'positive' | 'negative'; label: string }[] = [];
   if (nutrientDensity >= 25) factors.push({ kind: 'positive', label: 'High Nutrient Density' });
   if (processingLevel >= 17) factors.push({ kind: 'positive', label: 'Minimally Processed' });
-  if (Number(addedSugarDailyPercent ?? 0) >= 10) factors.push({ kind: 'negative', label: 'Added Sugar' });
+  if (Number(addedSugarMetric.dailyPercent ?? 0) >= 20) factors.push({ kind: 'negative', label: 'Added Sugar' });
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
 
@@ -1066,6 +1041,17 @@ export async function scoreFood(input: ScoreInput) {
   })();
   const hasRawAdditive = (codes: string[]) =>
     codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
+  const rawIngredientTags: string[] = (() => {
+    try { return product.ingredientsTagsJson ? JSON.parse(product.ingredientsTagsJson) : []; }
+    catch { return []; }
+  })();
+  const flavorDetected = containsFlavorIngredient(
+    product.ingredientsText,
+    rawIngredientTags,
+  );
+  const hasIngredientPattern = (re: RegExp) =>
+    hasIng(re) ||
+    re.test([product.ingredientsText ?? '', ...rawIngredientTags].join(' ').toLowerCase());
 
   const sodiumNutrient = prodNutr.find(
     (n: any) => n.nutrientId === SODIUM_NUTRIENT_ID
@@ -1074,143 +1060,115 @@ export async function scoreFood(input: ScoreInput) {
     (n: any) => n.nutrientId === SATURATED_FAT_NUTRIENT_ID
   );
 
-  const sodiumDailyPercent = watchLimitPercent(
-    sodiumNutrient?.value,
-    sodiumLimit
+  const sodiumMetric = per100gWatchMetric(
+    (sodiumNutrient as any)?.value100g,
+    1000,
+    sodiumReference.dailyLimit,
+    sodiumReference.highMin,
   );
-
-  const satfatDailyPercent = watchLimitPercent(
-    satfatNutrient?.value,
-    satfatLimit
+  const satfatMetric = per100gWatchMetric(
+    (satfatNutrient as any)?.value100g,
+    1,
+    satfatReference.dailyLimit,
+    satfatReference.highMin,
   );
 
   const watch = [
     {
       code: 'added_sugar',
-      icon: '🍬',
+      icon: '🧁',
       name: 'Added Sugar',
       nameZh: '添加糖',
-
-      // 没有真实 serving size -> value 为 null -> 不假装检测到 high。
-      present:
-        addedSugarG != null &&
-        addedSugarG >= sugarThreshold &&
-        (product.novaScore ?? 4) >= 2,
-
-      value: addedSugarG,
-      value100g: displayValue100g(
-        ADDED_SUGAR_NUTRIENT_ID,
-        (addedSugarNutrient as any)?.value100g
-      ),
+      available: addedSugarMetric.value100g != null && addedSugarReference.dailyLimit != null,
+      present: addedSugarMetric.present,
+      value: addedSugarMetric.value100g,
+      value100g: addedSugarMetric.value100g,
       unit: addedSugarNutrient?.unit ?? 'g',
-
-      // 这里的 dailyValue 是“每份占该年龄段独立 sugar limit 的百分比”
-      // 仅为了兼容现有前端字段名，不是 FDA %DV。
-      dailyValue: addedSugarDailyPercent,
-      ageLimit: sugarLimit,
+      dailyValue: addedSugarMetric.dailyPercent ?? undefined,
+      ageLimit: addedSugarReference.dailyLimit,
       ageLimitUnit: 'g',
-      threshold: sugarThreshold,
-      referenceBasis: viewReferenceBasis(product.servingSize),
-
-      detail:
-        addedSugarG == null
-          ? 'Serving size is unavailable, so per-serving added sugar cannot be calculated.'
-          : sugarLimit === 0
-            ? 'Added sugar is not recommended for this age group.'
-            : `${Number(addedSugarDailyPercent ?? 0).toFixed(1)}% of the age-specific daily added sugar limit per serving (limit: ${sugarLimit}g).`,
-
-      detailZh:
-        addedSugarG == null
-          ? '缺少可靠的每份重量，因此无法计算每份添加糖。'
-          : sugarLimit === 0
-            ? '该年龄段不建议摄入添加糖。'
-            : `每份添加糖约占该年龄段每日上限的${Number(addedSugarDailyPercent ?? 0).toFixed(1)}%（上限：${sugarLimit}g）。`,
+      threshold: addedSugarReference.highMin ?? undefined,
+      referenceBasis: '100 g / 100 mL',
+      detail: addedSugarMetric.value100g == null
+        ? 'Added sugar per 100 g / 100 mL is unavailable from OFF.'
+        : resolvedAddedSugar.inferredFromZeroTotalSugar
+          ? 'Added sugar is 0g per 100 g / 100 mL because OFF reports total sugar as 0g.'
+          : `${addedSugarMetric.value100g.toFixed(1)}g added sugar per 100 g / 100 mL.`,
+      detailZh: addedSugarMetric.value100g == null
+        ? 'OFF 暂无每100g/100mL添加糖数据。'
+        : resolvedAddedSugar.inferredFromZeroTotalSugar
+          ? 'OFF 标注总糖为0g，因此每100g/100mL添加糖可确定为0g。'
+          : `每100g/100mL含添加糖${addedSugarMetric.value100g.toFixed(1)}g。`,
     },
     {
       code: 'flavors', icon: '🧪', name: 'Added Flavors', nameZh: '添加香精',
-      present: hasIng(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/) ||
+      present: flavorDetected || hasIngredientPattern(/flavor|extract|香精|香草提取/) || hasAdd(/flavor/) ||
         hasRawAdditive(['e620', 'e621', 'e622', 'e623', 'e624', 'e625', 'e635']),
       detail: 'Contains added flavoring. Generally recognized as safe, but indicates processing.',
       detailZh: '含添加香精/提取物。一般认为安全，但属于加工标志成分。'
     },
     {
       code: 'colors', icon: '🎨', name: 'Artificial Colors', nameZh: '人工色素',
-      present: hasAdd(/color|色素/) || hasIng(/color|色素/) ||
+      present: hasAdd(/color|色素/) || hasIngredientPattern(/color|色素/) ||
         hasRawAdditive(['e102', 'e110', 'e122', 'e124', 'e129', 'e133', 'e150a', 'e150b', 'e150c', 'e150d', 'e151', 'e160']),
       detail: 'Contains artificial colors. Some are linked to hyperactivity in sensitive children.',
       detailZh: '含人工色素，部分色素与敏感儿童多动相关。'
     },
     {
       code: 'preservatives', icon: '⚗️', name: 'Preservatives', nameZh: '防腐剂',
-      present: hasAdd(/preservative|防腐/) || hasIng(/benzoate|sorbate|防腐/) || hasRawAdditive(['e200', 'e202', 'e210', 'e211', 'e212', 'e213', 'e220', 'e249', 'e250', 'e251', 'e252']),
+      present: hasAdd(/preservative|防腐/) || hasIngredientPattern(/benzoate|sorbate|防腐/) || hasRawAdditive(['e200', 'e202', 'e210', 'e211', 'e212', 'e213', 'e220', 'e249', 'e250', 'e251', 'e252']),
       detail: 'Contains preservatives.', detailZh: '含防腐剂。'
     },
     {
       code: 'sodium', icon: '🧂', name: 'Sodium', nameZh: '钠',
-      present:
-        sodiumNutrient?.value != null &&
-        Number(sodiumNutrient.value) > sodiumThreshold,
-      value: sodiumNutrient?.value == null ? null : Number(sodiumNutrient.value),
-      value100g: displayValue100g(
-        SODIUM_NUTRIENT_ID,
-        (sodiumNutrient as any)?.value100g
-      ),
+      available: sodiumMetric.value100g != null && sodiumReference.dailyLimit != null,
+      present: sodiumMetric.present,
+      value: sodiumMetric.value100g,
+      value100g: sodiumMetric.value100g,
       unit: sodiumNutrient?.unit ?? 'mg',
-      dailyValue: sodiumDailyPercent,
-      ageLimit: sodiumLimit,
+      dailyValue: sodiumMetric.dailyPercent ?? undefined,
+      ageLimit: sodiumReference.dailyLimit,
       ageLimitUnit: 'mg',
-      threshold: sodiumThreshold,
-      referenceBasis: viewReferenceBasis(product.servingSize),
-      detail:
-        sodiumNutrient?.value == null
-          ? 'Serving size is unavailable, so per-serving sodium cannot be calculated.'
-          : `${Number(sodiumDailyPercent ?? 0).toFixed(1)}% of the age-specific daily sodium limit per serving (limit: ${sodiumLimit}mg).`,
-      detailZh:
-        sodiumNutrient?.value == null
-          ? '缺少可靠的每份重量，因此无法计算每份钠含量。'
-          : `每份钠约占该年龄段每日上限的${Number(sodiumDailyPercent ?? 0).toFixed(1)}%（上限：${sodiumLimit}mg）。`
+      threshold: sodiumReference.highMin ?? undefined,
+      referenceBasis: '100 g / 100 mL',
+      detail: sodiumMetric.value100g == null
+        ? 'Sodium per 100 g / 100 mL is unavailable.'
+        : `${sodiumMetric.value100g.toFixed(1)}mg sodium per 100 g / 100 mL.`,
+      detailZh: sodiumMetric.value100g == null
+        ? '暂无每100g/100mL钠数据。'
+        : `每100g/100mL含钠${sodiumMetric.value100g.toFixed(1)}mg。`
     },
     {
       code: 'satfat', icon: '🥩', name: 'Saturated Fat', nameZh: '饱和脂肪',
-      present:
-        satfatNutrient?.value != null &&
-        Number(satfatNutrient.value) > satfatThreshold,
-      value: satfatNutrient?.value == null ? null : Number(satfatNutrient.value),
-      value100g: displayValue100g(
-        SATURATED_FAT_NUTRIENT_ID,
-        (satfatNutrient as any)?.value100g
-      ),
+      available: satfatMetric.value100g != null && satfatReference.dailyLimit != null,
+      present: satfatMetric.present,
+      value: satfatMetric.value100g,
+      value100g: satfatMetric.value100g,
       unit: satfatNutrient?.unit ?? 'g',
-      dailyValue: satfatDailyPercent,
-      ageLimit: satfatLimit,
+      dailyValue: satfatMetric.dailyPercent ?? undefined,
+      ageLimit: satfatReference.dailyLimit,
       ageLimitUnit: 'g',
-      threshold: satfatThreshold,
-      referenceBasis: viewReferenceBasis(product.servingSize),
-      detail:
-        satfatNutrient?.value == null
-          ? 'Serving size is unavailable, so per-serving saturated fat cannot be calculated.'
-          : satfatLimit === null
-            ? 'No daily saturated fat limit is defined for this age group.'
-            : `${Number(satfatDailyPercent ?? 0).toFixed(1)}% of the age-specific daily saturated fat limit per serving (limit: ${satfatLimit}g).`,
-      detailZh:
-        satfatNutrient?.value == null
-          ? '缺少可靠的每份重量，因此无法计算每份饱和脂肪。'
-          : satfatLimit === null
-            ? '该年龄段暂无明确的每日饱和脂肪上限。'
-            : `每份饱和脂肪约占该年龄段每日上限的${Number(satfatDailyPercent ?? 0).toFixed(1)}%（上限：${satfatLimit}g）。`,
+      threshold: satfatReference.highMin ?? undefined,
+      referenceBasis: '100 g / 100 mL',
+      detail: satfatMetric.value100g == null
+        ? 'Saturated fat per 100 g / 100 mL is unavailable.'
+        : `${satfatMetric.value100g.toFixed(1)}g saturated fat per 100 g / 100 mL.`,
+      detailZh: satfatMetric.value100g == null
+        ? '暂无每100g/100mL饱和脂肪数据。'
+        : `每100g/100mL含饱和脂肪${satfatMetric.value100g.toFixed(1)}g。`,
     },
     {
       code: 'transfat', icon: '⛽', name: 'Trans Fat', nameZh: '反式脂肪',
-      // 只要出现即判定：配料含氢化油脂 / 添加剂 e471/e472 / 营养标签反式脂肪 > 0
+      // 只要出现即判定：配料含氢化油脂，或每100g营养标签反式脂肪 > 0。
+      // E471/E472 是乳化剂，不能单独作为反式脂肪存在的证据。
       present:
-        hasIng(/hydrogenated|氢化/) ||
-        hasRawAdditive(['e471', 'e472']) ||
-        Number(prodNutr.find((n: any) => n.nutrient.name === 'Trans Fat')?.value ?? 0) > 0,
+        hasIngredientPattern(/hydrogenated|氢化/) ||
+        Number(prodNutr.find((n: any) => n.nutrient.name === 'Trans Fat')?.value100g ?? 0) > 0,
       detail: 'Contains hydrogenated oils or trans fat.',
       detailZh: '含氢化油脂或反式脂肪。'
     },
     {
-      code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIng(/fructose corn|果葡|高果糖/),
+      code: 'hfcs', icon: '🌽', name: 'High Fructose Corn Syrup', nameZh: '果葡糖浆', present: hasIngredientPattern(/high[- ]fructose (?:corn|maize)|glucose[- ]fructose|fructose[- ]glucose|果葡|高果糖/),
       detail: 'Contains high fructose corn syrup.', detailZh: '含果葡糖浆。'
     },
     // ↓↓↓ 新增: 抗氧化剂/酸度调节剂/增稠乳化剂/增味剂/甜味剂
@@ -1229,7 +1187,9 @@ export async function scoreFood(input: ScoreInput) {
     },
     {
       code: 'thickeners_emulsifiers', icon: '🥣', name: 'Thickeners / Emulsifiers', nameZh: '增稠剂/乳化剂',
-      present: hasAdditiveCategory(rawAdditives, 'Thickener'),
+      present:
+        hasAdditiveCategory(rawAdditives, 'Thickener') ||
+        hasAdditiveCategory(rawAdditives, 'Emulsifier'),
       detail: 'Contains thickener/emulsifier additives, used to adjust texture or help ingredients blend.',
       detailZh: '含增稠剂/乳化剂类添加剂，用于调整口感质地或帮助成分融合。',
     },

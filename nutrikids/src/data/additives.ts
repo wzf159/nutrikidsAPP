@@ -431,11 +431,11 @@ export const ADDITIVE_DICT: Record<string, AdditiveInfo> = {
   E553AII: {
     name: 'Magnesium Trisilicate',
     nameZh: '三硅酸镁',
-    type: 'Thickener',
-    typeZh: '增稠剂',
+    type: 'Anticaking Agent',
+    typeZh: '抗结剂',
     risk: 'unknown',
-    desc: 'Classified as a thickener. No simple risk classification is provided.',
-    descZh: '被归类为增稠剂，但未提供可直接使用的简单风险等级。',
+    desc: 'Used as an anticaking agent or dusting agent. No simple risk classification is provided.',
+    descZh: '用作抗结剂或撒粉剂，暂无可直接使用的简单风险等级。',
   },
 };
 
@@ -483,7 +483,7 @@ export const RISK_COLOR: Record<
  *   "Thickeners / Emulsifiers", "Flavor Enhancers" and "Sweeteners" come from additive tags.
  */
 export const WATCH_CARDS: WatchCard[] = [
-  { code: 'added-sugar', name: 'Added Sugar', nameZh: '添加糖', icon: '🍬', source: 'nutriments' },
+  { code: 'added-sugar', name: 'Added Sugar', nameZh: '添加糖', icon: '🧁', source: 'nutriments' },
   { code: 'flavorings', name: 'Flavorings', nameZh: '食用香料', icon: '🧪', source: 'ingredients' },
   { code: 'colors', name: 'Food Colors', nameZh: '食用色素', icon: '🎨', source: 'additives' },
   { code: 'preservatives', name: 'Preservatives', nameZh: '防腐剂', icon: '🫙', source: 'additives' },

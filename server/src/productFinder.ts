@@ -382,7 +382,7 @@ export async function syncProductFromOpenFoodFacts(
   try {
     const res = await fetch(
       `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}.json` +
-      '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,ingredients_tags,additives_tags',
+      '?fields=product_name,product_name_zh,brands,image_front_url,nova_group,nutriscore_grade,nutriscore_score,categories_tags,quantity,serving_size,nutriments,allergens_tags,ingredients_text,ingredients_tags,additives_tags',
       { headers: { 'User-Agent': 'NutriKids/0.1 (dev)' } },
     );
     if (!res.ok) return null;
@@ -394,6 +394,7 @@ export async function syncProductFromOpenFoodFacts(
         nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        ingredients_text?: string;
         ingredients_tags?: string[];
         additives_tags?: string[];
       };
@@ -467,6 +468,11 @@ export async function syncProductFromOpenFoodFacts(
           ? JSON.stringify(p.additives_tags)
           : null,
 
+        ingredientsText: p.ingredients_text ?? null,
+        ingredientsTagsJson: p.ingredients_tags?.length
+          ? JSON.stringify(p.ingredients_tags)
+          : null,
+
         categoriesTagsJson: p.categories_tags?.length
           ? JSON.stringify(p.categories_tags)
           : null,
@@ -500,6 +506,11 @@ export async function syncProductFromOpenFoodFacts(
 
         additivesJson: p.additives_tags?.length
           ? JSON.stringify(p.additives_tags)
+          : null,
+
+        ingredientsText: p.ingredients_text ?? null,
+        ingredientsTagsJson: p.ingredients_tags?.length
+          ? JSON.stringify(p.ingredients_tags)
           : null,
 
         categoriesTagsJson: p.categories_tags?.length
@@ -540,6 +551,7 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         nutriscore_score?: number; categories_tags?: string[];
         quantity?: string; serving_size?: string;
         nutriments?: Record<string, number>; allergens_tags?: string[];
+        ingredients_text?: string;
         ingredients_tags?: string[];
         additives_tags?: string[];
       }>;
@@ -613,6 +625,11 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
           ? JSON.stringify(p.additives_tags)
           : null,
 
+        ingredientsText: p.ingredients_text ?? null,
+        ingredientsTagsJson: p.ingredients_tags?.length
+          ? JSON.stringify(p.ingredients_tags)
+          : null,
+
         categoriesTagsJson: p.categories_tags?.length
           ? JSON.stringify(p.categories_tags)
           : null,
@@ -632,6 +649,8 @@ async function searchOpenFoodFactsByName(name: string): Promise<ProductFindResul
         nutrients: { create: nutrients },
         allergens: { create: allergenRows.map((a) => ({ allergenId: a.id })) },
         additivesJson: p.additives_tags?.length ? JSON.stringify(p.additives_tags) : null,
+        ingredientsText: p.ingredients_text ?? null,
+        ingredientsTagsJson: p.ingredients_tags?.length ? JSON.stringify(p.ingredients_tags) : null,
         categoriesTagsJson: p.categories_tags?.length ? JSON.stringify(p.categories_tags) : null,
       },
       select: { id: true, name: true, nameZh: true, imageUrl: true, brand: { select: { name: true } } },

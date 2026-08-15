@@ -831,18 +831,18 @@ export default function FoodAnalyzer() {
   const WATCH_LIMIT_CODES = new Set(['added_sugar', 'sodium', 'satfat']);
 
   const watchLevel = (code: string, present: boolean, dailyValue = 0) => {
-    // Trans fat has no moderate/low state: any detected amount is highlighted.
+    // Trans fat is binary: display only present/absent, never High/Moderate/Low.
     if (code === 'transfat') {
       return present
         ? {
           key: 'high' as const,
-          label: isZh ? '高' : isEs ? 'ALTO' : 'HIGH',
+          label: isZh ? '有' : isEs ? 'PRESENTE' : 'PRESENT',
           color: '#dc2626',
           bg: 'rgba(255,237,213,0.82)',
         }
         : {
           key: 'low' as const,
-          label: isZh ? '无' : isEs ? 'NO' : 'ABSENT',
+          label: isZh ? '无' : isEs ? 'AUSENTE' : 'ABSENT',
           color: '#a7a7b7',
           bg: 'rgba(255,255,255,0.38)',
         };
@@ -861,7 +861,7 @@ export default function FoodAnalyzer() {
       };
     }
 
-    if (percent >= 10) {
+    if (percent > 5) {
       return {
         key: 'moderate' as const,
         label: isZh ? '中等' : isEs ? 'MODERADO' : 'MODERATE',
@@ -886,6 +886,22 @@ export default function FoodAnalyzer() {
       return {
         key: 'unknown' as const,
         label: isZh ? '数据不可用' : isEs ? 'SIN DATOS' : 'DATA UNAVAILABLE',
+        color: '#a7a7b7',
+        bg: 'rgba(255,255,255,0.38)',
+      };
+    }
+
+    // Added sugar, sodium and saturated fat display "None" when the
+    // standardized per-100g value is explicitly zero. Missing values are
+    // handled above and must not be treated as zero.
+    if (
+      WATCH_LIMIT_CODES.has(w.code) &&
+      w.value100g != null &&
+      Number(w.value100g) === 0
+    ) {
+      return {
+        key: 'low' as const,
+        label: isZh ? '无' : isEs ? 'AUSENTE' : 'NONE',
         color: '#a7a7b7',
         bg: 'rgba(255,255,255,0.38)',
       };
@@ -1941,6 +1957,7 @@ export default function FoodAnalyzer() {
                         };
 
                         const isNutrient = NUTRIENT_WATCH_CODES.has(watchData.code);
+                        const hasNumericThreshold = WATCH_LIMIT_CODES.has(watchData.code);
                         const status = isNutrient
                           ? watchStatus(watchData)
                           : ingredientStatus(true);
@@ -1956,7 +1973,7 @@ export default function FoodAnalyzer() {
                                 </h3>
 
                                 <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                  {isNutrient
+                                  {hasNumericThreshold
                                     ? (isZh ? '每100g/100ml含量、每日上限与同品类对比' : 'Per-100g content, daily limit and category comparison')
                                     : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
                                 </p>
@@ -1972,7 +1989,7 @@ export default function FoodAnalyzer() {
                             </div>
 
                             <div className="px-4 py-2">
-                              {isNutrient ? (
+                              {hasNumericThreshold ? (
                                 <>
                                   <div className="py-3 border-b border-gray-100">
                                     <p className="text-[12px] font-semibold text-[#1a1040]">
@@ -2393,6 +2410,7 @@ export default function FoodAnalyzer() {
                       if (!selectedWatchData) return null;
 
                       const isNutrient = NUTRIENT_WATCH_CODES.has(selectedWatchData.code);
+                      const hasNumericThreshold = WATCH_LIMIT_CODES.has(selectedWatchData.code);
 
                       // Added sugar / sodium / saturated fat remain clickable
                       // even when their level is Moderate or Low. Ingredient
@@ -2425,7 +2443,7 @@ export default function FoodAnalyzer() {
                                 {isZh ? wd.nameZh : wd.name}
                               </h3>
                               <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                {isNutrient
+                                {hasNumericThreshold
                                   ? (isZh ? '每100g/100ml含量、每日上限与同品类对比' : 'Per-100g content, daily limit and category comparison')
                                   : (isZh ? '检测结果与配料说明' : 'Detection and ingredient details')}
                               </p>
@@ -2441,7 +2459,7 @@ export default function FoodAnalyzer() {
                           </div>
 
                           {/* Body */}
-                          {isNutrient ? (
+                          {hasNumericThreshold ? (
                             <div className="px-4 py-2">
                               <div className="flex items-start gap-2.5 py-2.5 border-b border-gray-100">
                                 <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#893ce3]" />

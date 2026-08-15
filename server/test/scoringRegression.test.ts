@@ -3,7 +3,9 @@ import test from 'node:test';
 
 process.env.OPENAI_API_KEY ||= 'test-only-key';
 
-const productFinder = await import('./productFinder.js');
+const productFinder = await import('../src/productFinder.js');
+const additiveCategories = await import('../src/scoring/additiveCategories.js');
+const watchMetrics = await import('../src/scoring/watchMetrics.js');
 
 
 test('OFF mapping keeps total sugar and added sugar as separate nutrients', () => {
@@ -185,4 +187,96 @@ test('OFF *_serving value wins over calculated serving value', () => {
 
   // 应该使用 OFF 的 3，而不是自己算出来的 2.5
   assert.equal(protein?.value, 3);
+});
+
+test('P3 sodium uses the spreadsheet 4+ reference and per-100g content', () => {
+  const reference = watchMetrics.p3WatchReference(3, 'sodium');
+  const sodium = watchMetrics.per100gWatchMetric(
+    0.4,
+    1000,
+    reference.dailyLimit,
+    reference.highMin,
+  );
+
+  assert.deepEqual(reference, {
+    dailyLimit: 2300,
+    lowMax: 115,
+    highMin: 460,
+    unit: 'mg',
+  });
+  assert.equal(sodium.value100g, 400);
+  assert.equal(Math.round(Number(sodium.dailyPercent) * 10) / 10, 17.4);
+  assert.equal(sodium.present, false);
+});
+
+test('P3 references exactly match the spreadsheet age groups', () => {
+  assert.deepEqual(watchMetrics.p3WatchReference(2, 'added_sugar'), {
+    dailyLimit: 25,
+    lowMax: 1.25,
+    highMin: 5,
+    unit: 'g',
+  });
+  assert.deepEqual(watchMetrics.p3WatchReference(2, 'satfat'), {
+    dailyLimit: 10,
+    lowMax: 0.5,
+    highMin: 2,
+    unit: 'g',
+  });
+  assert.deepEqual(watchMetrics.p3WatchReference(2, 'sodium'), {
+    dailyLimit: 1500,
+    lowMax: 75,
+    highMin: 300,
+    unit: 'mg',
+  });
+  assert.deepEqual(watchMetrics.p3WatchReference(4, 'added_sugar'), {
+    dailyLimit: 50,
+    lowMax: 2.5,
+    highMin: 10,
+    unit: 'g',
+  });
+  assert.deepEqual(watchMetrics.p3WatchReference(4, 'satfat'), {
+    dailyLimit: 20,
+    lowMax: 1,
+    highMin: 4,
+    unit: 'g',
+  });
+  assert.deepEqual(watchMetrics.p3WatchReference(1, 'added_sugar'), {
+    dailyLimit: null,
+    lowMax: null,
+    highMin: null,
+    unit: 'g',
+  });
+});
+
+test('P3 infers zero added sugar only from an explicit zero total sugar', () => {
+  assert.deepEqual(watchMetrics.resolveAddedSugar100g(undefined, 0), {
+    value100g: 0,
+    inferredFromZeroTotalSugar: true,
+  });
+  assert.deepEqual(watchMetrics.resolveAddedSugar100g(undefined, 4), {
+    value100g: null,
+    inferredFromZeroTotalSugar: false,
+  });
+  assert.deepEqual(watchMetrics.resolveAddedSugar100g(undefined, undefined), {
+    value100g: null,
+    inferredFromZeroTotalSugar: false,
+  });
+  assert.deepEqual(watchMetrics.resolveAddedSugar100g(2, 0), {
+    value100g: 2,
+    inferredFromZeroTotalSugar: false,
+  });
+});
+
+test('OFF E322 is an emulsifier while E500 remains an acidity regulator', () => {
+  assert.equal(additiveCategories.getAdditiveCategory('en:e322'), 'Emulsifier');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e322i'), 'Emulsifier');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e500'), 'Acidity Regulator');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e500ii'), 'Acidity Regulator');
+});
+
+test('known additive-category regressions match their declared functions', () => {
+  assert.equal(additiveCategories.getAdditiveCategory('en:e471'), 'Emulsifier');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e472e'), 'Emulsifier');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e420'), 'Sweetener');
+  assert.equal(additiveCategories.getAdditiveCategory('en:e553aii'), 'Anticaking Agent');
 });
