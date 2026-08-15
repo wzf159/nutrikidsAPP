@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Navigate, Routes, Route } from 'react-router-dom';
 import { useSession } from './lib/auth';
 import TopNav from './components/E1_Layout/TopNav';
 import Home from './pages/Home';
@@ -42,8 +42,10 @@ function ConsumerApp() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/onboarding" element={<Onboarding />} />
-            <Route path="/food-analyzer" element={<FoodAnalyzer />} />
-            <Route path="/science-insights" element={<ScienceInsights />} />
+            <Route path="/label-profiler" element={<FoodAnalyzer />} />
+            <Route path="/food-analyzer" element={<Navigate to="/label-profiler" replace />} />
+            <Route path="/healthy-growth" element={<ScienceInsights />} />
+            <Route path="/science-insights" element={<Navigate to="/healthy-growth" replace />} />
             <Route path="/growth-profile" element={<GrowthProfile />} />
             <Route path="/feedback" element={<Feedback />} />
             <Route path="/food-fact" element={<FoodFactVisualization />} />

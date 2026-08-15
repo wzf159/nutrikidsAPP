@@ -22,8 +22,8 @@ const handleUpgrade = async () => {
 };
 
 const NAV_ITEMS: { icon: string; key: string; path: string }[] = [
-  { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/food-analyzer' },
-  { icon: '🌱', key: 'nav.scienceInsights', path: '/science-insights' },
+  { icon: '🏷️', key: 'nav.foodAnalyzer', path: '/label-profiler' },
+  { icon: '🌱', key: 'nav.scienceInsights', path: '/healthy-growth' },
   { icon: '💬', key: 'nav.feedback', path: '/feedback' },
 ];
 

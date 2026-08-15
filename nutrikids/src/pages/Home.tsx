@@ -54,7 +54,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => navigate('/food-analyzer')}
+          onClick={() => navigate('/label-profiler')}
           className="text-[13px] font-bold text-[#a78bfa] hover:text-[#893ce3] underline underline-offset-[3px] transition"
           style={{ fontFamily: 'Nunito, sans-serif' }}
         >

@@ -174,7 +174,7 @@ export default function Onboarding() {
       if (existing) await updateChild(existing.id, input);
       else await createChild(input);
       window.dispatchEvent(new Event('nutrikids:child-updated'));
-      navigate('/food-analyzer');
+      navigate('/label-profiler');
     } catch (e) {
       setError((e as Error).message);
     } finally {
