@@ -11,22 +11,22 @@ export default function Footer() {
   const navigate = useNavigate();
 
   const rightsLabel = isZh
-    ? `© ${new Date().getFullYear()} NutriKids. 保留所有权利。`
+    ? `© ${new Date().getFullYear()} Growtrition. 保留所有权利。`
     : isEs
-    ? `© ${new Date().getFullYear()} NutriKids. Todos los derechos reservados.`
-    : `© ${new Date().getFullYear()} NutriKids. All rights reserved.`;
+    ? `© ${new Date().getFullYear()} Growtrition. Todos los derechos reservados.`
+    : `© ${new Date().getFullYear()} Growtrition. All rights reserved.`;
 
   const desc1 = isZh
-    ? (<>NutriKids 由 <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong> 开发，这是一家致力于通过研究、教育和创新改善儿童健康的非营利组织。</>)
+    ? (<>Growtrition 由 <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong> 开发，这是一家致力于通过研究、教育和创新改善儿童健康的非营利组织。</>)
     : isEs
-    ? (<>NutriKids es desarrollado por <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong>, una organización sin fines de lucro dedicada a mejorar el bienestar infantil a través de la investigación, la educación y la innovación.</>)
-    : (<>NutriKids is developed by <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong>, a nonprofit organization dedicated to improving children's wellbeing through research, education, and innovation.</>);
+    ? (<>Growtrition es desarrollado por <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong>, una organización sin fines de lucro dedicada a mejorar el bienestar infantil a través de la investigación, la educación y la innovación.</>)
+    : (<>Growtrition is developed by <strong style={{ color: '#7c3aed' }}>SENSE Institute</strong>, a nonprofit organization dedicated to improving children's wellbeing through research, education, and innovation.</>);
 
   const desc2 = isZh
-    ? 'NutriKids 是一个教育平台，不提供医疗建议、诊断或治疗。'
+    ? 'Growtrition 是一个教育平台，不提供医疗建议、诊断或治疗。'
     : isEs
-    ? 'NutriKids es una plataforma educativa y no brinda asesoramiento médico, diagnóstico ni tratamiento.'
-    : 'NutriKids is an educational platform and does not provide medical advice, diagnosis, or treatment.';
+    ? 'Growtrition es una plataforma educativa y no brinda asesoramiento médico, diagnóstico ni tratamiento.'
+    : 'Growtrition is an educational platform and does not provide medical advice, diagnosis, or treatment.';
 
   const links = isZh
     ? [

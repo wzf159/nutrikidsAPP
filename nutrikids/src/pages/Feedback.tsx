@@ -138,7 +138,7 @@ export default function Feedback() {
           <div style={{ fontSize: 52, marginBottom: 16 }}>🎉</div>
           <p style={{ fontFamily: "'Poppins',sans-serif", fontSize: 22, fontWeight: 800, color: '#1f2937', marginBottom: 10 }}>Thank you!</p>
           <p style={{ fontFamily: ff, fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 6 }}>
-            Your feedback means a lot to us. We'll use it to make NutriKids even better for families like yours.
+            Your feedback means a lot to us. We'll use it to make Growtrition even better for families like yours.
           </p>
           <p style={{ fontFamily: ff, fontSize: 14, color: '#6b7280', lineHeight: 1.7, marginBottom: 24 }}>
             If you have more thoughts, feel free to reach out anytime at{' '}

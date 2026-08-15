@@ -38,7 +38,7 @@
     },
     "rules": {
       "title": "Scoring & Labelling Rules (Guideline-based)",
-      "subtitle": "These 6 authoritative guidelines are rule sources, not databases: what each one is, which NutriKids rule it becomes, and how to implement it.",
+      "subtitle": "These 6 authoritative guidelines are rule sources, not databases: what each one is, which Growtrition rule it becomes, and how to implement it.",
       "what": "What it is",
       "rule": "Rule it becomes",
       "how": "How to implement"
@@ -48,7 +48,7 @@
       "subtitle": "Three complementary roles: Nutri-Score grades, NRF ranks, FDA Healthy badges — all alongside the 4-dimension personalised score.",
       "what": "What it is",
       "formula": "Formula",
-      "how": "Usage in NutriKids",
+      "how": "Usage in Growtrition",
       "pros": "Pros & caveats"
     }
   },
@@ -125,7 +125,7 @@
     }
   },
   "home": {
-    "title": "NutriKids",
+    "title": "Growtrition",
     "subtitle": "Smart nutrition guidance for growing kids",
     "cta": "Analyze Food",
     "feature1Title": "Food Analyzer",
@@ -141,9 +141,9 @@
   },
   "feedback": {
     "title": "Share Your Feedback",
-    "subtitle": "Help us make NutriKids better for you and your child.",
+    "subtitle": "Help us make Growtrition better for you and your child.",
     "timer": "Takes less than 2 minutes",
-    "privacyNote": "Your responses are anonymous and used only to improve NutriKids.",
+    "privacyNote": "Your responses are anonymous and used only to improve Growtrition.",
     "q1": {
       "label": "Which best describes you?",
       "1": "👨‍👩‍👧 Parent",
@@ -158,7 +158,7 @@
       "4": "🤐 Prefer not to say"
     },
     "q3": {
-      "label": "Has NutriKids helped you make better food choices for your child?",
+      "label": "Has Growtrition helped you make better food choices for your child?",
       "1": "Not at all",
       "2": "Not really",
       "3": "Somewhat",
@@ -174,7 +174,7 @@
       "5": "✨ Visuals are a bit distracting"
     },
     "q5": {
-      "label": "How trustworthy does NutriKids feel?",
+      "label": "How trustworthy does Growtrition feel?",
       "1": "⭐⭐⭐⭐⭐ Very trustworthy",
       "2": "⭐⭐⭐⭐ Mostly trustworthy",
       "3": "⭐⭐⭐ Neutral",
@@ -196,7 +196,7 @@
       "2": "🌱 Healthy Growth"
     },
     "q8": {
-      "label": "Which feature would you most like NutriKids to add next?",
+      "label": "Which feature would you most like Growtrition to add next?",
       "sub": "Select all that apply",
       "1": "📅 Daily Nutrition Tracker",
       "2": "🎯 Personalized Nutrition Plan",
@@ -205,7 +205,7 @@
       "5": "🤖 AI Nutrition Coach"
     },
     "q9": {
-      "label": "How likely are you to recommend NutriKids to other parents?",
+      "label": "How likely are you to recommend Growtrition to other parents?",
       "low": "Not at all likely",
       "high": "Extremely likely"
     },
@@ -216,7 +216,7 @@
     "submit": "Submit Feedback",
     "submitting": "Submitting...",
     "successTitle": "Thank you!",
-    "successMsg": "Your feedback means the world to us.<br/>We'll use it to make NutriKids even better for you and your child 💜",
+    "successMsg": "Your feedback means the world to us.<br/>We'll use it to make Growtrition even better for you and your child 💜",
     "submitAnother": "Submit Another"
   },
   "lang": {
@@ -227,7 +227,7 @@
     "title": "Support Us",
     "landing": {
       "subtitle": "Help us build a healthier future for children.",
-      "desc": "NutriKids is a nonprofit, community-driven initiative. Whether through financial support, technical contributions, research collaboration, or sharing our mission, you can help us make nutrition guidance more accessible for families.",
+      "desc": "Growtrition is a nonprofit, community-driven initiative. Whether through financial support, technical contributions, research collaboration, or sharing our mission, you can help us make nutrition guidance more accessible for families.",
       "donate": "Donate",
       "becomeContributor": "Become a Contributor"
     },
@@ -235,7 +235,7 @@
       "backBtn": "Back to Support",
       "title": "Become a Contributor",
       "subtitle": "Help us improve children's nutrition education and wellbeing.",
-      "desc1": "NutriKids welcomes individuals and organizations who would like to contribute their time, expertise, or resources to support healthier childhood development.",
+      "desc1": "Growtrition welcomes individuals and organizations who would like to contribute their time, expertise, or resources to support healthier childhood development.",
       "desc2": "We are particularly interested in collaborating with:",
       "roles": [
         "Software Developers",
@@ -248,7 +248,7 @@
         "Student Volunteers"
       ],
       "desc3": "Whether you can contribute technical expertise, research support, educational content, design skills, or community outreach, we would love to hear from you.",
-      "note": "Please note: Most contributor opportunities are currently volunteer-based. As NutriKids continues to grow, some roles may become eligible for paid support depending on available funding, project needs, work authorization requirements, and role availability. Compensation is not guaranteed, and participation should be considered voluntary unless otherwise agreed upon in writing.",
+      "note": "Please note: Most contributor opportunities are currently volunteer-based. As Growtrition continues to grow, some roles may become eligible for paid support depending on available funding, project needs, work authorization requirements, and role availability. Compensation is not guaranteed, and participation should be considered voluntary unless otherwise agreed upon in writing.",
       "contact": "Questions? Contact us at: ",
       "timer": "Takes less than 2 minutes",
       "questions": {
@@ -265,7 +265,7 @@
         "q5": "Approximately how much time could you contribute?",
         "q6": "Have you already sent your resume and/or cover letter to ",
         "q6Suffix": "?",
-        "q7": "Why are you interested in contributing to NutriKids? ",
+        "q7": "Why are you interested in contributing to Growtrition? ",
         "q7Hint": "Optional",
         "q7HintFull": "We would love to learn more about your interests, goals, or motivation for getting involved.",
         "q7Placeholder": "Share your motivation...",
@@ -279,7 +279,7 @@
     "success": {
       "title": "Thank You!",
       "messages": [
-        "Thank you for your interest in supporting NutriKids.",
+        "Thank you for your interest in supporting Growtrition.",
         "Our team reviews submissions periodically and may contact contributors when opportunities align with project needs and available resources.",
         "We appreciate your willingness to help improve children's nutrition education and wellbeing."
       ]
@@ -312,7 +312,7 @@
   },
   "about": {
     "tabs": {
-      "aboutNutrikids": "About NutriKids",
+      "aboutNutrikids": "About Growtrition",
       "mission": "Mission",
       "howItWorks": "How It Works",
       "team": "Team",
@@ -324,11 +324,11 @@
       "getInTouch": "Get in Touch"
     },
     "panelAbout": {
-      "title": "About NutriKids",
+      "title": "About Growtrition",
       "paragraphs": [
-        "NutriKids is an evidence-informed nutrition education platform designed to help families understand how food choices may support their children's unique growth and developmental needs.",
-        "By combining nutrition science, publicly available food and nutrition data, and artificial intelligence technology, NutriKids translates complex food information into practical, child-centered insights that are easier for families to understand and apply.",
-        "Unlike general food analysis tools, NutriKids is being developed to help parents evaluate foods in the context of a child's age, growth stage, and nutritional needs.",
+        "Growtrition is an evidence-informed nutrition education platform designed to help families understand how food choices may support their children's unique growth and developmental needs.",
+        "By combining nutrition science, publicly available food and nutrition data, and artificial intelligence technology, Growtrition translates complex food information into practical, child-centered insights that are easier for families to understand and apply.",
+        "Unlike general food analysis tools, Growtrition is being developed to help parents evaluate foods in the context of a child's age, growth stage, and nutritional needs.",
         "Our first release focuses on the <strong>Food Analyzer</strong>, which helps families better understand packaged foods and how their nutritional characteristics may support different aspects of child development. Future releases will introduce Daily Nutrition Tracking and Personalized Nutrition Plans to provide a more comprehensive and individualized nutrition experience.",
         "Our long-term vision is to create a trusted nutrition companion that helps families make informed decisions and build healthier habits throughout childhood."
       ]
@@ -336,7 +336,7 @@
     "panelMission": {
       "title": "Mission",
       "paragraphs": [
-        "At NutriKids, we believe that every child deserves access to nutrition guidance that reflects their unique developmental needs.",
+        "At Growtrition, we believe that every child deserves access to nutrition guidance that reflects their unique developmental needs.",
         "Our mission is to <strong>empower parents and caregivers</strong> with accessible, trustworthy, and science-informed nutrition insights that support healthier food choices and lifelong wellbeing.",
         "By making nutrition information easier to understand and apply, we aim to help families build healthy habits and make confident decisions about the foods their children consume."
       ]
@@ -346,7 +346,7 @@
       "foodAnalyzer": {
         "title": "Food Analyzer",
         "badge": "Available Now",
-        "desc": "The Food Analyzer evaluates packaged foods based on ingredients, nutrient content, and food characteristics. Rather than simply displaying nutrition facts, NutriKids helps parents understand how nutrients and ingredients may contribute to different aspects of child growth and development while highlighting nutritional strengths and potential areas of concern."
+        "desc": "The Food Analyzer evaluates packaged foods based on ingredients, nutrient content, and food characteristics. Rather than simply displaying nutrition facts, Growtrition helps parents understand how nutrients and ingredients may contribute to different aspects of child growth and development while highlighting nutritional strengths and potential areas of concern."
       },
       "dailyTracking": {
         "title": "Daily Nutrition Tracking",
@@ -360,12 +360,12 @@
       },
       "approach": {
         "title": "Our Approach",
-        "desc": "NutriKids is designed to <strong>support—not replace</strong>—parental judgment and professional healthcare guidance. Our goal is to make nutrition information easier to understand so families can make informed decisions with greater confidence."
+        "desc": "Growtrition is designed to <strong>support—not replace</strong>—parental judgment and professional healthcare guidance. Our goal is to make nutrition information easier to understand so families can make informed decisions with greater confidence."
       }
     },
     "panelTeam": {
       "title": "Team",
-      "desc": "NutriKids is developed by a multidisciplinary team with backgrounds in research, product design, data science, and software development. The project is led by <strong>SENSE Institute</strong>, a nonprofit organization dedicated to advancing community wellbeing through research, education, and innovation.",
+      "desc": "Growtrition is developed by a multidisciplinary team with backgrounds in research, product design, data science, and software development. The project is led by <strong>SENSE Institute</strong>, a nonprofit organization dedicated to advancing community wellbeing through research, education, and innovation.",
       "members": [
         {
           "name": "Houpu Li",
@@ -392,7 +392,7 @@
     },
     "panelSources": {
       "title": "Scientific Sources",
-      "desc": "NutriKids is informed by publicly available scientific evidence, nutrition research, and guidance from recognized health and nutrition organizations, including:",
+      "desc": "Growtrition is informed by publicly available scientific evidence, nutrition research, and guidance from recognized health and nutrition organizations, including:",
       "items": [
         {
           "emoji": "🇺🇸",
@@ -446,7 +446,7 @@
       "footer": "We regularly review available resources and update our educational content to reflect current evidence and best practices whenever possible.",
       "scoreCalc": {
         "title": "How the Score Is Calculated",
-        "desc": "NutriKids' food scores are computed in two steps by a deterministic rule engine, not randomly generated by AI, so results stay stable, auditable, and traceable:",
+        "desc": "Growtrition' food scores are computed in two steps by a deterministic rule engine, not randomly generated by AI, so results stay stable, auditable, and traceable:",
         "dims": [
           {
             "weight": "Step 1",
@@ -469,14 +469,14 @@
     },
     "panelAIDisclaimer": {
       "title": "AI Disclaimer",
-      "p1": "NutriKids uses artificial intelligence (AI) technology to help analyze food and nutrition information and generate educational insights.",
+      "p1": "Growtrition uses artificial intelligence (AI) technology to help analyze food and nutrition information and generate educational insights.",
       "pillText": "While we strive to provide accurate and useful information, <strong>AI-generated content may occasionally contain inaccuracies, omissions, or interpretations</strong> that do not fully reflect an individual's unique circumstances.",
-      "p2": "Information provided by NutriKids is intended for <strong>educational purposes only</strong> and should not be considered medical, nutritional, or professional advice."
+      "p2": "Information provided by Growtrition is intended for <strong>educational purposes only</strong> and should not be considered medical, nutritional, or professional advice."
     },
     "panelMedicalDisclaimer": {
       "title": "Medical Disclaimer",
-      "p1": "NutriKids is an <strong>educational platform</strong> and does not provide medical advice, diagnosis, treatment, or healthcare services.",
-      "pillText": "Information provided through NutriKids is intended for <strong>educational and informational purposes only</strong> and should not replace professional medical or nutritional guidance.",
+      "p1": "Growtrition is an <strong>educational platform</strong> and does not provide medical advice, diagnosis, treatment, or healthcare services.",
+      "pillText": "Information provided through Growtrition is intended for <strong>educational and informational purposes only</strong> and should not replace professional medical or nutritional guidance.",
       "p2": "Parents and caregivers should consult <strong>qualified healthcare professionals</strong> regarding questions about a child's health, nutrition, growth, or development."
     },
     "panelPrivacyPolicy": {
@@ -485,11 +485,11 @@
       "sections": [
         {
           "title": "Overview",
-          "content": "NutriKids is committed to protecting your privacy and handling your information responsibly. This Privacy Policy explains what information we collect, how we use it, and the choices available to you when using NutriKids."
+          "content": "Growtrition is committed to protecting your privacy and handling your information responsibly. This Privacy Policy explains what information we collect, how we use it, and the choices available to you when using Growtrition."
         },
         {
           "title": "Information We May Collect",
-          "content": "Depending on how you use NutriKids, we may collect:",
+          "content": "Depending on how you use Growtrition, we may collect:",
           "items": [
             "Information you voluntarily provide, such as age group preferences, nutrition-related inputs, or feedback submissions",
             "Food and nutrition information submitted for analysis",
@@ -501,7 +501,7 @@
           "title": "How We Use Information",
           "content": "We may use collected information to:",
           "items": [
-            "Provide and improve NutriKids services",
+            "Provide and improve Growtrition services",
             "Generate nutrition analyses and educational insights",
             "Understand how users interact with the platform",
             "Improve functionality, accuracy, and user experience",
@@ -511,11 +511,11 @@
         },
         {
           "title": "Data Sharing",
-          "content": "<strong>NutriKids does not sell personal information.</strong> We may share information with trusted service providers that help operate the platform, such as hosting, analytics, payment processing, or AI service providers, when necessary to deliver services."
+          "content": "<strong>Growtrition does not sell personal information.</strong> We may share information with trusted service providers that help operate the platform, such as hosting, analytics, payment processing, or AI service providers, when necessary to deliver services."
         },
         {
           "title": "Children's Privacy",
-          "content": "NutriKids is designed to support families and caregivers. Parents and caregivers should provide information on behalf of children. We do not knowingly collect personal information directly from children without appropriate parental involvement."
+          "content": "Growtrition is designed to support families and caregivers. Parents and caregivers should provide information on behalf of children. We do not knowingly collect personal information directly from children without appropriate parental involvement."
         },
         {
           "title": "Data Security",
@@ -537,41 +537,41 @@
       "sections": [
         {
           "title": "Acceptance of Terms",
-          "content": "By accessing or using NutriKids, you agree to these Terms of Use. If you do not agree with these terms, please discontinue use of the platform.",
+          "content": "By accessing or using Growtrition, you agree to these Terms of Use. If you do not agree with these terms, please discontinue use of the platform.",
           "type": "warning"
         },
         {
           "title": "Educational Purpose",
-          "content": "NutriKids is an educational platform designed to help families better understand food, nutrition, and healthy development. The platform is intended for <strong>informational and educational purposes only</strong>."
+          "content": "Growtrition is an educational platform designed to help families better understand food, nutrition, and healthy development. The platform is intended for <strong>informational and educational purposes only</strong>."
         },
         {
           "title": "No Medical Advice",
-          "content": "NutriKids does not provide medical advice, diagnosis, treatment, or healthcare services. Information provided through the platform should not be considered a substitute for professional medical, nutritional, or healthcare guidance.",
+          "content": "Growtrition does not provide medical advice, diagnosis, treatment, or healthcare services. Information provided through the platform should not be considered a substitute for professional medical, nutritional, or healthcare guidance.",
           "type": "alert"
         },
         {
           "title": "User Responsibility",
-          "content": "Users are responsible for evaluating information provided by NutriKids and determining its suitability for their individual circumstances. Parents and caregivers should consult qualified healthcare professionals regarding questions about a child's health, nutrition, growth, or development."
+          "content": "Users are responsible for evaluating information provided by Growtrition and determining its suitability for their individual circumstances. Parents and caregivers should consult qualified healthcare professionals regarding questions about a child's health, nutrition, growth, or development."
         },
         {
           "title": "Accuracy of Information",
-          "content": "We strive to provide accurate and evidence-informed information. However, NutriKids does not guarantee the accuracy, completeness, reliability, or suitability of any content, analysis, or recommendation. Information may change as scientific knowledge evolves."
+          "content": "We strive to provide accurate and evidence-informed information. However, Growtrition does not guarantee the accuracy, completeness, reliability, or suitability of any content, analysis, or recommendation. Information may change as scientific knowledge evolves."
         },
         {
           "title": "Intellectual Property",
-          "content": "Unless otherwise stated, content, design, logos, text, and materials available through NutriKids are the property of NutriKids, SENSE Institute, or their respective owners and may not be reproduced without permission."
+          "content": "Unless otherwise stated, content, design, logos, text, and materials available through Growtrition are the property of Growtrition, SENSE Institute, or their respective owners and may not be reproduced without permission."
         },
         {
           "title": "Limitation of Liability",
-          "content": "To the fullest extent permitted by law, NutriKids, SENSE Institute, and project contributors shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, or inability to use, the platform."
+          "content": "To the fullest extent permitted by law, Growtrition, SENSE Institute, and project contributors shall not be liable for any direct, indirect, incidental, consequential, or special damages arising from the use of, or inability to use, the platform."
         },
         {
           "title": "Modifications",
-          "content": "We may modify, suspend, or discontinue any portion of NutriKids at any time without prior notice."
+          "content": "We may modify, suspend, or discontinue any portion of Growtrition at any time without prior notice."
         },
         {
           "title": "Updates to These Terms",
-          "content": "We may update these Terms of Use periodically. Continued use of NutriKids after changes are posted constitutes acceptance of the revised terms."
+          "content": "We may update these Terms of Use periodically. Continued use of Growtrition after changes are posted constitutes acceptance of the revised terms."
         },
         {
           "title": "Contact Us",
