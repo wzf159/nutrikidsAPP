@@ -481,7 +481,20 @@ export default function FoodAnalyzer() {
 
   async function runAiSummary(productName: string) {
     const activeChildId = childIdRef.current;
-    if (!activeChildId) return;
+
+    console.log('runAiSummary clicked');
+    console.log('productName:', productName);
+    console.log('activeChildId:', activeChildId);
+
+    if (!activeChildId) {
+      setPhase({
+        name: 'error',
+        msg: isZh
+          ? '没有找到当前孩子档案，请刷新页面后重试'
+          : 'No active child profile was found. Please refresh and try again.',
+      });
+      return;
+    }
 
     setResult(null);
     setSelectedGoal(null);
@@ -499,10 +512,14 @@ export default function FoodAnalyzer() {
     });
 
     try {
+      console.log('calling getAISummary...');
+
       const summary = await getAISummary(
         productName,
         activeChildId,
       );
+
+      console.log('AI summary returned:', summary);
 
       setPhase({
         name: 'ai-result',
@@ -510,6 +527,8 @@ export default function FoodAnalyzer() {
         summary,
       });
     } catch (e) {
+      console.error('getAISummary failed:', e);
+
       setPhase({
         name: 'error',
         msg: (e as Error).message,
@@ -1344,24 +1363,22 @@ export default function FoodAnalyzer() {
 
             {/* Reference UI: large outlined recommendation card */}
             <div
-              className={`rounded-[26px] border-2 p-4 sm:p-5 ${
-                phase.summary.recommendationLevel === 'recommended'
+              className={`rounded-[26px] border-2 p-4 sm:p-5 ${phase.summary.recommendationLevel === 'recommended'
                   ? 'border-emerald-200'
                   : phase.summary.recommendationLevel === 'moderate'
                     ? 'border-amber-200'
                     : 'border-rose-200'
-              }`}
+                }`}
             >
               {/* Header like "Good choices of the day" */}
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0 ${
-                    phase.summary.recommendationLevel === 'recommended'
+                  className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0 ${phase.summary.recommendationLevel === 'recommended'
                       ? 'bg-emerald-500'
                       : phase.summary.recommendationLevel === 'moderate'
                         ? 'bg-amber-500'
                         : 'bg-rose-500'
-                  }`}
+                    }`}
                 >
                   {phase.summary.recommendationLevel === 'recommended'
                     ? 'A'
@@ -1372,13 +1389,12 @@ export default function FoodAnalyzer() {
 
                 <div className="min-w-0">
                   <p
-                    className={`text-[18px] sm:text-[20px] font-extrabold leading-tight ${
-                      phase.summary.recommendationLevel === 'recommended'
+                    className={`text-[18px] sm:text-[20px] font-extrabold leading-tight ${phase.summary.recommendationLevel === 'recommended'
                         ? 'text-emerald-800'
                         : phase.summary.recommendationLevel === 'moderate'
                           ? 'text-amber-800'
                           : 'text-rose-800'
-                    }`}
+                      }`}
                     style={{ fontFamily: 'Poppins, sans-serif' }}
                   >
                     {phase.summary.recommendationLevel === 'recommended'
@@ -1392,13 +1408,12 @@ export default function FoodAnalyzer() {
 
               {/* Recommendation sentence */}
               <div
-                className={`rounded-[18px] px-4 py-3 mb-4 ${
-                  phase.summary.recommendationLevel === 'recommended'
+                className={`rounded-[18px] px-4 py-3 mb-4 ${phase.summary.recommendationLevel === 'recommended'
                     ? 'bg-emerald-50'
                     : phase.summary.recommendationLevel === 'moderate'
                       ? 'bg-amber-50'
                       : 'bg-rose-50'
-                }`}
+                  }`}
               >
                 <p
                   className="text-[13px] sm:text-[14px] font-bold text-gray-700 leading-relaxed"
@@ -1416,17 +1431,15 @@ export default function FoodAnalyzer() {
                   return (
                     <div
                       key={`${item.title}-${index}`}
-                      className={`rounded-[22px] px-4 py-3.5 ${
-                        positive ? 'bg-[#e9fbf3]' : 'bg-[#fff4e8]'
-                      }`}
+                      className={`rounded-[22px] px-4 py-3.5 ${positive ? 'bg-[#e9fbf3]' : 'bg-[#fff4e8]'
+                        }`}
                     >
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-[14px] flex-shrink-0 ${
-                            positive
+                          className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-[14px] flex-shrink-0 ${positive
                               ? 'bg-[#bdf4da] text-emerald-700'
                               : 'bg-[#ffe1b8] text-amber-700'
-                          }`}
+                            }`}
                         >
                           {index + 1}
                         </div>
@@ -1434,9 +1447,8 @@ export default function FoodAnalyzer() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-0.5">
                             <p
-                              className={`text-[14px] sm:text-[15px] font-extrabold leading-tight ${
-                                positive ? 'text-[#166b55]' : 'text-[#9a5a17]'
-                              }`}
+                              className={`text-[14px] sm:text-[15px] font-extrabold leading-tight ${positive ? 'text-[#166b55]' : 'text-[#9a5a17]'
+                                }`}
                               style={{ fontFamily: 'Poppins, sans-serif' }}
                             >
                               {item.title}
@@ -1680,30 +1692,30 @@ export default function FoodAnalyzer() {
                           </>
                         ) : highNutrients.length > 0 ? (
                           <div className="rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 mb-3 flex items-center gap-2">
-                              <span>⭐</span>
+                            <span>⭐</span>
 
-                              <p
-                                className="text-[12px] font-semibold text-green-700"
-                                style={{ fontFamily: 'Nunito, sans-serif' }}
-                              >
-                                <span className="font-bold">
-                                  {isZh ? '富含 ' : isEs ? 'Buena fuente de ' : 'Good source of '}
+                            <p
+                              className="text-[12px] font-semibold text-green-700"
+                              style={{ fontFamily: 'Nunito, sans-serif' }}
+                            >
+                              <span className="font-bold">
+                                {isZh ? '富含 ' : isEs ? 'Buena fuente de ' : 'Good source of '}
+                              </span>
+
+                              {highNutrients.map((n, i) => (
+                                <span
+                                  key={n.id}
+                                  className="font-extrabold"
+                                  style={{ color: nutrientColor(n.id) }}
+                                >
+                                  {isZh
+                                    ? n.nameZh ?? n.name
+                                    : n.name}
+
+                                  {i < highNutrients.length - 1 ? ' & ' : ''}
                                 </span>
-
-                                {highNutrients.map((n, i) => (
-                                  <span
-                                    key={n.id}
-                                    className="font-extrabold"
-                                    style={{ color: nutrientColor(n.id) }}
-                                  >
-                                    {isZh
-                                      ? n.nameZh ?? n.name
-                                      : n.name}
-
-                                    {i < highNutrients.length - 1 ? ' & ' : ''}
-                                  </span>
-                                ))}
-                              </p>
+                              ))}
+                            </p>
                           </div>
                         ) : (
                           presentWatch.length > 0 && (
@@ -1766,7 +1778,7 @@ export default function FoodAnalyzer() {
                   </div>
 
                   {/* 中栏 — BENEFITS：所有等级保留面板，低分档显示风险引导 */}
-                  <div className={`pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${ hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''}`}>
+                  <div className={`pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''}`}>
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
                       <span
@@ -1788,118 +1800,118 @@ export default function FoodAnalyzer() {
                       </div>
                     ) : (
                       <>
-                    {tierCounts && (
-                      <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
-                        {isZh ? `支持 ${tierCounts.core + tierCounts.important + tierCounts.supporting} 项目标` : `Supports ${tierCounts.core + tierCounts.important + tierCounts.supporting} goals`} ·{' '}
-                        <span className="text-[#4c1d95] font-extrabold">{tierCounts.core} {isZh ? '核心' : 'Core'}</span> ·{' '}
-                        <span className="text-[#a21caf] font-extrabold">{tierCounts.important} {isZh ? '重要' : 'Important'}</span> ·{' '}
-                        <span className="text-[#db2777] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
-                      </p>
-                    )}
-
-                    {tierCounts &&
-                      tierCounts.core + tierCounts.important + tierCounts.supporting === 0 && (
-                        <div className="rounded-xl bg-white/55 border border-[rgba(137,60,227,0.12)] px-3 py-3 mb-3">
-                          <p className="text-[11px] font-bold text-[#6b6b8a] leading-relaxed">
-                            {isZh
-                              ? '该食品目前没有足够的营养证据支持所选发育目标。'
-                              : 'This food does not currently provide enough nutrient evidence to support the selected developmental goals.'}
+                        {tierCounts && (
+                          <p className="text-[10px] font-bold text-[#6b6b8a] mb-2.5 leading-relaxed">
+                            {isZh ? `支持 ${tierCounts.core + tierCounts.important + tierCounts.supporting} 项目标` : `Supports ${tierCounts.core + tierCounts.important + tierCounts.supporting} goals`} ·{' '}
+                            <span className="text-[#4c1d95] font-extrabold">{tierCounts.core} {isZh ? '核心' : 'Core'}</span> ·{' '}
+                            <span className="text-[#a21caf] font-extrabold">{tierCounts.important} {isZh ? '重要' : 'Important'}</span> ·{' '}
+                            <span className="text-[#db2777] font-extrabold">{tierCounts.supporting} {isZh ? '辅助' : 'Supporting'}</span>
                           </p>
-                        </div>
-                      )}
+                        )}
 
-                    {/* 按 tier 分组 */}
-                    {(['core', 'important', 'supporting'] as const).map(tier => {
-                      const goalsInTier = view.goals.filter(
-                        g =>
-                          g.selected &&
-                          g.tier === tier &&
-                          supportedGoalIds.has(Number(g.id))
-                      );
-                      const inactiveGoals = view.goals.filter(
-                        g =>
-                          g.selected &&
-                          g.tier === tier &&
-                          !supportedGoalIds.has(Number(g.id))
-                      );
-                      if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
-                      const tc = TIER_CONFIG[tier];
-                      return (
-                        <div key={tier} className="mb-3 relative">
-                          <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1.5 mb-3 border-b"
-                            style={{ color: tc.color, borderColor: `${tc.color}33` }}>
-                            <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: tc.color }} />
-                            {isZh ? `${tc.labelZh}目标` : `${tc.label} Goals`}
-                          </p>
-                          <div className="grid grid-cols-3 gap-2">
-                            {goalsInTier.map(g => (
-                              <button key={g.id} onClick={() => { if (!g.tier) return; setTopWatchPopup(null); setGoalPopup(goalPopup === g.id ? null : g.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
-                                <span
-                                  className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)] ${selectedGoal === g.id ? 'scale-110' : ''}`}
-                                  style={{ border: `3px solid ${tc.color}` }}
-                                >
-                                  {g.icon}
-                                </span>
-                                <span className="text-[9px] font-bold text-center leading-tight text-[#5a1d8a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  {isZh ? g.labelZh ?? g.label : g.label}
-                                </span>
-                              </button>
-                            ))}
-                            {inactiveGoals.map(g => (
-                              <button key={g.id} className="flex flex-col items-center gap-1 cursor-default opacity-40">
-                                <span className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] bg-[rgba(237,220,255,0.5)] grayscale border-2 border-[rgba(137,60,227,0.18)]">
-                                  {g.icon}
-                                </span>
-                                <span className="text-[9px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                                  {isZh ? g.labelZh ?? g.label : g.label}
-                                </span>
-                              </button>
-                            ))}
-                          </div>
-                          {goalPopup !== null && (() => {
-                            const g = view.goals.find(g => Number(g.id) === Number(goalPopup));
-                            if (!g || g.tier !== tier) return null;
-                            const nutrients = view.flows
-                              .filter(f => Number(f.goalId) === Number(goalPopup))
-                              .map(f => view.nutrients.find(n => Number(n.id) === Number(f.nutrientId)))
-                              .filter(Boolean);
-                            return (
-                              <div
-                                className="absolute z-40 top-[72px] left-1/2 -translate-x-1/2 w-[260px] max-w-[calc(100vw-32px)] rounded-[18px] border border-[rgba(124,58,237,0.14)] bg-white/98 shadow-[0_12px_30px_rgba(80,40,160,0.18)] overflow-hidden"
-                                onClick={e => e.stopPropagation()}
-                              >
-                                <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
-                                  <span className="text-[24px] leading-none">{g.icon}</span>
-                                  <div className="min-w-0 flex-1">
-                                    <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                        {tierCounts &&
+                          tierCounts.core + tierCounts.important + tierCounts.supporting === 0 && (
+                            <div className="rounded-xl bg-white/55 border border-[rgba(137,60,227,0.12)] px-3 py-3 mb-3">
+                              <p className="text-[11px] font-bold text-[#6b6b8a] leading-relaxed">
+                                {isZh
+                                  ? '该食品目前没有足够的营养证据支持所选发育目标。'
+                                  : 'This food does not currently provide enough nutrient evidence to support the selected developmental goals.'}
+                              </p>
+                            </div>
+                          )}
+
+                        {/* 按 tier 分组 */}
+                        {(['core', 'important', 'supporting'] as const).map(tier => {
+                          const goalsInTier = view.goals.filter(
+                            g =>
+                              g.selected &&
+                              g.tier === tier &&
+                              supportedGoalIds.has(Number(g.id))
+                          );
+                          const inactiveGoals = view.goals.filter(
+                            g =>
+                              g.selected &&
+                              g.tier === tier &&
+                              !supportedGoalIds.has(Number(g.id))
+                          );
+                          if (goalsInTier.length === 0 && inactiveGoals.length === 0) return null;
+                          const tc = TIER_CONFIG[tier];
+                          return (
+                            <div key={tier} className="mb-3 relative">
+                              <p className="flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-wide pb-1.5 mb-3 border-b"
+                                style={{ color: tc.color, borderColor: `${tc.color}33` }}>
+                                <span className="w-[6px] h-[6px] rounded-full inline-block" style={{ background: tc.color }} />
+                                {isZh ? `${tc.labelZh}目标` : `${tc.label} Goals`}
+                              </p>
+                              <div className="grid grid-cols-3 gap-2">
+                                {goalsInTier.map(g => (
+                                  <button key={g.id} onClick={() => { if (!g.tier) return; setTopWatchPopup(null); setGoalPopup(goalPopup === g.id ? null : g.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
+                                    <span
+                                      className={`w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] transition-all bg-white/88 shadow-[0_0_0_3px_rgba(137,60,227,0.18),0_4px_12px_rgba(137,60,227,0.3)] ${selectedGoal === g.id ? 'scale-110' : ''}`}
+                                      style={{ border: `3px solid ${tc.color}` }}
+                                    >
+                                      {g.icon}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-center leading-tight text-[#5a1d8a]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                       {isZh ? g.labelZh ?? g.label : g.label}
-                                    </h3>
-                                    <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
-                                      {isZh ? '贡献营养素' : 'Contributing nutrients'}
-                                    </p>
-                                  </div>
-                                  <button type="button" onClick={() => setGoalPopup(null)} className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5">✕</button>
-                                </div>
-                                <div className="px-4 py-2 max-h-[190px] overflow-y-auto">
-                                  {nutrients.map(n => n && (
-                                    <div key={n.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
-                                      <div className="flex items-center gap-2 min-w-0">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-[#893ce3] flex-shrink-0" />
-                                        <span className="text-[12px] font-semibold text-[#1a1040] truncate">{isZh ? n.nameZh ?? n.name : n.name}</span>
-                                      </div>
-                                      <span className="text-[11px] font-bold text-[#893ce3] whitespace-nowrap">
-                                        {n.value != null ? `${n.value}${n.unit ?? ''}` : `${Number(n.dailyValue ?? 0).toFixed(2)}% DNC`}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                                <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : isEs ? 'Fuente: ' : 'Source: '}{productTitle} · {isZh ? 'DNC（每日营养贡献）' : isEs ? 'DNC (Contribución Nutricional Diaria)' : 'DNC (Daily Nutrient Contribution)'}</p>
+                                    </span>
+                                  </button>
+                                ))}
+                                {inactiveGoals.map(g => (
+                                  <button key={g.id} className="flex flex-col items-center gap-1 cursor-default opacity-40">
+                                    <span className="w-[46px] h-[46px] rounded-full flex items-center justify-center text-[16px] bg-[rgba(237,220,255,0.5)] grayscale border-2 border-[rgba(137,60,227,0.18)]">
+                                      {g.icon}
+                                    </span>
+                                    <span className="text-[9px] font-bold text-center leading-tight text-[#b0aabf]" style={{ fontFamily: 'Nunito, sans-serif' }}>
+                                      {isZh ? g.labelZh ?? g.label : g.label}
+                                    </span>
+                                  </button>
+                                ))}
                               </div>
-                            );
-                          })()}
-                        </div>
-                      );
-                    })}
+                              {goalPopup !== null && (() => {
+                                const g = view.goals.find(g => Number(g.id) === Number(goalPopup));
+                                if (!g || g.tier !== tier) return null;
+                                const nutrients = view.flows
+                                  .filter(f => Number(f.goalId) === Number(goalPopup))
+                                  .map(f => view.nutrients.find(n => Number(n.id) === Number(f.nutrientId)))
+                                  .filter(Boolean);
+                                return (
+                                  <div
+                                    className="absolute z-40 top-[72px] left-1/2 -translate-x-1/2 w-[260px] max-w-[calc(100vw-32px)] rounded-[18px] border border-[rgba(124,58,237,0.14)] bg-white/98 shadow-[0_12px_30px_rgba(80,40,160,0.18)] overflow-hidden"
+                                    onClick={e => e.stopPropagation()}
+                                  >
+                                    <div className="flex items-start gap-2.5 px-4 py-3 border-b border-[#eee8f7]">
+                                      <span className="text-[24px] leading-none">{g.icon}</span>
+                                      <div className="min-w-0 flex-1">
+                                        <h3 className="text-[15px] leading-tight font-extrabold text-[#1a1040]">
+                                          {isZh ? g.labelZh ?? g.label : g.label}
+                                        </h3>
+                                        <p className="mt-0.5 text-[10px] leading-tight text-gray-400">
+                                          {isZh ? '贡献营养素' : 'Contributing nutrients'}
+                                        </p>
+                                      </div>
+                                      <button type="button" onClick={() => setGoalPopup(null)} className="w-6 h-6 flex items-center justify-center rounded-full text-[14px] text-gray-400 hover:bg-black/5">✕</button>
+                                    </div>
+                                    <div className="px-4 py-2 max-h-[190px] overflow-y-auto">
+                                      {nutrients.map(n => n && (
+                                        <div key={n.id} className="flex items-center justify-between gap-3 py-2 border-b border-gray-100 last:border-0">
+                                          <div className="flex items-center gap-2 min-w-0">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-[#893ce3] flex-shrink-0" />
+                                            <span className="text-[12px] font-semibold text-[#1a1040] truncate">{isZh ? n.nameZh ?? n.name : n.name}</span>
+                                          </div>
+                                          <span className="text-[11px] font-bold text-[#893ce3] whitespace-nowrap">
+                                            {n.value != null ? `${n.value}${n.unit ?? ''}` : `${Number(n.dailyValue ?? 0).toFixed(2)}% DNC`}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                    <p className="px-4 pb-3 text-[9px] leading-snug text-gray-400">{isZh ? '来源：' : isEs ? 'Fuente: ' : 'Source: '}{productTitle} · {isZh ? 'DNC（每日营养贡献）' : isEs ? 'DNC (Contribución Nutricional Diaria)' : 'DNC (Daily Nutrient Contribution)'}</p>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          );
+                        })}
                       </>
                     )}
 
@@ -2158,7 +2170,7 @@ export default function FoodAnalyzer() {
               </div>
             </section>
 
-            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 ${ hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''} `}>
+            <div className={`grid grid-cols-1 lg:grid-cols-2 gap-5 ${hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''} `}>
               {/* ② 成长益处 */}
               <section
                 ref={growthBenefitsRef}
@@ -2198,126 +2210,126 @@ export default function FoodAnalyzer() {
                       <p className="text-sm text-gray-400 mb-3">👆 {isZh ? '点击任意目标或营养素查看详情' : isEs ? 'Toca cualquier objetivo o nutriente para ver detalles' : 'Tap any goal or nutrient to see details'}</p>
 
                       <div className="relative">
-                      <svg viewBox={`0 0 ${svgWidth} ${SK.height}`} className="w-full h-auto select-none">
-                        <defs>
-                          {ribbons.map((r: any, i: number) => (
-                            <linearGradient key={i} id={`flow-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
-                              <stop offset="0%" stopColor={TIER_COLOR[goalById(r.goalId).tier!]} />
-                              <stop offset="100%" stopColor={nutrientColor(r.nutrientId)} />
-                            </linearGradient>
-                          ))}
-                        </defs>
-
-                        {ribbons.map((r: any, i: number) => (
-                          <path key={i} d={r.path} fill={`url(#flow-${i})`}
-                            opacity={ribbonActive(r) ? (selectedGoal != null || selectedNutrient != null ? 0.65 : 0.3) : 0.07}
-                            className="transition-opacity duration-300 cursor-pointer" onClick={() => toggleGoal(r.goalId)} />
-                        ))}
-
-                        {goalNodes.map((n: any) => {
-                          const g = goalById(n.id);
-                          return (
-                            <g key={n.id} className="cursor-pointer" onClick={() => toggleGoal(n.id)}>
-                              <rect x={SK.leftX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={TIER_COLOR[g.tier!]} opacity={selectedGoal == null || selectedGoal === n.id ? 1 : 0.3} className="transition-opacity" />
-                              <text x={SK.leftX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 1} dominantBaseline="middle" fontSize="26" fontWeight="800" fill={TIER_COLOR[g.tier!]}>
-                                {g.icon} {isZh ? g.labelZh ?? g.label : (g.label ?? '').replace('Development', 'Dev.')}
-                              </text>
-                            </g>
-                          );
-                        })}
-
-                        {nutrientNodes.map((n: any) => {
-                          const nt = nutrientById(n.id);
-                          const color = nutrientColor(n.id);
-                          return (
-                            <g key={n.id} className="cursor-pointer" onClick={() => toggleNutrient(n.id)}>
-                              <rect x={SK.rightX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={color} opacity={selectedNutrient == null || selectedNutrient === n.id ? 1 : 0.3} className="transition-opacity" />
-                              <text
-                                x={SK.rightX + SK.nodeWidth + 12}
-                                y={(n.y0 + n.y1) / 2}
-                                textAnchor="start"
-                                dominantBaseline="middle"
-                              >
-                                <tspan
-                                  x={SK.rightX + SK.nodeWidth + 12}
-                                  dy="-0.55em"
-                                  fontSize="26"
-                                  fontWeight="800"
-                                  fill={color}
-                                >
-                                  {isZh ? nt.nameZh ?? nt.name : nt.name}
-                                </tspan>
-
-                                <tspan
-                                  x={SK.rightX + SK.nodeWidth + 12}
-                                  dy="1.35em"
-                                  fontSize="18"
-                                  fontWeight="500"
-                                  fill={color}
-                                >
-                                  {levelLabel(nt.level)}
-                                </tspan>
-                              </text>
-                            </g>
-                          );
-                        })}
-                      </svg>
-                      {selectedNutrientData && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setSelectedNutrient(null)}
-                          />
-                          <div
-                            className="absolute left-1/2 -translate-x-1/2 z-50 bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[300px]"
-                            style={{ top: 0 }}
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <div className="flex items-start justify-between mb-4">
-                              <div className="flex items-center gap-3">
-                                <span className="text-3xl">🔬</span>
-                                <div>
-                                  <h3 className="text-[15px] font-extrabold text-[#1a1040]">
-                                    {isZh ? selectedNutrientData.nameZh ?? selectedNutrientData.name : selectedNutrientData.name}
-                                  </h3>
-                                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full mt-1 inline-block ${selectedNutrientData.level === 'High' ? 'bg-green-100 text-green-700' :
-                                    selectedNutrientData.level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-gray-100 text-gray-600'
-                                    }`}>
-                                    {levelLabel(selectedNutrientData.level)} {isZh ? '来源' : 'Source'}
-                                  </span>
-                                </div>
-                              </div>
-                              <button
-                                onClick={() => setSelectedNutrient(null)}
-                                className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-black/5 transition"
-                              >
-                                ✕
-                              </button>
-                            </div>
-
-                            {[
-                              { label: isZh ? '每100g含量' : isEs ? 'Por 100g' : 'Per 100g', value: selectedNutrientData.value100g != null ? `${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''}` : '—' },
-                              { label: '% DNC', value: `${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%` },
-                              ...(selectedNutrientData.dailyReference != null
-                                ? [{ label: isZh ? '每日需求' : isEs ? 'Necesidad Diaria' : 'Daily Need', value: `${selectedNutrientData.dailyReference}${selectedNutrientData.unit ?? ''}` }]
-                                : []),
-                            ].map(row => (
-                              <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
-                                <div className="flex items-center gap-2">
-                                  <span className="w-2 h-2 rounded-full bg-[#0ea5e9] flex-shrink-0" />
-                                  <span className="text-[14px] font-semibold text-[#1a1040]">{row.label}</span>
-                                </div>
-                                <span className="text-[14px] font-bold text-[#0ea5e9]">{row.value}</span>
-                              </div>
+                        <svg viewBox={`0 0 ${svgWidth} ${SK.height}`} className="w-full h-auto select-none">
+                          <defs>
+                            {ribbons.map((r: any, i: number) => (
+                              <linearGradient key={i} id={`flow-${i}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stopColor={TIER_COLOR[goalById(r.goalId).tier!]} />
+                                <stop offset="100%" stopColor={nutrientColor(r.nutrientId)} />
+                              </linearGradient>
                             ))}
+                          </defs>
 
-                            <p className="mt-3 text-[11px] text-gray-400">
-                              {isZh ? '来源：' : 'Source: '}{productTitle}
-                            </p>
-                          </div>
-                        </>
-                      )}
+                          {ribbons.map((r: any, i: number) => (
+                            <path key={i} d={r.path} fill={`url(#flow-${i})`}
+                              opacity={ribbonActive(r) ? (selectedGoal != null || selectedNutrient != null ? 0.65 : 0.3) : 0.07}
+                              className="transition-opacity duration-300 cursor-pointer" onClick={() => toggleGoal(r.goalId)} />
+                          ))}
+
+                          {goalNodes.map((n: any) => {
+                            const g = goalById(n.id);
+                            return (
+                              <g key={n.id} className="cursor-pointer" onClick={() => toggleGoal(n.id)}>
+                                <rect x={SK.leftX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={TIER_COLOR[g.tier!]} opacity={selectedGoal == null || selectedGoal === n.id ? 1 : 0.3} className="transition-opacity" />
+                                <text x={SK.leftX + SK.nodeWidth + 12} y={(n.y0 + n.y1) / 2 + 1} dominantBaseline="middle" fontSize="26" fontWeight="800" fill={TIER_COLOR[g.tier!]}>
+                                  {g.icon} {isZh ? g.labelZh ?? g.label : (g.label ?? '').replace('Development', 'Dev.')}
+                                </text>
+                              </g>
+                            );
+                          })}
+
+                          {nutrientNodes.map((n: any) => {
+                            const nt = nutrientById(n.id);
+                            const color = nutrientColor(n.id);
+                            return (
+                              <g key={n.id} className="cursor-pointer" onClick={() => toggleNutrient(n.id)}>
+                                <rect x={SK.rightX} y={n.y0} width={SK.nodeWidth} height={n.y1 - n.y0} rx={8} fill={color} opacity={selectedNutrient == null || selectedNutrient === n.id ? 1 : 0.3} className="transition-opacity" />
+                                <text
+                                  x={SK.rightX + SK.nodeWidth + 12}
+                                  y={(n.y0 + n.y1) / 2}
+                                  textAnchor="start"
+                                  dominantBaseline="middle"
+                                >
+                                  <tspan
+                                    x={SK.rightX + SK.nodeWidth + 12}
+                                    dy="-0.55em"
+                                    fontSize="26"
+                                    fontWeight="800"
+                                    fill={color}
+                                  >
+                                    {isZh ? nt.nameZh ?? nt.name : nt.name}
+                                  </tspan>
+
+                                  <tspan
+                                    x={SK.rightX + SK.nodeWidth + 12}
+                                    dy="1.35em"
+                                    fontSize="18"
+                                    fontWeight="500"
+                                    fill={color}
+                                  >
+                                    {levelLabel(nt.level)}
+                                  </tspan>
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </svg>
+                        {selectedNutrientData && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setSelectedNutrient(null)}
+                            />
+                            <div
+                              className="absolute left-1/2 -translate-x-1/2 z-50 bg-white rounded-[20px] shadow-[0_8px_32px_rgba(80,40,160,0.18)] p-5 w-[300px]"
+                              style={{ top: 0 }}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <div className="flex items-start justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <span className="text-3xl">🔬</span>
+                                  <div>
+                                    <h3 className="text-[15px] font-extrabold text-[#1a1040]">
+                                      {isZh ? selectedNutrientData.nameZh ?? selectedNutrientData.name : selectedNutrientData.name}
+                                    </h3>
+                                    <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full mt-1 inline-block ${selectedNutrientData.level === 'High' ? 'bg-green-100 text-green-700' :
+                                      selectedNutrientData.level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-gray-100 text-gray-600'
+                                      }`}>
+                                      {levelLabel(selectedNutrientData.level)} {isZh ? '来源' : 'Source'}
+                                    </span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => setSelectedNutrient(null)}
+                                  className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-black/5 transition"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+
+                              {[
+                                { label: isZh ? '每100g含量' : isEs ? 'Por 100g' : 'Per 100g', value: selectedNutrientData.value100g != null ? `${selectedNutrientData.value100g}${selectedNutrientData.unit ?? ''}` : '—' },
+                                { label: '% DNC', value: `${Number(selectedNutrientData.dailyValue ?? 0).toFixed(2)}%` },
+                                ...(selectedNutrientData.dailyReference != null
+                                  ? [{ label: isZh ? '每日需求' : isEs ? 'Necesidad Diaria' : 'Daily Need', value: `${selectedNutrientData.dailyReference}${selectedNutrientData.unit ?? ''}` }]
+                                  : []),
+                              ].map(row => (
+                                <div key={row.label} className="flex items-center justify-between py-2.5 border-b border-gray-100 last:border-0">
+                                  <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-[#0ea5e9] flex-shrink-0" />
+                                    <span className="text-[14px] font-semibold text-[#1a1040]">{row.label}</span>
+                                  </div>
+                                  <span className="text-[14px] font-bold text-[#0ea5e9]">{row.value}</span>
+                                </div>
+                              ))}
+
+                              <p className="mt-3 text-[11px] text-gray-400">
+                                {isZh ? '来源：' : 'Source: '}{productTitle}
+                              </p>
+                            </div>
+                          </>
+                        )}
                       </div>
                       {(selectedGoalData || selectedNutrientData) && (
                         <div className="mt-3 rounded-2xl bg-purple-50/70 border border-purple-100 px-4 py-3 text-sm text-gray-700 animate-fade-in-up">
@@ -2405,7 +2417,7 @@ export default function FoodAnalyzer() {
               {/* ③ 家长须知 */}
               <section
                 ref={thingsToWatchRef}
-                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-visible ${ hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''}`}
+                className={`bg-white/70 backdrop-blur-xl rounded-[18px] border-[1.5px] border-white/90 shadow-[0_8px_32px_rgba(220,100,80,0.08),inset_0_1.5px_0_rgba(255,255,255,0.95)] p-5 animate-fade-in-up delay-200 relative overflow-visible ${hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''}`}
               >   <div className="relative">
                   <div className="flex items-center gap-3 mb-3">
                     <SectionBadge n={3} />
@@ -2609,83 +2621,83 @@ export default function FoodAnalyzer() {
                           </div>
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {nutrientWatch.map(w => {
-                            const level = watchStatus(w);
-                           
-                            const canOpen =
-                              w.available !== false && (
-                                w.code === 'transfat'
-                                  ? w.present
-                                  : ['added_sugar', 'sodium', 'satfat'].includes(w.code)
-                              );
-                            const isHighlighted = shouldHighlightWatch(w);
-                            const isSelected =
-                              canOpen &&
-                              selectedWatch === w.code &&
-                              NUTRIENT_WATCH_CODES.has(w.code);
+                            {nutrientWatch.map(w => {
+                              const level = watchStatus(w);
 
-                            return (
-                              <div key={w.code} className="relative">
-                                <button
-                                  disabled={!canOpen}
-                                  onClick={() =>
-                                    canOpen &&
-                                    setSelectedWatch(selectedWatch === w.code ? null : w.code)
-                                  }
-                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
-          ${canOpen
-                                      ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
-                                      : 'cursor-default opacity-60'
+                              const canOpen =
+                                w.available !== false && (
+                                  w.code === 'transfat'
+                                    ? w.present
+                                    : ['added_sugar', 'sodium', 'satfat'].includes(w.code)
+                                );
+                              const isHighlighted = shouldHighlightWatch(w);
+                              const isSelected =
+                                canOpen &&
+                                selectedWatch === w.code &&
+                                NUTRIENT_WATCH_CODES.has(w.code);
+
+                              return (
+                                <div key={w.code} className="relative">
+                                  <button
+                                    disabled={!canOpen}
+                                    onClick={() =>
+                                      canOpen &&
+                                      setSelectedWatch(selectedWatch === w.code ? null : w.code)
                                     }
+                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+          ${canOpen
+                                        ? 'cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.12)]'
+                                        : 'cursor-default opacity-60'
+                                      }
           ${isSelected
-                                      ? 'ring-2 ring-orange-300'
-                                      : ''
-                                    }`}
-                                  style={{
-                                    background: isHighlighted ? level.bg : 'rgba(255,255,255,0.38)',
-                                    borderColor: isHighlighted
-                                      ? 'rgba(251,146,60,0.42)'
-                                      : 'rgba(255,255,255,0.65)',
-                                  }}
-                                >
-                                  <span
-                                    className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
-            ${isHighlighted ? '' : 'grayscale opacity-65'}`}
+                                        ? 'ring-2 ring-orange-300'
+                                        : ''
+                                      }`}
                                     style={{
-                                      background: isHighlighted
-                                        ? 'rgba(255,247,237,0.88)'
-                                        : 'rgba(255,255,255,0.45)',
+                                      background: isHighlighted ? level.bg : 'rgba(255,255,255,0.38)',
                                       borderColor: isHighlighted
-                                        ? 'rgba(251,146,60,0.38)'
-                                        : 'rgba(230,225,235,0.55)',
+                                        ? 'rgba(251,146,60,0.42)'
+                                        : 'rgba(255,255,255,0.65)',
                                     }}
                                   >
-                                    {w.icon}
-                                  </span>
+                                    <span
+                                      className={`w-[70px] h-[70px] rounded-full flex items-center justify-center text-[31px] border-2
+            ${isHighlighted ? '' : 'grayscale opacity-65'}`}
+                                      style={{
+                                        background: isHighlighted
+                                          ? 'rgba(255,247,237,0.88)'
+                                          : 'rgba(255,255,255,0.45)',
+                                        borderColor: isHighlighted
+                                          ? 'rgba(251,146,60,0.38)'
+                                          : 'rgba(230,225,235,0.55)',
+                                      }}
+                                    >
+                                      {w.icon}
+                                    </span>
 
-                                  <span
-                                    className={`text-[12px] font-extrabold text-center leading-tight ${isHighlighted ? 'text-[#29233f]' : 'text-[#6f6b85]'
-                                      }`}
-                                  >
-                                    {isZh ? w.nameZh : w.name}
-                                  </span>
+                                    <span
+                                      className={`text-[12px] font-extrabold text-center leading-tight ${isHighlighted ? 'text-[#29233f]' : 'text-[#6f6b85]'
+                                        }`}
+                                    >
+                                      {isZh ? w.nameZh : w.name}
+                                    </span>
 
-                                  <span
-                                    className="text-[10px] font-extrabold tracking-wide"
-                                    style={{ color: level.color }}
-                                  >
-                                    {level.label}
-                                  </span>
-                                </button>
+                                    <span
+                                      className="text-[10px] font-extrabold tracking-wide"
+                                      style={{ color: level.color }}
+                                    >
+                                      {level.label}
+                                    </span>
+                                  </button>
 
-                                {isSelected && (
-                                  <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
-                                    {renderWatchPopup()}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                  {isSelected && (
+                                    <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
+                                      {renderWatchPopup()}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
 
@@ -2702,59 +2714,59 @@ export default function FoodAnalyzer() {
                           </div>
 
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {ingredientWatch.map(w => {
-                            const isSelected =
-                              w.present &&
-                              selectedWatch === w.code &&
-                              !NUTRIENT_WATCH_CODES.has(w.code);
+                            {ingredientWatch.map(w => {
+                              const isSelected =
+                                w.present &&
+                                selectedWatch === w.code &&
+                                !NUTRIENT_WATCH_CODES.has(w.code);
 
-                            return (
-                              <div key={w.code} className="relative">
-                                <button
-                                  disabled={!w.present}
-                                  onClick={() =>
-                                    w.present &&
-                                    setSelectedWatch(selectedWatch === w.code ? null : w.code)
-                                  }
-                                  className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
-          ${w.present
-                                      ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
-                                      : 'bg-white/35 border-white/65 cursor-default opacity-60'
+                              return (
+                                <div key={w.code} className="relative">
+                                  <button
+                                    disabled={!w.present}
+                                    onClick={() =>
+                                      w.present &&
+                                      setSelectedWatch(selectedWatch === w.code ? null : w.code)
                                     }
+                                    className={`aspect-square w-full rounded-[18px] px-2 py-3 flex flex-col items-center justify-center gap-2 border transition-all
+          ${w.present
+                                        ? 'bg-[rgba(255,247,237,0.78)] border-[rgba(251,146,60,0.38)] cursor-pointer hover:-translate-y-0.5 shadow-[0_8px_24px_rgba(249,115,22,0.10)]'
+                                        : 'bg-white/35 border-white/65 cursor-default opacity-60'
+                                      }
           ${w.present && selectedWatch === w.code
-                                      ? 'ring-2 ring-orange-300'
-                                      : ''
-                                    }`}
-                                >
-                                  <span
-                                    className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'
+                                        ? 'ring-2 ring-orange-300'
+                                        : ''
                                       }`}
                                   >
-                                    {w.icon}
-                                  </span>
-
-                                  <span
-                                    className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'
-                                      }`}
-                                  >
-                                    {isZh ? w.nameZh : w.name}
-                                  </span>
-
-                                  {w.present && (
-                                    <span className="text-[10px] font-extrabold tracking-wide text-red-600">
-                                      {isZh ? '已检出' : isEs ? 'PRESENTE' : 'PRESENT'}
+                                    <span
+                                      className={`text-[34px] ${w.present ? '' : 'grayscale opacity-60'
+                                        }`}
+                                    >
+                                      {w.icon}
                                     </span>
-                                  )}
-                                </button>
 
-                                {isSelected && (
-                                  <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
-                                    {renderWatchPopup()}
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
+                                    <span
+                                      className={`text-[12px] font-extrabold text-center leading-tight ${w.present ? 'text-[#29233f]' : 'text-[#6f6b85]'
+                                        }`}
+                                    >
+                                      {isZh ? w.nameZh : w.name}
+                                    </span>
+
+                                    {w.present && (
+                                      <span className="text-[10px] font-extrabold tracking-wide text-red-600">
+                                        {isZh ? '已检出' : isEs ? 'PRESENTE' : 'PRESENT'}
+                                      </span>
+                                    )}
+                                  </button>
+
+                                  {isSelected && (
+                                    <div className="absolute right-0 top-full z-50 mt-2 w-[360px]">
+                                      {renderWatchPopup()}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
 
