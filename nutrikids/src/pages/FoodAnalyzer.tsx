@@ -1919,8 +1919,8 @@ export default function FoodAnalyzer() {
                     </div>
                     <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
-                        ? `${summaryWatch.length} 项需要高亮关注${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`
-                        : `${summaryWatch.length} highlighted concerns${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`}
+                        ? `${summaryWatch.length} 项值得注意的成分${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`
+                        : `${summaryWatch.length} ingredients worth noting${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`}
                     </p>
                     <div className="relative">
                       <div className="grid grid-cols-4 gap-1.5 mb-2.5">
