@@ -8,11 +8,11 @@ import {
 } from './FoodAnalysisDoc';
 
 const levelRows = [
-  ['Level 5', '75–100', '强力支持', '绿色', '营养益处明显优于潜在风险'],
-  ['Level 4', '58–74', '良好支持', '黄绿色', '营养益处优于潜在风险'],
-  ['Level 3', '44–57', '适度支持', '琥珀色', '益处与关注点并存'],
-  ['Level 2', '37–43', '有限支持', '橙色', '潜在风险开始超过营养支持'],
-  ['Level 1', '0–36', '益处有限', '红色', '潜在风险超过营养支持'],
+  ['Strong', '5', '75–100', '强力支持', '绿色', '营养益处明显优于潜在风险'],
+  ['Good', '4', '58–74', '良好支持', '黄绿色', '营养益处优于潜在风险'],
+  ['Moderate', '3', '44–57', '适度支持', '琥珀色', '益处与关注点并存'],
+  ['Limited', '2', '37–43', '有限支持', '橙色', '潜在风险开始超过营养支持'],
+  ['Minimal', '1', '0–36', '益处有限', '红色', '潜在风险超过营养支持'],
 ];
 
 const ageThresholdRows = [
@@ -73,21 +73,21 @@ export default function FoodAnalyzerLabelsDoc() {
         ├─ Nutri-Score 原始分/等级是否完整？ ── 否 ─→ 422：不生成分析结果
         │                                      是
         ▼
-   计算 0–100 总分 → 换算前台 Level 1–5
+   计算 0–100 总分 → 换算 Food Score 1–5 与文字等级
         │
         ├─ 命中儿童过敏原？ ──────── 是 ─┐
         ├─ 命中高风险添加剂？ ────── 是 ─┴→ 安全否决：显示 0 / NOT SAFE
         │                                      否
         ▼
-   显示原总分与 Level
+   显示原总分与文字等级
         │
-        ├─ Level ≥ 3 → 优先显示“富含”营养素
-        └─ Level < 3 → 优先显示“注意”成分
+        ├─ Food Score ≥ 3 → 优先显示“富含”营养素
+        └─ Food Score < 3 → 优先显示“注意”成分
         │
         ▼
    ① 食品评估 → ② 成长益处 → ③ 家长须知 → NOVA 加工程度`}</CompactFlow>
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          页面标签有三类：计算标签（总分、Level、%DV）、判断标签（NOT SAFE、已检出、富含）和来源标签（NOVA、AI 估算、数据源按钮）。三者不要混成同一种“评分”。
+          页面标签有三类：计算标签（总分、文字等级、%DV）、判断标签（NOT SAFE、已检出、富含）和来源标签（NOVA、AI 估算、数据源按钮）。三者不要混成同一种“评分”。
         </p>
       </Section>
 
@@ -105,7 +105,7 @@ export default function FoodAnalyzerLabelsDoc() {
         </div>
       </Section>
 
-      <Section eyebrow="1 · FOOD ASSESSMENT" title="① 食品评估：总分、Level 与安全否决">
+      <Section eyebrow="1 · FOOD ASSESSMENT" title="① 食品评估：总分、文字等级与安全否决">
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3"><OrderBadge>A</OrderBadge><h3 className="font-bold">先算总分</h3></div>
@@ -121,19 +121,19 @@ export default function FoodAnalyzerLabelsDoc() {
 本地添加剂字典 risk = high？ ───── 是 ─┴→ displayScore = 0
                                            displayLevel = 0
                                            标签 = NOT SAFE
-两个条件都否 ───────────────────────────→ 保留原总分和 Level`}</CompactFlow>
+两个条件都否 ───────────────────────────→ 保留原总分和文字等级`}</CompactFlow>
             <p className="mt-3 text-xs leading-5 text-slate-500">安全否决只改变页面显示，不会回写或重算数据库中的原始 overallScore。</p>
             <p className="mt-2 text-xs leading-5 text-slate-500">这里的 <code>risk = high</code> 来自前端添加剂说明字典；它与 C/D/E 总分分支使用的 ANSES/EFSA harmful reference 集合是两套用途不同的数据。</p>
           </div>
         </div>
 
-        <h3 className="mt-7 text-lg font-bold">前台五档 Level</h3>
-        <div className="mt-3"><DataTable headers={['页面标签', '总分区间', '中文标题', '颜色', '摘要含义']} rows={levelRows} /></div>
+        <h3 className="mt-7 text-lg font-bold">前台五档文字等级</h3>
+        <div className="mt-3"><DataTable headers={['文字等级', 'Food Score', '总分区间', '中文标题', '颜色', '摘要含义']} rows={levelRows} /></div>
 
         <div className="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <p className="font-bold text-amber-950">注意：系统里同时存在“四档 Grade”和“五档 Level”</p>
+          <p className="font-bold text-amber-950">注意：系统里同时存在“四档 Grade”和“五档 Food Score”</p>
           <p className="mt-2 text-sm leading-6 text-amber-900">
-            服务端保存的 Grade 为 Excellent 80–100、Good 60–79、Fair 40–59、Poor 0–39；food-analyzer 主结果卡实际展示的是上表 Level 1–5。两套阈值用途不同，不应拿 Grade 的 A/B/C/D 去解释页面 Level。
+            服务端保存的 Grade 为 Excellent 80–100、Good 60–79、Fair 40–59、Poor 0–39；food-analyzer 主结果卡实际展示的是 Strong、Good、Moderate、Limited、Minimal。两套阈值用途不同，不应拿 Grade 的 A/B/C/D 去解释页面文字等级。
           </p>
         </div>
       </Section>
@@ -142,15 +142,15 @@ export default function FoodAnalyzerLabelsDoc() {
         <DataTable
           headers={['页面位置 / 标签', '显示条件', '计算或取值', '缺失 / 被覆盖时']}
           rows={[
-            ['评分圆圈', '成功获得分析结果', '正常显示四舍五入后的 overallScore 与 Level；安全否决时固定 0 / NOT SAFE', '缺 Nutri-Score 原始分或 A–E 等级时整张结果卡不生成'],
-            ['强力支持 / 良好支持 / 适度支持 / 有限支持 / 益处有限', '没有安全否决', '按前台五档 Level 阈值选择标题、颜色和摘要', '安全否决时改成过敏原 / 有害添加剂标题'],
+            ['评分圆圈', '成功获得分析结果', '正常显示四舍五入后的 overallScore 与文字等级；安全否决时固定 0 / NOT SAFE', '缺 Nutri-Score 原始分或 A–E 等级时整张结果卡不生成'],
+            ['Strong / Good / Moderate / Limited / Minimal', '没有安全否决', '按前台五档 Food Score 阈值选择标题、颜色和摘要', '安全否决时改成过敏原 / 有害添加剂标题'],
             ['AI 估算营养信息', 'verified = false 且 isAiGenerated = true', '未验证、无条码的 AI 创建产品', '官方 / 条码产品不显示'],
             ['检测到过敏原', '产品已标记存在的过敏原，与当前儿童档案过敏原 ID 相同', '列出所有 matchedAllergens', '无交集则不显示'],
             ['检测到有害添加剂', '产品 E 编号在前端添加剂字典中且 risk = high', '列出命中的添加剂名称', '无高风险项则不显示'],
-            ['富含…', 'Level ≥ 3，且至少有一个正向营养素达到 High', '取正向营养素列表中 %DV ≥ 20 的前 2 项', '安全否决优先；无 High 营养素时不显示'],
-            ['注意：…', 'Level < 3、没有安全否决、且存在 watch.present 项', '最多显示前三个已判定存在的关注项', 'Level ≥ 3 时不显示此摘要'],
+            ['富含…', 'Food Score ≥ 3，且至少有一个正向营养素达到 High', '取正向营养素列表中 %DV ≥ 20 的前 2 项', '安全否决优先；无 High 营养素时不显示'],
+            ['注意：…', 'Food Score < 3、没有安全否决、且存在 watch.present 项', '最多显示前三个已判定存在的关注项', 'Food Score ≥ 3 时不显示此摘要'],
             ['支持 N 项目标 · 核心 / 重要 / 辅助', '儿童已选择目标', '只统计 selected、supportDV > 0 且具有年龄/性别 tier 的目标', '总数为 0 时显示“没有足够营养证据”'],
-            ['NOVA N · 加工名称', '产品 novaScore 为 1–4', '直接读取产品 NOVA 等级并查表映射文案', '没有 NOVA 数据时不显示'],
+            ['NOVA 4 · 超加工', '产品 novaScore = 4', '仅对超加工食品显示加工等级警示', 'NOVA 1–3 或没有 NOVA 数据时不显示'],
             ['来源按钮', '结果卡固定展示', 'WHO、AAP、AHA、CDC、NIH ODS、Open Food Facts 等固定入口', '它们是说明入口，不参与计算'],
           ]}
         />
@@ -223,10 +223,10 @@ supportDV = round(GoalScore × 证据覆盖率 × 100)
         <DataTable
           headers={['NOVA', '页面名称', '典型示例', '参与哪些地方']}
           rows={[
-            ['1', '未 / 低度加工', '新鲜水果、蔬菜、鸡蛋、牛奶', '显示加工等级；天然食物的糖不自动当作添加糖'],
-            ['2', '加工烹饪配料', '油、黄油、糖、盐', '显示加工等级'],
-            ['3', '加工食品', '奶酪、酸奶、罐装蔬菜、新鲜面包', '显示加工等级'],
-            ['4', '超加工', '碳酸饮料、糖果、方便面', '显示加工等级；旧的 breakdown.processingLevel 会映射为 8/20，但不参与当前最终总分'],
+            ['1', '未 / 低度加工', '新鲜水果、蔬菜、鸡蛋、牛奶', 'Things to Watch 不提示；天然食物的糖不自动当作添加糖'],
+            ['2', '加工烹饪配料', '油、黄油、糖、盐', 'Things to Watch 不提示加工等级'],
+            ['3', '加工食品', '奶酪、酸奶、罐装蔬菜、新鲜面包', 'Things to Watch 不提示加工等级'],
+            ['4', '超加工', '碳酸饮料、糖果、方便面', 'Things to Watch 显示加工等级警示；旧的 breakdown.processingLevel 会映射为 8/20，但不参与当前最终总分'],
           ]}
         />
         <p className="mt-3 text-sm leading-6 text-slate-500">NOVA 优先读取 Open Food Facts 的 <code>nova_group</code>，必要时读取其营养字段里的 nova-group 兜底；前端不根据配料数量自行推算 NOVA。</p>
@@ -241,7 +241,7 @@ supportDV = round(GoalScore × 证据覆盖率 × 100)
             ['添加糖字段缺失', '显示“数据不可用”，不当作 0g', '总糖不能替代添加糖'],
             ['某正向营养素缺 %DV', '不进入前 6 项营养素列表', '成长展示要求 %DV > 0'],
             ['同品类没有可用 p10 / p90', '该营养素跳过，不按 0 惩罚', '无法做可靠归一化'],
-            ['过敏原与高风险添加剂同时命中', '标题显示二者都检测到；分数与 Level 均显示 0', '安全优先级高于营养得分'],
+            ['过敏原与高风险添加剂同时命中', '标题显示二者都检测到；分数显示 0、等级显示 NOT SAFE', '安全优先级高于营养得分'],
             ['安全否决后仍有益处 / 家长须知数据', '下方区域置灰且不可交互', '保留数据上下文，但阻止正向信息压过安全警示'],
           ]}
         />

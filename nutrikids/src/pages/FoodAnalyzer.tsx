@@ -66,6 +66,13 @@ function scoreToLevel(score: number): number {
 }
 
 const levelColors = ['#dc2626', '#ea580c', '#d97706', '#65a30d', '#16a34a'];
+const foodScoreLabels: Record<number, string> = {
+  5: 'Strong',
+  4: 'Good',
+  3: 'Moderate',
+  2: 'Limited',
+  1: 'Minimal',
+};
 
 /* ------------------------------------------------------------------ */
 /* Sankey 布局（由接口数据驱动）                                       */
@@ -734,6 +741,7 @@ export default function FoodAnalyzer() {
 
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
+  const showProcessingWarning = view?.product.novaScore === 4 && nova != null;
   const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
   const highNutrients = view?.nutrients.filter(n => n.level === 'High') ?? []; // 面板1：所有 %DNC 为 High 的营养元素
   const selectedGoalData = selectedGoal != null && view ? goalById(selectedGoal) : null;
@@ -1494,7 +1502,7 @@ export default function FoodAnalyzer() {
                             </span>
 
                             <span className="text-[9px] font-bold text-white/85 tracking-wider mt-0.5">
-                              {hasSafetyRisk ? 'NOT SAFE' : `LEVEL ${displayLevel}`}
+                              {hasSafetyRisk ? 'NOT SAFE' : foodScoreLabels[displayLevel]}
                             </span>
                           </div>
 
@@ -1722,7 +1730,7 @@ export default function FoodAnalyzer() {
                               color: lv === levelNum ? levelColors[lv - 1] : '#9ca3af',
                               fontFamily: 'Nunito, sans-serif',
                             }}>
-                              Level {lv}{lv === levelNum ? ' ✓' : ''}
+                              {foodScoreLabels[lv]}{lv === levelNum ? ' ✓' : ''}
                             </span>
                           </div>
                         ))}
@@ -1893,8 +1901,8 @@ export default function FoodAnalyzer() {
                     </div>
                     <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
-                        ? `${summaryWatch.length} 项需要高亮关注${nova ? ` · NOVA ${view.product.novaScore} ${nova.zh}` : ''}`
-                        : `${summaryWatch.length} highlighted concerns${nova ? ` · NOVA ${view.product.novaScore} ${nova.en}` : ''}`}
+                        ? `${summaryWatch.length} 项需要高亮关注${showProcessingWarning ? ` · NOVA 4 ${nova.zh}` : ''}`
+                        : `${summaryWatch.length} highlighted concerns${showProcessingWarning ? ` · NOVA 4 ${nova.en}` : ''}`}
                     </p>
                     <div className="relative">
                       <div className="grid grid-cols-4 gap-1.5 mb-2.5">
@@ -2092,7 +2100,7 @@ export default function FoodAnalyzer() {
                         );
                       })()}
                     </div>
-                    {nova && (
+                    {showProcessingWarning && (
                       <div className="bg-[rgba(249,115,22,0.08)] border-l-3 border-[#f97316] rounded-lg px-2.5 py-1.5 flex items-center gap-2">
                         <span className="text-[22px] flex-shrink-0 mt-0.5">
                           {NOVA_ICON[view.product.novaScore ?? 4] ?? '🍭'}
@@ -2391,8 +2399,8 @@ export default function FoodAnalyzer() {
                     <span>🔴</span>
                     <span className="text-xs font-bold text-[#9a3412]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                       {isZh
-                        ? `${presentWatch.length} 项值得注意的成分${nova ? ` · ${nova.zh}` : ''}`
-                        : `${presentWatch.length} ingredients worth noting${nova ? ` · ${nova.en}` : ''}`}
+                        ? `${presentWatch.length} 项值得注意的成分${showProcessingWarning ? ` · ${nova.zh}` : ''}`
+                        : `${presentWatch.length} ingredients worth noting${showProcessingWarning ? ` · ${nova.en}` : ''}`}
                     </span>
                   </div>
 
@@ -2745,7 +2753,7 @@ export default function FoodAnalyzer() {
                     );
                   })()}
 
-                  {nova && (
+                  {showProcessingWarning && (
                     <div className="border-t border-[rgba(200,160,100,0.25)] pt-4 mt-3">
                       <h4 className="font-extrabold text-[#a07040] tracking-wide mb-2">{isZh ? '加工程度' : 'PROCESSING'}</h4>
                       <div className="flex items-baseline gap-2.5 mb-3">
