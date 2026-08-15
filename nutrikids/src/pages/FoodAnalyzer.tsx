@@ -54,7 +54,7 @@ const LEVEL_META: Record<number, {
   4: { label: 'Good Support', labelZh: '良好支持', labelEs: 'Buen Apoyo', summary: 'Good overall alignment, with nutritional benefits outweighing potential concerns.', summaryZh: '整体契合度良好，营养益处优于潜在风险。', summaryEs: 'Buena alineación general con los objetivos de desarrollo.', color: '#65a30d', bg: 'rgba(101,163,13,0.08)', emoji: '✅' },
   3: { label: 'Moderate Support', labelZh: '适度支持', labelEs: 'Apoyo Moderado', summary: 'A balanced profile, with both nutritional benefits and potential concerns to consider.', summaryZh: '营养档案均衡，同时存在益处和需要关注的风险。', summaryEs: 'Un perfil equilibrado con beneficios y posibles preocupaciones.', color: '#d97706', bg: 'rgba(217,119,6,0.08)', emoji: '⚖️' },
   2: { label: 'Limited Support', labelZh: '有限支持', labelEs: 'Apoyo Limitado', summary: 'Limited overall benefit, as potential concerns begin to outweigh the nutritional support for developmental goals.', summaryZh: '整体益处有限，潜在风险开始超过营养支持。', summaryEs: 'Beneficio general limitado, las preocupaciones comienzan a superar el apoyo nutricional.', color: '#ea580c', bg: 'rgba(234,88,12,0.08)', emoji: '⚠️' },
-  1: { label: 'Limited Benefit', labelZh: '益处有限', labelEs: 'Beneficio Limitado', summary: 'Limited overall benefit, as potential concerns outweigh the nutritional support for developmental goals.', summaryZh: '整体益处有限，潜在风险超过营养支持。', summaryEs: 'Beneficio general limitado, las preocupaciones superan el apoyo nutricional.', color: '#dc2626', bg: 'rgba(220,38,38,0.08)', emoji: '🚫' },
+  1: { label: 'Minimal Support', labelZh: '最低支持', labelEs: 'Apoyo mínimo', summary: 'Minimal overall support, as potential concerns outweigh the nutritional benefits for developmental goals.', summaryZh: '整体支持很少，因为潜在风险超过了对发育目标的营养益处。', summaryEs: 'Apoyo general mínimo, ya que las posibles preocupaciones superan los beneficios nutricionales para los objetivos de desarrollo.', color: '#dc2626', bg: 'rgba(220,38,38,0.08)', emoji: '🚫' },
 };
 
 function scoreToLevel(score: number): number {
@@ -1477,7 +1477,7 @@ export default function FoodAnalyzer() {
                   <div className="pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0">
                     <div className="flex items-center gap-2 mb-3">
                       <SectionBadge n={1} />
-                      <h2 className="text-xl font-extrabold text-gray-900">{isZh ? '食品评估' : isEs ? 'Evaluación alimentaria' : 'Food Assessment'}</h2>
+                      <h2 className="text-xl font-extrabold text-gray-900">{isZh ? '综合评估' : isEs ? 'Evaluación general' : 'Overall Assessment'}</h2>
                     </div>
                     {/* 产品图片 */}
                     <div className="flex gap-4 items-start mb-4">

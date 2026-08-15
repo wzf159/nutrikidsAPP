@@ -277,6 +277,8 @@ model Product {
   landM2         Float?   @map("land_m2")
   verified       Boolean  @default(false)
   additivesJson   String?  @map("additives_json")  
+  ingredientsText String?  @map("ingredients_text")
+  ingredientsTagsJson String? @map("ingredients_tags_json")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
   categoriesTagsJson String? @map("categories_tags_json") 

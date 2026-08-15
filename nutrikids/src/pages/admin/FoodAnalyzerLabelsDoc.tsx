@@ -12,7 +12,7 @@ const levelRows = [
   ['Good', '4', '58–74', '良好支持', '黄绿色', '营养益处优于潜在风险'],
   ['Moderate', '3', '44–57', '适度支持', '琥珀色', '益处与关注点并存'],
   ['Limited', '2', '37–43', '有限支持', '橙色', '潜在风险开始超过营养支持'],
-  ['Minimal', '1', '0–36', '益处有限', '红色', '潜在风险超过营养支持'],
+  ['Minimal', '1', '< 37', '最低支持', '红色', '潜在风险超过对发育目标的营养益处'],
 ];
 
 const ageThresholdRows = [
@@ -105,7 +105,7 @@ export default function FoodAnalyzerLabelsDoc() {
         </div>
       </Section>
 
-      <Section eyebrow="1 · FOOD ASSESSMENT" title="① 食品评估：总分、文字等级与安全否决">
+      <Section eyebrow="1 · OVERALL ASSESSMENT" title="① 综合评估：总分、文字等级与安全否决">
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-3"><OrderBadge>A</OrderBadge><h3 className="font-bold">先算总分</h3></div>
