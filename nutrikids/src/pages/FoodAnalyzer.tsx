@@ -1086,7 +1086,7 @@ export default function FoodAnalyzer() {
           <div className="flex sm:hidden flex-col gap-3 w-full">
             {/* 第一行：搜索输入 */}
             <div
-              className={`relative bg-white/52 backdrop-blur-xl saturate-180 rounded-full px-5 py-3 flex items-center gap-2 ${dragging ? 'ring-2 ring-[#893ce3] ring-offset-2' : ''
+              className={`relative z-20 bg-white/52 backdrop-blur-xl saturate-180 rounded-full px-5 py-3 flex items-center gap-2 ${dragging ? 'ring-2 ring-[#893ce3] ring-offset-2' : ''
                 }`}
               style={{ border: '1px solid rgba(255,255,255,0.8)' }}
             >
