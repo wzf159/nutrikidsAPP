@@ -42,6 +42,7 @@ export default function TopNav() {
   const [cardOpen, setCardOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const [allergenDict, setAllergenDict] = useState<Allergen[]>([]);
 
   const loadChildren = () => {
@@ -76,7 +77,8 @@ export default function TopNav() {
   useEffect(() => {
     if (!cardOpen) return;
     const onClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setCardOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)
+        && mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) setCardOpen(false);
     };
     document.addEventListener('mousedown', onClick);
     return () => document.removeEventListener('mousedown', onClick);
@@ -342,7 +344,7 @@ export default function TopNav() {
 
       {/* 手机端折叠面板：只有孩子选择器 + 语言切换 */}
       {menuOpen && (
-        <div className="sm:hidden absolute top-full left-0 right-0 bg-white/96 backdrop-blur-xl border-b border-white/80 shadow-[0_16px_48px_rgba(80,40,160,0.16)] px-5 py-4 flex flex-col gap-3">
+        <div ref={mobileMenuRef} className="sm:hidden absolute top-full left-0 right-0 bg-white/96 backdrop-blur-xl border-b border-white/80 shadow-[0_16px_48px_rgba(80,40,160,0.16)] px-5 py-4 flex flex-col gap-3">
           {child ? (
             <button
               onClick={() => setCardOpen(o => !o)}
