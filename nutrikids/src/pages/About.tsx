@@ -177,6 +177,7 @@ function PanelSources() {
         },
       ],
     },
+
     {
       emoji: '🏥',
       name: 'Centers for Disease Control and Prevention',
@@ -192,6 +193,7 @@ function PanelSources() {
         },
       ],
     },
+
     {
       emoji: '🔬',
       name: 'NIH Office of Dietary Supplements',
@@ -260,6 +262,282 @@ function PanelSources() {
         {
           text: 'National Institutes of Health, Office of Dietary Supplements. (2022, October 4). Zinc: Fact sheet for consumers.',
           url: 'https://ods.od.nih.gov/factsheets/Zinc-Consumer/',
+        },
+      ],
+    },
+
+    {
+      emoji: '🔬',
+      name: 'NIH National Center for Complementary and Integrative Health',
+      abbr: 'NIH NCCIH',
+      references: [
+        {
+          text: 'National Center for Complementary and Integrative Health. (2019, August). Probiotics: Usefulness and safety.',
+          url: 'https://www.nccih.nih.gov/health/probiotics-usefulness-and-safety',
+        },
+      ],
+    },
+
+    {
+      emoji: '🩺',
+      name: 'U.S. Preventive Services Task Force',
+      abbr: 'USPSTF',
+      references: [
+        {
+          text: 'U.S. Preventive Services Task Force. (2021, December 7). Prevention of dental caries in children younger than 5 years: Screening and interventions. JAMA.',
+          url: 'https://www.uspreventiveservicestaskforce.org/uspstf/recommendation/prevention-of-dental-caries-in-children-younger-than-age-5-years-screening-and-interventions1',
+        },
+      ],
+    },
+
+    {
+      emoji: '👶',
+      name: 'American Academy of Pediatrics',
+      abbr: 'AAP',
+      references: [
+        {
+          text: 'Wagner, C. L., Greer, F. R., & American Academy of Pediatrics Section on Breastfeeding and Committee on Nutrition. (2008). Prevention of rickets and vitamin D deficiency in infants, children, and adolescents. Pediatrics, 122(5), 1142-1152.',
+          url: 'https://publications.aap.org/pediatrics/article/122/5/1142/71470',
+        },
+      ],
+    },
+
+    {
+      emoji: '❤️',
+      name: 'American Heart Association',
+      abbr: 'AHA',
+      references: [
+        {
+          text: 'American Heart Association. (2026, March 31). 2026 dietary guidance to improve cardiovascular health: A scientific statement from the American Heart Association. Circulation.',
+          url: 'https://www.ahajournals.org/doi/10.1161/CIR.0000000000001435',
+        },
+        {
+          text: 'American Heart Association. (2026, March 31). Following 9 key steps for a lifetime of eating well can support heart health. AHA Newsroom.',
+          url: 'https://newsroom.heart.org/news/following-9-key-steps-for-a-lifetime-of-eating-well-can-support-heart-health',
+        },
+        {
+          text: 'American Heart Association. (n.d.). Dietary recommendations for healthy children.',
+          url: '',
+        },
+      ],
+    },
+
+    {
+      emoji: '🏨',
+      name: "Children's Hospital Los Angeles",
+      abbr: 'CHLA',
+      references: [
+        {
+          text: "Children's Hospital Los Angeles. (n.d.). Infant nutrition and feeding: Nutritional needs (Chapter 1).",
+          url: 'https://www.chla.org/sites/default/files/migrated/Chapter1_NutritionalNeeds.pdf',
+        },
+      ],
+    },
+
+    {
+      emoji: '📖',
+      name: 'National Center for Biotechnology Information',
+      abbr: 'NCBI',
+      references: [
+        {
+          text: 'National Institute of Dental and Craniofacial Research. (2021, December). Oral health across the lifespan: Adolescents. In Oral health in America (NBK578291). NCBI Bookshelf.',
+          url: 'https://www.ncbi.nlm.nih.gov/books/NBK578291/',
+        },
+        {
+          text: 'Institute of Medicine (National Academies Press). (2011). Dietary reference intakes for energy, carbohydrate, fiber, fat, fatty acids, cholesterol, protein, and amino acids: Summary tables (NBK56068). NCBI Bookshelf.',
+          url: 'https://www.ncbi.nlm.nih.gov/books/NBK56068/',
+        },
+        {
+          text: 'Canadian Agency for Drugs and Technologies in Health. (2024, June). Choline supplementation for infants, children, and pregnant people (NBK605544). NCBI Bookshelf.',
+          url: 'https://www.ncbi.nlm.nih.gov/books/NBK605544/',
+        },
+      ],
+    },
+
+    {
+      emoji: '📖',
+      name: 'PubMed Central and National Center for Biotechnology Information',
+      abbr: 'PMC + NCBI',
+      references: [
+        {
+          text: 'Atherosclerotic cardiovascular disease beginning in childhood. (2010). Korean Circulation Journal.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC2812791/',
+        },
+        {
+          text: 'Bone metabolism in children and adolescents: Main characteristics of the determinants of peak bone mass. (2014). Clinical Cases in Mineral and Bone Metabolism.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3917578/',
+        },
+        {
+          text: 'Bone mineral accrual from adolescence into young adulthood and peak bone mass: A longitudinal cohort study. (2025). Health Science Reports.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC12560013/',
+        },
+        {
+          text: 'Breast and bottle feeding as risk factors for dental caries: A systematic review and meta-analysis. (2015). PLoS ONE.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4651315/',
+        },
+        {
+          text: 'Dietary models and cardiovascular risk prevention in pediatric patients. (2023). Nutrients.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10458109/',
+        },
+        {
+          text: 'Effects of malnutrition on the immune system and infection: A literature review. (2023). Nutrients.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10780435/',
+        },
+        {
+          text: 'Fibre intake is associated with cardiovascular health in European children. (2020). Nutrients.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7822117/',
+        },
+        {
+          text: "Impact of unhealthy food and beverage consumption on children's risk of dental caries: A systematic review. (2023). Nutrition Reviews.",
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11465133/',
+        },
+        {
+          text: 'Nutritional approach to prevention and treatment of cardiovascular disease in childhood. (2021). Nutrients.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC8308497/',
+        },
+        {
+          text: 'The composition of the gut microbiota throughout life, with an emphasis on early life. (2015). Microbial Ecology in Health and Disease.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC4315782/',
+        },
+        {
+          text: 'The development of visual acuity and contrast sensitivity in children. (2010). Journal of Optometry.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3972638/',
+        },
+        {
+          text: 'The prevalence and risk factors of abnormal vision among preschool children. (2024). Pediatric Health, Medicine and Therapeutics.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC11584346/',
+        },
+        {
+          text: 'Early development of infant gut microbiota in relation to breastfeeding and human milk oligosaccharides. (2023). Frontiers in Nutrition.',
+          url: 'https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10034312/',
+        },
+        {
+          text: 'Lutein supplementation for eye diseases. (2020). Nutrients.',
+          url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7352796/',
+        },
+      ],
+    },
+
+    {
+      emoji: '📰',
+      name: 'Frontiers in Nutrition',
+      abbr: 'Front. Nutr',
+      references: [
+        {
+          text: 'Bone health in school age children: Effects of nutritional intake on outcomes. (2021). Frontiers in Nutrition.',
+          url: 'https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2021.773425/full',
+        },
+        {
+          text: 'Role of nutrition and gut microbiome in childhood brain development and behavior. (2025, June 9). Frontiers in Nutrition.',
+          url: 'https://www.frontiersin.org/journals/nutrition/articles/10.3389/fnut.2025.1590172/full',
+        },
+      ],
+    },
+
+    {
+      emoji: '📰',
+      name: 'International Journal of Research in Orthopaedics',
+      abbr: 'IJORO',
+      references: [
+        {
+          text: 'Bone health from infancy to adolescence: A narrative review of nutritional and lifestyle determinants. (2025). International Journal of Research in Orthopaedics.',
+          url: 'https://www.ijoro.org/index.php/ijoro/article/download/3876/2200/22717',
+        },
+      ],
+    },
+
+    {
+      emoji: '📰',
+      name: 'Merck Manual Professional Edition',
+      abbr: 'MMPE',
+      references: [
+        {
+          text: 'Merck Manual Professional Edition. (2025, January). Physical growth and sexual maturation of adolescents.',
+          url: 'https://www.merckmanuals.com/professional/pediatrics/growth-and-development/physical-growth-and-sexual-maturation-of-adolescents',
+        },
+      ],
+    },
+
+    {
+      emoji: '📰',
+      name: 'S. Karger AG',
+      abbr: 'Karger',
+      references: [
+        {
+          text: 'S. Karger AG. (2019, December 28). Nutritional factors in fetal and infant brain development. Annals of Nutrition and Metabolism.',
+          url: 'https://karger.com/anm/article/75/Suppl.%201/20/42664',
+        },
+        {
+          text: 'S. Karger AG. (2025, June 24). Microbiome maturation trajectory and key milestones in early life. Annals of Nutrition and Metabolism.',
+          url: 'https://karger.com/anm/article/81/Suppl.%201/20/925489',
+        },
+      ],
+    },
+
+    {
+      emoji: '📰',
+      name: 'ScienceDirect',
+      abbr: 'ScienceDirect',
+      references: [
+        {
+          text: 'Characteristics and longitudinal stability of gut microbiota in healthy individuals across different age groups. (2025, November). ScienceDirect.',
+          url: 'https://www.sciencedirect.com/science/article/pii/S2666517425001725',
+        },
+        {
+          text: 'Lewis, T. L., & Maurer, D. (2017). Critical periods re-examined: Evidence from children treated for dense cataracts. Cognitive Development.',
+          url: 'https://www.sciencedirect.com/science/article/abs/pii/S0885201416300934',
+        },
+        {
+          text: 'Neurodevelopmental effects of childhood malnutrition: A neuroimaging perspective. (2021, May). NeuroImage.',
+          url: 'https://www.sciencedirect.com/science/article/pii/S1053811921001051',
+        },
+        {
+          text: 'Origin of atherosclerosis in childhood and adolescence. (2023). American Journal of Clinical Nutrition.',
+          url: 'https://www.sciencedirect.com/science/article/pii/S0002916523068727',
+        },
+        {
+          text: 'Psychiatric and cognitive outcomes of iron supplementation in non-anemic children, adolescents, and menstruating adults: A meta-analysis and systematic review. (2025). Neuroscience & Biobehavioral Reviews.',
+          url: 'https://www.sciencedirect.com/science/article/abs/pii/S0149763425003732',
+        },
+        {
+          text: 'The impact of undernutrition and overnutrition on early brain development. (2025, June). ScienceDirect.',
+          url: 'https://www.sciencedirect.com/science/article/abs/pii/S1071909125000336',
+        },
+      ],
+    },
+
+    {
+      emoji: '🥛',
+      name: 'U.S. Dairy and National Dairy Council',
+      abbr: 'NDC',
+      references: [
+        {
+          text: 'U.S. Dairy / National Dairy Council. (2026, January 27). Nutrition and childhood brain development.',
+          url: 'https://www.usdairy.com/news-articles/infant-and-childhood-nutrition-and-cognition',
+        },
+      ],
+    },
+
+    {
+      emoji: '🧪',
+      name: 'BioRxiv',
+      abbr: 'BioRxiv',
+      references: [
+        {
+          text: 'Adolescent girls at familial risk for depression with more advanced adrenarche have altered gut microbiota. (2025, August 8). bioRxiv.',
+          url: 'https://www.biorxiv.org/content/10.1101/2025.08.07.669149.full.pdf',
+        },
+      ],
+    },
+
+    {
+      emoji: '📦',
+      name: 'Open Food Facts',
+      abbr: 'Open Food Facts',
+      references: [
+        {
+          text: 'Open Food Facts. (2012). Open Food Facts [Data set].',
+          url: 'https://world.openfoodfacts.org',
         },
       ],
     },
