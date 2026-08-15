@@ -278,7 +278,7 @@ export default function TopNav() {
                   >
                     <span className="w-8 h-8 rounded-full border-2 border-dashed border-purple-300 flex items-center justify-center text-purple-400 text-lg flex-shrink-0">+</span>
                     <span className="text-sm font-semibold text-[#893ce3]">
-                      {isZh ? '添加新孩子' : i18n.language === 'es' ? 'Agregar niño' : 'Add Child'}
+                      {isZh ? '添加孩子' : i18n.language === 'es' ? 'Agregar niño' : 'Add Child'}
                     </span>
                   </button>
                 </div>

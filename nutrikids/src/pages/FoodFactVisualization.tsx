@@ -53,7 +53,7 @@ export default function FoodFactVisualization() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-6 py-3 border-b border-gray-100 bg-white">
-        <NavLink to="/" className="text-sm text-gray-500 hover:text-green-600 flex items-center gap-1">
+        <NavLink to="/" className="text-sm text-gray-500 hover:text-green-600 inline-flex items-center gap-1">
           ← {t('input.backToHome')}
         </NavLink>
       </div>

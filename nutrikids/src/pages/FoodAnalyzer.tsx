@@ -967,7 +967,7 @@ export default function FoodAnalyzer() {
   return (
     <div className="flex-1 flex flex-col bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
       <div className="px-6 py-2">
-        <NavLink to="/" className="text-sm text-gray-500 hover:text-[#893ce3] flex items-center gap-1">
+        <NavLink to="/" className="text-sm text-gray-500 hover:text-[#893ce3] inline-flex items-center gap-1">
           ← {t('input.backToHome')}
         </NavLink>
       </div>
