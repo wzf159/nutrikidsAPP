@@ -156,56 +156,260 @@ function PanelTeam() {
 
 function PanelSources() {
   const { t } = useTranslation();
-  const items = t('about.panelSources.items', { returnObjects: true }) as { emoji: string; label: string }[];
-  const scoreDims = t('about.panelSources.scoreCalc.dims', { returnObjects: true }) as { label: string; weight: string; desc: string }[]; 
+
+  const groups = t(
+    'about.panelSources.groups',
+    { returnObjects: true }
+  ) as {
+    emoji: string;
+    name: string;
+    abbr: string;
+    references: string[];
+  }[];
+
+  const scoreDims = t(
+    'about.panelSources.scoreCalc.dims',
+    { returnObjects: true }
+  ) as {
+    label: string;
+    weight: string;
+    desc: string;
+  }[];
+
   return (
     <div style={cardStyle}>
-      <h2 style={{ ...gradientText, marginBottom: '16px' }}>{t('about.panelSources.title')}</h2>
-      <p style={{ ...bodyText, marginBottom: '20px' }}>{t('about.panelSources.desc')}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {items.map((s) => (
-          <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#f5f3ff', borderRadius: '12px', padding: '14px 18px' }}>
-            <span style={{ fontSize: '24px' }}>{s.emoji}</span>
-            <span style={{ color: '#3b0764', fontWeight: 600 }}>{s.label}</span>
-          </div>
+      <h2
+        style={{
+          ...gradientText,
+          marginBottom: '16px',
+        }}
+      >
+        {t('about.panelSources.title')}
+      </h2>
+
+      <p
+        style={{
+          ...bodyText,
+          marginBottom: '20px',
+        }}
+      >
+        {t('about.panelSources.desc')}
+      </p>
+
+      {/* Sources by organization */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '12px',
+        }}
+      >
+        {groups.map((group) => (
+          <details
+            key={group.name}
+            style={{
+              background: '#f5f3ff',
+              borderRadius: '12px',
+              padding: '14px 18px',
+              border: '1px solid rgba(137,60,227,0.1)',
+            }}
+          >
+            <summary
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                cursor: 'pointer',
+                listStyle: 'none',
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>
+                {group.emoji}
+              </span>
+
+              <div style={{ flex: 1 }}>
+                <div
+                  style={{
+                    color: '#3b0764',
+                    fontWeight: 700,
+                    fontSize: '14px',
+                  }}
+                >
+                  {group.name}
+                </div>
+
+                <div
+                  style={{
+                    color: '#8b7b9f',
+                    fontSize: '12px',
+                    marginTop: '2px',
+                  }}
+                >
+                  {group.abbr} · {group.references.length}{' '}
+                  {group.references.length === 1
+                    ? t('about.panelSources.reference')
+                    : t('about.panelSources.references')}
+                </div>
+              </div>
+
+              <span
+                style={{
+                  color: '#893ce3',
+                  fontSize: '20px',
+                  fontWeight: 700,
+                }}
+              >
+                ›
+              </span>
+            </summary>
+
+            <div
+              style={{
+                marginTop: '14px',
+                paddingTop: '12px',
+                borderTop: '1px solid rgba(137,60,227,0.12)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+              }}
+            >
+              {group.references.map((ref, index) => (
+                <div
+                  key={index}
+                  style={{
+                    background: '#fff',
+                    borderRadius: '9px',
+                    padding: '10px 12px',
+                    color: '#666',
+                    fontSize: '12.5px',
+                    lineHeight: 1.65,
+                  }}
+                >
+                  {ref}
+                </div>
+              ))}
+            </div>
+          </details>
         ))}
       </div>
+
       {/* 综合评分计算逻辑 */}
-    <div style={{ marginTop: '24px', background: '#faf5ff', border: '1.5px solid rgba(137,60,227,0.15)', borderRadius: '14px', padding: '20px 22px' }}>
-        <h3 style={{ color: '#7c3aed', fontSize: '16px', fontWeight: 800, marginBottom: '6px', fontFamily: "'Nunito', sans-serif" }}>
+      <div
+        style={{
+          marginTop: '24px',
+          background: '#faf5ff',
+          border: '1.5px solid rgba(137,60,227,0.15)',
+          borderRadius: '14px',
+          padding: '20px 22px',
+        }}
+      >
+        <h3
+          style={{
+            color: '#7c3aed',
+            fontSize: '16px',
+            fontWeight: 800,
+            marginBottom: '6px',
+            fontFamily: "'Nunito', sans-serif",
+          }}
+        >
           📐 {t('about.panelSources.scoreCalc.title')}
         </h3>
-        <p style={{ ...bodyText, fontSize: '13px', marginBottom: '16px' }}>
+
+        <p
+          style={{
+            ...bodyText,
+            fontSize: '13px',
+            marginBottom: '16px',
+          }}
+        >
           {t('about.panelSources.scoreCalc.desc')}
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
           {scoreDims.map((d, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', background: '#fff', borderRadius: '10px', padding: '10px 14px' }}>
-              <span style={{
-                flexShrink: 0, minWidth: '46px', textAlign: 'center',
-                fontWeight: 800, fontSize: '13px', color: '#893ce3',
-                background: 'rgba(137,60,227,0.1)', borderRadius: '999px', padding: '3px 8px',
-              }}>
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                background: '#fff',
+                borderRadius: '10px',
+                padding: '10px 14px',
+              }}
+            >
+              <span
+                style={{
+                  flexShrink: 0,
+                  minWidth: '46px',
+                  textAlign: 'center',
+                  fontWeight: 800,
+                  fontSize: '13px',
+                  color: '#893ce3',
+                  background: 'rgba(137,60,227,0.1)',
+                  borderRadius: '999px',
+                  padding: '3px 8px',
+                }}
+              >
                 {d.weight}
               </span>
+
               <div>
-                <p style={{ color: '#3b0764', fontWeight: 700, fontSize: '13.5px', margin: 0 }}>{d.label}</p>
-                <p style={{ color: '#777', fontSize: '12.5px', margin: '2px 0 0' }}>{d.desc}</p>
+                <p
+                  style={{
+                    color: '#3b0764',
+                    fontWeight: 700,
+                    fontSize: '13.5px',
+                    margin: 0,
+                  }}
+                >
+                  {d.label}
+                </p>
+
+                <p
+                  style={{
+                    color: '#777',
+                    fontSize: '12.5px',
+                    margin: '2px 0 0',
+                  }}
+                >
+                  {d.desc}
+                </p>
               </div>
             </div>
           ))}
         </div>
-        <p style={{ color: '#999', fontSize: '11.5px', marginTop: '14px', lineHeight: 1.7 }}>
+
+        <p
+          style={{
+            color: '#999',
+            fontSize: '11.5px',
+            marginTop: '14px',
+            lineHeight: 1.7,
+          }}
+        >
           {t('about.panelSources.scoreCalc.note')}
         </p>
       </div>
-   
-      <p style={{ color: '#888', fontSize: '13px', marginTop: '18px' }}>{t('about.panelSources.footer')}</p>
+
+      <p
+        style={{
+          color: '#888',
+          fontSize: '13px',
+          marginTop: '18px',
+        }}
+      >
+        {t('about.panelSources.footer')}
+      </p>
     </div>
-    
   );
 }
-
 function PanelAIDisclaimer() {
   const { t } = useTranslation();
   return (
@@ -369,16 +573,16 @@ function PanelGetInTouch() {
 }
 
 const PANELS: Record<TabId, React.ReactNode> = {
-  'about-nutrikids':    <PanelAbout />,
-  'mission':            <PanelMission />,
-  'how-it-works':       <PanelHowItWorks />,
-  'team':               <PanelTeam />,
-  'sources':            <PanelSources />,
-  'ai-disclaimer':      <PanelAIDisclaimer />,
+  'about-nutrikids': <PanelAbout />,
+  'mission': <PanelMission />,
+  'how-it-works': <PanelHowItWorks />,
+  'team': <PanelTeam />,
+  'sources': <PanelSources />,
+  'ai-disclaimer': <PanelAIDisclaimer />,
   'medical-disclaimer': <PanelMedicalDisclaimer />,
-  'privacy-policy':     <PanelPrivacyPolicy />,
-  'terms-of-use':       <PanelTermsOfUse />,
-  'get-in-touch':       <PanelGetInTouch />,
+  'privacy-policy': <PanelPrivacyPolicy />,
+  'terms-of-use': <PanelTermsOfUse />,
+  'get-in-touch': <PanelGetInTouch />,
 };
 
 export default function About() {
@@ -394,16 +598,16 @@ export default function About() {
   }, [location.state]);
 
   const TABS: { id: TabId; label: string }[] = [
-    { id: 'about-nutrikids',    label: t('about.tabs.aboutNutrikids') },
-    { id: 'mission',            label: t('about.tabs.mission') },
-    { id: 'how-it-works',       label: t('about.tabs.howItWorks') },
-    { id: 'team',               label: t('about.tabs.team') },
-    { id: 'sources',            label: t('about.tabs.sources') },
-    { id: 'ai-disclaimer',      label: t('about.tabs.aiDisclaimer') },
+    { id: 'about-nutrikids', label: t('about.tabs.aboutNutrikids') },
+    { id: 'mission', label: t('about.tabs.mission') },
+    { id: 'how-it-works', label: t('about.tabs.howItWorks') },
+    { id: 'team', label: t('about.tabs.team') },
+    { id: 'sources', label: t('about.tabs.sources') },
+    { id: 'ai-disclaimer', label: t('about.tabs.aiDisclaimer') },
     { id: 'medical-disclaimer', label: t('about.tabs.medicalDisclaimer') },
-    { id: 'privacy-policy',     label: t('about.tabs.privacyPolicy') },
-    { id: 'terms-of-use',       label: t('about.tabs.termsOfUse') },
-    { id: 'get-in-touch',       label: t('about.tabs.getInTouch') },
+    { id: 'privacy-policy', label: t('about.tabs.privacyPolicy') },
+    { id: 'terms-of-use', label: t('about.tabs.termsOfUse') },
+    { id: 'get-in-touch', label: t('about.tabs.getInTouch') },
   ];
 
   return (

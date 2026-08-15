@@ -1322,7 +1322,7 @@ export default function FoodAnalyzer() {
                     className="text-[14px] font-extrabold text-[#6b5a2f] mb-1"
                     style={{ fontFamily: 'Nunito, sans-serif' }}
                   >
-                    {isZh ? 'AI 提示' : isEs ? 'Aviso de IA' : 'AI guidance'}
+                    {isZh ? '温馨提示' : isEs ? 'Recordatorio amable' : 'Kindly Reminder'}
                   </p>
 
                   <p
