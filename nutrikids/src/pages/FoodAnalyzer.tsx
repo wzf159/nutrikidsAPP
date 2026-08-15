@@ -742,6 +742,11 @@ export default function FoodAnalyzer() {
   const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
   const showProcessingWarning = view?.product.novaScore === 4 && nova != null;
+  const processingWarningLabel = isZh
+    ? '超加工食品'
+    : isEs
+      ? 'Alimento ultraprocesado'
+      : 'Ultra Processed food';
   const topNutrients = view?.nutrients.filter(n => n.level === 'High').slice(0, 2) ?? []; // 只有当某个营养素含量真正达到每日推荐量20%以上时，才会被算作"富含"候选
   const highNutrients = view?.nutrients.filter(n => n.level === 'High') ?? []; // 面板1：所有 %DNC 为 High 的营养元素
   const selectedGoalData = selectedGoal != null && view ? goalById(selectedGoal) : null;
@@ -1901,8 +1906,8 @@ export default function FoodAnalyzer() {
                     </div>
                     <p className="text-[10px] font-bold text-[#6B6B8A] mb-2.5">
                       {isZh
-                        ? `${summaryWatch.length} 项需要高亮关注${showProcessingWarning ? ` · NOVA 4 ${nova.zh}` : ''}`
-                        : `${summaryWatch.length} highlighted concerns${showProcessingWarning ? ` · NOVA 4 ${nova.en}` : ''}`}
+                        ? `${summaryWatch.length} 项需要高亮关注${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`
+                        : `${summaryWatch.length} highlighted concerns${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`}
                     </p>
                     <div className="relative">
                       <div className="grid grid-cols-4 gap-1.5 mb-2.5">
@@ -2106,7 +2111,7 @@ export default function FoodAnalyzer() {
                           {NOVA_ICON[view.product.novaScore ?? 4] ?? '🍭'}
                         </span>
                         <span className="text-[10px] font-bold text-[#9a3412] tracking-wide" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                          {isZh ? `等级 ${view.product.novaScore} · ${nova.zh}` : `LEVEL ${view.product.novaScore} · ${nova.en}`}
+                          {processingWarningLabel}
                         </span>
                       </div>
                     )}
@@ -2399,8 +2404,8 @@ export default function FoodAnalyzer() {
                     <span>🔴</span>
                     <span className="text-xs font-bold text-[#9a3412]" style={{ fontFamily: 'Nunito, sans-serif' }}>
                       {isZh
-                        ? `${presentWatch.length} 项值得注意的成分${showProcessingWarning ? ` · ${nova.zh}` : ''}`
-                        : `${presentWatch.length} ingredients worth noting${showProcessingWarning ? ` · ${nova.en}` : ''}`}
+                        ? `${presentWatch.length} 项值得注意的成分${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`
+                        : `${presentWatch.length} ingredients worth noting${showProcessingWarning ? ` · ${processingWarningLabel}` : ''}`}
                     </span>
                   </div>
 
@@ -2757,26 +2762,21 @@ export default function FoodAnalyzer() {
                     <div className="border-t border-[rgba(200,160,100,0.25)] pt-4 mt-3">
                       <h4 className="font-extrabold text-[#a07040] tracking-wide mb-2">{isZh ? '加工程度' : 'PROCESSING'}</h4>
                       <div className="flex items-baseline gap-2.5 mb-3">
-                        <span className="text-[26px] font-extrabold text-[#ea6c00] italic" style={{ fontFamily: 'Poppins, sans-serif' }}>NOVA {view.product.novaScore}</span>
-                        <span className="text-sm font-semibold text-[#f97316]" style={{ fontFamily: 'Nunito, sans-serif' }}>{isZh ? nova.zh : nova.en}</span>
+                        <span className="text-[26px] font-extrabold text-[#ea6c00] italic" style={{ fontFamily: 'Poppins, sans-serif' }}>{processingWarningLabel}</span>
                       </div>
 
                       <div className="flex justify-between mb-1.5">
                         <div className="flex-1 text-center">
-                          <span className="block text-[10px] font-extrabold text-[#22c55e]">{isZh ? '等级 1' : 'LEVEL 1'}</span>
-                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '低度加工' : 'Minimally Processed'}</span>
+                          <span className="block text-[10px] font-extrabold text-[#22c55e]">{isZh ? '低度加工' : 'Minimally Processed'}</span>
                         </div>
                         <div className="flex-1 text-center">
-                          <span className="block text-[10px] font-extrabold text-[#d4c000]">{isZh ? '等级 2' : 'LEVEL 2'}</span>
-                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '烹饪配料' : 'Culinary Ingredients'}</span>
+                          <span className="block text-[10px] font-extrabold text-[#d4c000]">{isZh ? '烹饪配料' : 'Culinary Ingredients'}</span>
                         </div>
                         <div className="flex-1 text-center">
-                          <span className="block text-[10px] font-extrabold text-[#f97316]">{isZh ? '等级 3' : 'LEVEL 3'}</span>
-                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '加工食品' : 'Processed Foods'}</span>
+                          <span className="block text-[10px] font-extrabold text-[#f97316]">{isZh ? '加工食品' : 'Processed Foods'}</span>
                         </div>
                         <div className="flex-1 text-center">
-                          <span className="block text-[10px] font-extrabold text-[#ef4444]">{isZh ? '等级 4' : 'LEVEL 4'}</span>
-                          <span className="block text-[9px] font-semibold text-gray-500">{isZh ? '超加工' : 'Ultra Processed'}</span>
+                          <span className="block text-[10px] font-extrabold text-[#ef4444]">{processingWarningLabel}</span>
                         </div>
                       </div>
 
@@ -2798,7 +2798,7 @@ export default function FoodAnalyzer() {
                         <span className="text-center">
                           <span className="text-[16px]">🍭</span>
                           <br />
-                          <span className="text-[10px]" style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>{isZh ? '超加工' : 'Ultra Processed'}</span>
+                          <span className="text-[10px]" style={{ fontFamily: 'Nunito, sans-serif', fontWeight: 600 }}>{processingWarningLabel}</span>
                         </span>
                       </div>
 
@@ -2808,7 +2808,7 @@ export default function FoodAnalyzer() {
                         </span>
                         <div className="flex-1">
                           <p className="text-[11px] font-bold text-[#9a3412] tracking-wide" style={{ fontFamily: 'Nunito, sans-serif' }}>
-                            {isZh ? `等级 ${view.product.novaScore} · ${nova.zh}` : `LEVEL ${view.product.novaScore} · ${nova.en}`}
+                            {processingWarningLabel}
                           </p>
                           <p className="text-[11px] font-semibold text-[#4a5568] mt-0.5" style={{ fontFamily: 'Nunito, sans-serif' }}>
                             {isZh ? nova.examplesZh : nova.examples}

@@ -150,7 +150,7 @@ export default function FoodAnalyzerLabelsDoc() {
             ['富含…', 'Food Score ≥ 3，且至少有一个正向营养素达到 High', '取正向营养素列表中 %DV ≥ 20 的前 2 项', '安全否决优先；无 High 营养素时不显示'],
             ['注意：…', 'Food Score < 3、没有安全否决、且存在 watch.present 项', '最多显示前三个已判定存在的关注项', 'Food Score ≥ 3 时不显示此摘要'],
             ['支持 N 项目标 · 核心 / 重要 / 辅助', '儿童已选择目标', '只统计 selected、supportDV > 0 且具有年龄/性别 tier 的目标', '总数为 0 时显示“没有足够营养证据”'],
-            ['NOVA 4 · 超加工', '产品 novaScore = 4', '仅对超加工食品显示加工等级警示', 'NOVA 1–3 或没有 NOVA 数据时不显示'],
+            ['Ultra Processed food / 超加工食品', '产品 novaScore = 4', '仅对超加工食品显示文字警示，不展示 Level 4', 'NOVA 1–3 或没有 NOVA 数据时不显示'],
             ['来源按钮', '结果卡固定展示', 'WHO、AAP、AHA、CDC、NIH ODS、Open Food Facts 等固定入口', '它们是说明入口，不参与计算'],
           ]}
         />
@@ -226,7 +226,7 @@ supportDV = round(GoalScore × 证据覆盖率 × 100)
             ['1', '未 / 低度加工', '新鲜水果、蔬菜、鸡蛋、牛奶', 'Things to Watch 不提示；天然食物的糖不自动当作添加糖'],
             ['2', '加工烹饪配料', '油、黄油、糖、盐', 'Things to Watch 不提示加工等级'],
             ['3', '加工食品', '奶酪、酸奶、罐装蔬菜、新鲜面包', 'Things to Watch 不提示加工等级'],
-            ['4', '超加工', '碳酸饮料、糖果、方便面', 'Things to Watch 显示加工等级警示；旧的 breakdown.processingLevel 会映射为 8/20，但不参与当前最终总分'],
+            ['4', '超加工', '碳酸饮料、糖果、方便面', 'Things to Watch 显示“Ultra Processed food / 超加工食品”，不展示 Level 4；旧的 breakdown.processingLevel 会映射为 8/20，但不参与当前最终总分'],
           ]}
         />
         <p className="mt-3 text-sm leading-6 text-slate-500">NOVA 优先读取 Open Food Facts 的 <code>nova_group</code>，必要时读取其营养字段里的 nova-group 兜底；前端不根据配料数量自行推算 NOVA。</p>
