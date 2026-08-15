@@ -156,32 +156,114 @@ function PanelTeam() {
 function PanelSources() {
   const { t } = useTranslation();
 
-  const rawGroups = t(
-    'about.panelSources.groups',
-    { returnObjects: true }
-  );
-
-  const groups = Array.isArray(rawGroups)
-    ? rawGroups as {
-        emoji: string;
-        name: string;
-        abbr: string;
-        references: string[];
-      }[]
-    : [];
-
-  const rawScoreDims = t(
+  const scoreDims = t(
     'about.panelSources.scoreCalc.dims',
     { returnObjects: true }
-  );
+  ) as {
+    label: string;
+    weight: string;
+    desc: string;
+  }[];
 
-  const scoreDims = Array.isArray(rawScoreDims)
-    ? rawScoreDims as {
-        label: string;
-        weight: string;
-        desc: string;
-      }[]
-    : [];
+  const sourceGroups = [
+    {
+      emoji: '🌍',
+      name: 'World Health Organization',
+      abbr: 'WHO',
+      references: [
+        {
+          text: 'World Health Organization. (2011). Nutrient profiling: report of a WHO/IASO technical meeting, London, United Kingdom, 4–6 October 2010.',
+          url: 'https://iris.who.int/handle/10665/336447',
+        },
+      ],
+    },
+    {
+      emoji: '🏥',
+      name: 'Centers for Disease Control and Prevention',
+      abbr: 'CDC',
+      references: [
+        {
+          text: 'Centers for Disease Control and Prevention. (2015, March). Dental caries and sealant prevalence in children and adolescents in the United States, 2011-2012 (NCHS Data Brief No. 191).',
+          url: 'https://www.cdc.gov/nchs/products/databriefs/db191.htm',
+        },
+        {
+          text: 'Centers for Disease Control and Prevention. (2025, December 3). Physical activity basics and your health.',
+          url: 'https://www.cdc.gov/physicalactivity/basics/children/',
+        },
+      ],
+    },
+    {
+      emoji: '🔬',
+      name: 'NIH Office of Dietary Supplements',
+      abbr: 'NIH ODS',
+      references: [
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2025, September 4). Iron: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Iron-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (n.d.). Dietary supplements for immune function and infectious diseases: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/ImmuneFunction-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (n.d.). Omega-3 fatty acids: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2026, June 22). Calcium: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Calcium-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (n.d.). Folate: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Folate-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2024, May 1). Iodine: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/Iodine-Consumer/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2026, January 6). Magnesium: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Magnesium-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (n.d.). Phosphorus: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Phosphorus-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2022, June 2). Potassium: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/Potassium-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2025, March 10). Vitamin A and carotenoids: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminA-Consumer/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2025, July 2). Vitamin B12: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminB12-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2023, June 16). Vitamin B6: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminB6-Consumer/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (n.d.). Vitamin D: Fact sheet for health professionals.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminD-HealthProfessional/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2021, March 22). Vitamin E: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminE-Consumer/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2021, March 22). Vitamin K: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/VitaminK-Consumer/',
+        },
+        {
+          text: 'National Institutes of Health, Office of Dietary Supplements. (2022, October 4). Zinc: Fact sheet for consumers.',
+          url: 'https://ods.od.nih.gov/factsheets/Zinc-Consumer/',
+        },
+      ],
+    },
+  ];
 
   return (
     <div style={cardStyle}>
@@ -197,17 +279,17 @@ function PanelSources() {
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
+          gap: '14px',
         }}
       >
-        {groups.map((group) => (
+        {sourceGroups.map((group) => (
           <details
-            key={group.name}
+            key={group.abbr}
             style={{
-              background: '#f5f3ff',
-              borderRadius: '12px',
-              padding: '14px 18px',
-              border: '1px solid rgba(137,60,227,0.1)',
+              background: '#f8f2ff',
+              border: '1.5px solid rgba(137,60,227,0.18)',
+              borderRadius: '18px',
+              overflow: 'hidden',
             }}
           >
             <summary
@@ -215,11 +297,17 @@ function PanelSources() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '14px',
+                padding: '18px 20px',
                 cursor: 'pointer',
                 listStyle: 'none',
               }}
             >
-              <span style={{ fontSize: '24px' }}>
+              <span
+                style={{
+                  fontSize: '28px',
+                  flexShrink: 0,
+                }}
+              >
                 {group.emoji}
               </span>
 
@@ -227,8 +315,9 @@ function PanelSources() {
                 <div
                   style={{
                     color: '#3b0764',
-                    fontWeight: 700,
-                    fontSize: '14px',
+                    fontWeight: 800,
+                    fontSize: '17px',
+                    fontFamily: "'Nunito', sans-serif",
                   }}
                 >
                   {group.name}
@@ -236,23 +325,24 @@ function PanelSources() {
 
                 <div
                   style={{
-                    color: '#8b7b9f',
-                    fontSize: '12px',
-                    marginTop: '2px',
+                    color: '#a855f7',
+                    fontWeight: 700,
+                    fontSize: '13px',
+                    marginTop: '3px',
                   }}
                 >
                   {group.abbr} · {group.references.length}{' '}
                   {group.references.length === 1
-                    ? t('about.panelSources.reference')
-                    : t('about.panelSources.references')}
+                    ? 'reference'
+                    : 'references'}
                 </div>
               </div>
 
               <span
                 style={{
-                  color: '#893ce3',
+                  color: '#9ca3af',
                   fontSize: '20px',
-                  fontWeight: 700,
+                  fontWeight: 800,
                 }}
               >
                 ›
@@ -261,12 +351,12 @@ function PanelSources() {
 
             <div
               style={{
-                marginTop: '14px',
-                paddingTop: '12px',
-                borderTop: '1px solid rgba(137,60,227,0.12)',
+                borderTop:
+                  '1px solid rgba(137,60,227,0.12)',
+                padding: '16px 18px 18px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: '12px',
               }}
             >
               {group.references.map((ref, index) => (
@@ -274,14 +364,30 @@ function PanelSources() {
                   key={index}
                   style={{
                     background: '#fff',
-                    borderRadius: '9px',
-                    padding: '10px 12px',
-                    color: '#666',
-                    fontSize: '12.5px',
-                    lineHeight: 1.65,
+                    borderRadius: '14px',
+                    padding: '14px 16px',
+                    border:
+                      '1px solid rgba(137,60,227,0.08)',
+                    color: '#4b5563',
+                    fontSize: '13px',
+                    lineHeight: 1.7,
                   }}
                 >
-                  {ref}
+                  <span>{ref.text} </span>
+
+                  <a
+                    href={ref.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#893ce3',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      wordBreak: 'break-all',
+                    }}
+                  >
+                    {ref.url}
+                  </a>
                 </div>
               ))}
             </div>
@@ -289,11 +395,13 @@ function PanelSources() {
         ))}
       </div>
 
+      {/* scoreCalc 保留你原来的 */}
       <div
         style={{
           marginTop: '24px',
           background: '#faf5ff',
-          border: '1.5px solid rgba(137,60,227,0.15)',
+          border:
+            '1.5px solid rgba(137,60,227,0.15)',
           borderRadius: '14px',
           padding: '20px 22px',
         }}
@@ -310,7 +418,13 @@ function PanelSources() {
           📐 {t('about.panelSources.scoreCalc.title')}
         </h3>
 
-        <p style={{ ...bodyText, fontSize: '13px', marginBottom: '16px' }}>
+        <p
+          style={{
+            ...bodyText,
+            fontSize: '13px',
+            marginBottom: '16px',
+          }}
+        >
           {t('about.panelSources.scoreCalc.desc')}
         </p>
 
