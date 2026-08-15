@@ -5,6 +5,7 @@ import { hasAdditiveCategory } from './scoring/additiveCategories.js';
 import { ADDED_SUGAR_NUTRIENT_ID, OFF_NUTRIENT_MAP, TOTAL_SUGAR_NUTRIENT_ID } from './productFinder.js';
 import { containsFlavorIngredient } from './scoring/ingredientDetection.js';
 import { p3WatchReference, per100gWatchMetric, resolveAddedSugar100g } from './scoring/watchMetrics.js';
+import { findHarmfulAdditives } from './scoring/harmfulAdditives.js';
 
 // nutrients 字典 ID（见 seed.ts / productFinder.ts）
 const SUGAR_NUTRIENT_ID = TOTAL_SUGAR_NUTRIENT_ID;
@@ -548,6 +549,51 @@ export async function scoreFood(input: ScoreInput) {
   // 但不进入 Nutri-Score / FinalScore 评分流程。
   const isAiGenerated = !product.verified && product.barcode === null;
 
+  const childAllergIds = new Set(
+    child.allergens.map((allergen: { allergenId: number }) => allergen.allergenId),
+  );
+  const allergenFlags = product.allergens.map(
+    (productAllergen: { allergenId: number; present: boolean }) => ({
+      allergenId: productAllergen.allergenId,
+      present: productAllergen.present,
+      matchesChild:
+        productAllergen.present && childAllergIds.has(productAllergen.allergenId),
+    }),
+  );
+  const matchedAllergens = product.allergens
+    .filter((productAllergen) =>
+      productAllergen.present && childAllergIds.has(productAllergen.allergenId)
+    )
+    .map((productAllergen) => ({
+      code: productAllergen.allergen.code,
+      name: productAllergen.allergen.name,
+      nameZh: productAllergen.allergen.nameZh,
+      icon: productAllergen.allergen.icon,
+    }));
+
+  let productAdditiveTags: string[] = [];
+  try {
+    const parsedAdditiveTags = product.additivesJson
+      ? JSON.parse(product.additivesJson)
+      : [];
+    productAdditiveTags = Array.isArray(parsedAdditiveTags)
+      ? parsedAdditiveTags.filter((tag): tag is string => typeof tag === 'string')
+      : [];
+  } catch {
+    productAdditiveTags = [];
+  }
+
+  const harmfulAdditives = findHarmfulAdditives(productAdditiveTags);
+  const scoreBlockedBySafety =
+    matchedAllergens.length > 0 || harmfulAdditives.length > 0;
+  let scoreStatus = matchedAllergens.length > 0 && harmfulAdditives.length > 0
+    ? 'blocked_multiple'
+    : matchedAllergens.length > 0
+      ? 'blocked_allergen'
+      : harmfulAdditives.length > 0
+        ? 'blocked_harmful_additive'
+        : 'scored';
+
   const prodNutr = product.nutrients;
   console.log('additivesJson:', product.additivesJson);
 
@@ -667,7 +713,7 @@ export async function scoreFood(input: ScoreInput) {
   // ------------------------------------------------------
   // 只有 OFF 提供了 Nutri-Score 时才计算 FinalScore
   // ------------------------------------------------------
-  if (hasNutriScore) {
+  if (!scoreBlockedBySafety && hasNutriScore) {
     nutriNorm = Math.max(
       0,
       Math.min(
@@ -753,12 +799,18 @@ export async function scoreFood(input: ScoreInput) {
   // ======================================================
   else {
     console.log(
-      'Nutri-Score unavailable: skipping NutriNorm and FinalScore.'
+      scoreBlockedBySafety
+        ? 'Safety blocker detected: skipping NutriNorm and FinalScore.'
+        : 'Nutri-Score unavailable: skipping NutriNorm and FinalScore.'
     );
 
     nutriNorm = null;
     overallRaw = null;
     additiveScore = null;
+  }
+
+  if (!scoreBlockedBySafety && overallRaw === null) {
+    scoreStatus = 'unavailable';
   }
 
 
@@ -845,14 +897,6 @@ export async function scoreFood(input: ScoreInput) {
     'FinalScore:',
     overallRaw !== null ? overallRaw.toFixed(1) : 'N/A'
   );
-  // 过敏命中
-  const childAllergIds = new Set(child.allergens.map((a: { allergenId: number }) => a.allergenId));
-  const allergenFlags = product.allergens.map((a: { allergenId: number; present: boolean }) => ({
-    allergenId: a.allergenId,
-    present: a.present,
-    matchesChild: a.present && childAllergIds.has(a.allergenId),
-  }));
-
   // 正负因素（示例规则）
   const factors: { kind: 'positive' | 'negative'; label: string }[] = [];
   if (nutrientDensity >= 25) factors.push({ kind: 'positive', label: 'High Nutrient Density' });
@@ -860,6 +904,8 @@ export async function scoreFood(input: ScoreInput) {
   if (Number(addedSugarMetric.dailyPercent ?? 0) >= 20) factors.push({ kind: 'negative', label: 'Added Sugar' });
   if (allergenFlags.some((f: { matchesChild: boolean }) => f.matchesChild))
     factors.push({ kind: 'negative', label: 'Contains Child Allergen' });
+  if (harmfulAdditives.length > 0)
+    factors.push({ kind: 'negative', label: 'Contains Harmful Additive' });
 
   // ---------------- 前端视图数据（FoodAnalyzer 页面） ----------------
   // 营养素列表：排除糖/能量，按 %DV 排序
@@ -1035,10 +1081,7 @@ export async function scoreFood(input: ScoreInput) {
   const hasIng = (re: RegExp) => ingNames.some((n: string) => re.test(n));
   const addNames = product.additives.map((a: { additive: { name: string; nameZh: string | null; type: string | null } }) => `${a.additive.name} ${a.additive.nameZh ?? ''} ${a.additive.type ?? ''}`.toLowerCase());
   const hasAdd = (re: RegExp) => addNames.some((n: string) => re.test(n));
-  const rawAdditives: string[] = (() => {
-    try { return product.additivesJson ? JSON.parse(product.additivesJson) : []; }
-    catch { return []; }
-  })();
+  const rawAdditives = productAdditiveTags;
   const hasRawAdditive = (codes: string[]) =>
     codes.some(c => rawAdditives.includes(`en:${c.toLowerCase()}`));
   const rawIngredientTags: string[] = (() => {
@@ -1207,10 +1250,6 @@ export async function scoreFood(input: ScoreInput) {
     },
   ];
   console.log('Sodium value:', prodNutr.find((n: any) => n.nutrient.name === 'Sodium')?.value);
-  const matchedAllergens = product.allergens
-    .filter((a) => a.present && childAllergIds.has(a.allergenId))
-    .map((a) => ({ code: a.allergen.code, name: a.allergen.name, nameZh: a.allergen.nameZh, icon: a.allergen.icon }));
-
   // 事务写入
   const analysis = await prisma.analysis.create({
     data: {
@@ -1224,17 +1263,21 @@ export async function scoreFood(input: ScoreInput) {
       whyText:
         overall !== null
           ? `Scored ${overall}/100 for this child.`
-          : 'AI-estimated nutrition data; overall score is not calculated.',
+          : scoreBlockedBySafety
+            ? 'A safety concern was detected; overall score is not calculated.'
+            : 'Nutrition score data is unavailable; overall score is not calculated.',
       whyTextZh:
         overall !== null
           ? `针对该孩子综合评分 ${overall}/100。`
-          : 'AI 估算营养数据，不计算综合评分。',
+          : scoreBlockedBySafety
+            ? '检测到安全风险，不计算综合评分。'
+            : '缺少评分所需数据，不计算综合评分。',
       breakdown: {
         create: [
           {
             dimension: 'devScore',
-            score: Math.round(devScore * 100),
-            weight: isAiGenerated ? null : alpha,
+            score: scoreBlockedBySafety ? null : Math.round(devScore * 100),
+            weight: isAiGenerated || scoreBlockedBySafety ? null : alpha,
           },
           {
             dimension: 'nutriNorm',
@@ -1242,7 +1285,7 @@ export async function scoreFood(input: ScoreInput) {
               nutriNorm !== null
                 ? Math.round(nutriNorm * 100)
                 : null,
-            weight: isAiGenerated ? null : alpha,
+            weight: isAiGenerated || scoreBlockedBySafety ? null : alpha,
           },
           {
             dimension: 'additiveScore',
@@ -1250,7 +1293,7 @@ export async function scoreFood(input: ScoreInput) {
               additiveScore !== null
                 ? Math.round(additiveScore * 100)
                 : null,
-            weight: isAiGenerated ? null : 1 - alpha,
+            weight: isAiGenerated || scoreBlockedBySafety ? null : 1 - alpha,
           },
         ],
       },
@@ -1273,12 +1316,14 @@ export async function scoreFood(input: ScoreInput) {
           : overall >= 37
             ? 2
             : 1;
-  const computeBenefits = matchedAllergens.length === 0 && benefitLevel >= 3;
+  const computeBenefits = !scoreBlockedBySafety && benefitLevel >= 3;
 
   return {
     analysisId: analysis.id,
     overallScore: overall,
     grade,
+    scoreStatus,
+    harmfulAdditives,
     breakdown: { nutrientDensity, riskIngredients, processingLevel, stageMatch },
     factors,
     allergenFlags,
@@ -1300,21 +1345,15 @@ export async function scoreFood(input: ScoreInput) {
       child: { id: child.id, name: child.name, age: child.age },
       allergenSafe: matchedAllergens.length === 0,
       matchedAllergens,
+      harmfulAdditives,
       goals: computeBenefits ? viewGoals : [],
       nutrients: computeBenefits ? viewNutrients : [],
       flows: computeBenefits ? flows : [],
       watch,
-      additiveTags: (() => {
-        try {
-          const tags: string[] = product.additivesJson ? JSON.parse(product.additivesJson) : [];
-          return tags.map(tag => {
-            const code = tag.replace('en:', '').toUpperCase();
-            return { code, name: code, nameZh: code, type: 'additive' };
-          });
-        } catch {
-          return [];
-        }
-      })(),
+      additiveTags: productAdditiveTags.map((tag) => {
+        const code = tag.replace('en:', '').toUpperCase();
+        return { code, name: code, nameZh: code, type: 'additive' };
+      }),
     },
   };
 }

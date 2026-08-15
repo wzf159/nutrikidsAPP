@@ -50,6 +50,7 @@ export interface AnalysisView {
   child: { id: string; name: string; age: number | null };
   allergenSafe: boolean;
   matchedAllergens: { code: string; name: string; nameZh: string | null; icon: string | null }[];
+  harmfulAdditives: HarmfulAdditive[];
   goals: { id: number; icon: string | null; label: string; labelZh: string | null; selected: boolean; tier: 'core' | 'important' | 'supporting' | null; supportDV: number }[];
   nutrients: { id: number; name: string; nameZh: string | null; icon: string | null; value: number | null; value100g: number | null; unit: string | null; dailyValue: number; dailyReference: number | null; level: 'High' | 'Moderate' | 'Low' }[];
   flows: { goalId: number; nutrientId: number; value: number }[];
@@ -81,10 +82,26 @@ export interface MatchedAllergen {
   icon?: string | null;
 }
 
+export interface HarmfulAdditive {
+  tag: string;
+  code: string;
+  name: string;
+  nameZh: string | null;
+}
+
+export type ScoreStatus =
+  | 'scored'
+  | 'blocked_allergen'
+  | 'blocked_harmful_additive'
+  | 'blocked_multiple'
+  | 'unavailable';
+
 export interface AnalysisResult {
   analysisId: string;
-  overallScore: number;
-  grade: string;
+  overallScore: number | null;
+  grade: string | null;
+  scoreStatus: ScoreStatus;
+  harmfulAdditives: HarmfulAdditive[];
   view: AnalysisView;
 
   isAllergenSafe: boolean;

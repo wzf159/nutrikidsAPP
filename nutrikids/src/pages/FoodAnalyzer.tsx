@@ -756,7 +756,11 @@ export default function FoodAnalyzer() {
 
 
 
-  const grade = result ? GRADE_META[result.grade] ?? GRADE_META.Fair : null;
+  const grade = result
+    ? result.grade
+      ? GRADE_META[result.grade] ?? GRADE_META.Fair
+      : GRADE_META.Fair
+    : null;
   const nova = view?.product.novaScore ? NOVA_META[view.product.novaScore] : null;
   const showProcessingWarning = view?.product.novaScore === 4 && nova != null;
   const processingWarningLabel = isZh
@@ -779,17 +783,13 @@ export default function FoodAnalyzer() {
   const toggleNutrient = (id: number) => { setSelectedGoal(null); setSelectedNutrient(p => (p === id ? null : id)); };
 
   const productTitle = view ? (isZh ? view.product.nameZh ?? view.product.name : view.product.name) : '';
-  const levelNum = result ? scoreToLevel(result.overallScore) : 1;
+  const levelNum = result?.overallScore != null ? scoreToLevel(result.overallScore) : 1;
   const levelMeta = LEVEL_META[levelNum];
   // level 1/2 为低分“垃圾食品”，只强调风险，不展示益处面板
   const isLowLevel = levelNum <= 2;
   //const hasAllergen = view ? (!view.allergenSafe && view.matchedAllergens.length > 0) : false;
   const hasAllergen = view?.allergenSafe === false;
-  console.log('allergens', hasAllergen);
-  const highRiskAdditives =
-    view?.additiveTags.filter(
-      a => ADDITIVE_DICT[a.code]?.risk === "high"
-    ) ?? [];
+  const highRiskAdditives = view?.harmfulAdditives ?? [];
 
   const hasHighRiskAdditive = highRiskAdditives.length > 0;
   const hasSafetyRisk = hasAllergen || hasHighRiskAdditive;
@@ -1514,7 +1514,7 @@ export default function FoodAnalyzer() {
                             className="w-[64px] h-[64px] rounded-full flex-shrink-0 flex flex-col items-center justify-center shadow-[0_4px_16px_rgba(0,0,0,0.15)]"
                             style={{
                               background: hasSafetyRisk
-                                ? 'linear-gradient(135deg, #dc2626, #b91c1c)'
+                                ? 'linear-gradient(135deg, #c7c7c7, #a8a8a8)'
                                 : `linear-gradient(135deg, ${levelMeta.color}, ${levelMeta.color}cc)`,
                             }}
                           >
@@ -1526,7 +1526,7 @@ export default function FoodAnalyzer() {
                             </span>
 
                             <span className="text-[9px] font-bold text-white/85 tracking-wider mt-0.5">
-                              {hasSafetyRisk ? 'NOT SAFE' : foodScoreLabels[displayLevel]}
+                              {hasSafetyRisk ? 'NO SCORE' : foodScoreLabels[displayLevel]}
                             </span>
                           </div>
 
@@ -1584,7 +1584,7 @@ export default function FoodAnalyzer() {
                               </div>
                             )}
                             <p
-                              className={`text-[11px] leading-relaxed mt-0.5 ${hasSafetyRisk ? 'text-red-600' : 'text-gray-500'
+                              className={`text-[11px] leading-relaxed mt-0.5 ${hasSafetyRisk ? 'text-gray-400' : 'text-gray-500'
                                 }`}
                               style={{ fontFamily: 'Nunito, sans-serif' }}
                             >
@@ -1664,20 +1664,14 @@ export default function FoodAnalyzer() {
                                 <span className="text-base">⚗️</span>
 
                                 <div>
-                                  <p className="text-[12px] font-extrabold text-orange-700">
+                                  <p className="text-[11px] text-orange-700" style={{ fontFamily: 'Nunito, sans-serif' }}>
                                     {isZh
-                                      ? '检测到有害添加剂'
+                                      ? '具体物质：'
                                       : isEs
-                                        ? 'Aditivos nocivos detectados'
-                                        : 'Harmful Additives Detected'}
-                                  </p>
-
-                                  <p
-                                    className="text-[11px] text-orange-600"
-                                    style={{ fontFamily: 'Nunito, sans-serif' }}
-                                  >
+                                        ? 'Sustancia detectada: '
+                                        : 'Detected substance: '}
                                     {highRiskAdditives
-                                      .map(a => ADDITIVE_DICT[a.code]?.name ?? a.code)
+                                      .map(a => isZh ? a.nameZh ?? a.name : a.name)
                                       .join(', ')}
                                   </p>
                                 </div>
@@ -1745,16 +1739,16 @@ export default function FoodAnalyzer() {
                             <div
                               className="w-full rounded-full"
                               style={{
-                                background: levelColors[lv - 1],
-                                opacity: lv === levelNum ? 1 : 0.2,
-                                height: lv === levelNum ? '12px' : '8px',
+                                background: hasSafetyRisk ? '#c7c7c7' : levelColors[lv - 1],
+                                opacity: hasSafetyRisk ? 0.55 : lv === levelNum ? 1 : 0.2,
+                                height: !hasSafetyRisk && lv === levelNum ? '12px' : '8px',
                               }}
                             />
                             <span className="text-[9px] font-bold" style={{
-                              color: lv === levelNum ? levelColors[lv - 1] : '#9ca3af',
+                              color: !hasSafetyRisk && lv === levelNum ? levelColors[lv - 1] : '#9ca3af',
                               fontFamily: 'Nunito, sans-serif',
                             }}>
-                              {foodScoreLabels[lv]}{lv === levelNum ? ' ✓' : ''}
+                              {foodScoreLabels[lv]}{!hasSafetyRisk && lv === levelNum ? ' ✓' : ''}
                             </span>
                           </div>
                         ))}

@@ -76,12 +76,12 @@ export default function DataConsistencyDoc() {
       <DataTable headers={['层级', '数据/文件', '具体规则', '能否称为 OFF 官方结论']} rows={[
         ['产品含有哪些添加剂', <><code>product.additives_tags</code><br /><code>Product.additivesJson</code></>, '主流程直接请求 OFF 独立字段 additives_tags，例如 en:e150d；与完整配料 ingredients_tags 分开保存。', '是 OFF 返回的产品数据，但依赖配料表完整度和 OFF 解析质量。'],
         ['添加剂属于什么类别', <><code>scoring/data/additive_categories.json</code><br /><code>additiveCategories.ts</code></>, '本地字典当前有 645 个 E 标签：Acidity Regulator 166、Thickener 129、Color 93、Sweetener 87、Preservative 63、Glazing Agent 51、Antioxidant 26、Flavor Enhancer 25、Other 5。hasAdditiveCategory() 只做 tag→类别精确映射。', '不是 OFF 对产品的安全评价；这是项目本地生成的功能分类。'],
-        ['是否命中“有害”集合', <><code>scoring/data/harmful_additives_reference.json</code><br /><code>additiveScoreV2.ts</code></>, '本地集合当前含 135 个 OFF E 标签。产品 additives_tags 去重后与该集合求交集。', '不是 OFF 官方“有害”字段；应表述为项目基于外部评估整理的关注集合。'],
-        ['如何进入总分', <code>scoring.ts</code>, <><code>AdditiveScore = 命中数 ÷ 135</code>；仅 Nutri-Score C/D/E 分支以 50% 权重扣分。A/B 分支不使用该分数。</>, '属于 Growtrition 自定义评分公式。'],
+        ['是否命中“有害”集合', <><code>scoring/data/harmful_additives_reference.json</code><br /><code>harmfulAdditives.ts</code></>, <><code>efsa_evaluation_overexposure_risk.en = en:high</code> 的 38 个 OFF 添加剂。产品 <code>additives_tags</code> 去重后与该集合求交集。</>, '风险字段与名称来自 OFF taxonomy；“命中即不评分”是本项目的产品规则。'],
+        ['如何进入总分', <code>scoring.ts</code>, '只要命中任一高风险添加剂，FinalScore、overallScore 和 Grade 均不计算；无命中时才进入常规 A–E 评分分支。', '属于 Growtrition 的安全优先规则。'],
       ]} />
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <InfoCard title="空数组不一定等于已确认无添加剂" tone="amber">若 OFF 没有可解析的配料表，<code>additives_tags = []</code> 可能代表“未识别到/资料不足”。页面应结合 <code>ingredients_text</code>、<code>ingredients_n</code> 和数据质量标签区分“已解析未检出”与“未知”。</InfoCard>
-        <InfoCard title="旧接口仍有口径问题" tone="rose">独立 <code>/api/food/score</code> 当前用 <code>ingredients_tags</code> 与有害集合求交集，且请求字段里没有 <code>additives_tags</code>。它需要与主流程统一后，才能声称添加剂来源完全一致。</InfoCard>
+        <InfoCard title="两个评分入口使用同一口径" tone="blue">主分析接口与独立 <code>/api/food/score</code> 都读取 <code>additives_tags</code>，并使用同一份 38 项 EFSA high 参考表。</InfoCard>
       </div>
     </Section>
 

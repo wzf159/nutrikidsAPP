@@ -75,16 +75,11 @@ export default function FoodAnalyzerLabelsDoc() {
       <Section eyebrow="READING ORDER" title="先看一遍完整显示链">
         <CompactFlow>{`产品事实 + 儿童档案
         │
-        ├─ Nutri-Score 原始分/等级是否完整？ ── 否 ─→ 422：不生成分析结果
-        │                                      是
-        ▼
-   计算 0–100 总分 → 换算 Food Score 1–5 与文字等级
-        │
         ├─ 命中儿童过敏原？ ──────── 是 ─┐
-        ├─ 命中高风险添加剂？ ────── 是 ─┴→ 安全否决：显示 0 / NOT SAFE
+        ├─ 命中高风险添加剂？ ────── 是 ─┴→ 不计算总分：显示 0 / NO SCORE
         │                                      否
         ▼
-   显示原总分与文字等级
+   计算 0–100 总分 → 换算 Food Score 1–5 与文字等级
         │
         ├─ Food Score ≥ 3 → 优先显示“富含”营养素
         └─ Food Score < 3 → 优先显示“注意”成分
@@ -92,7 +87,7 @@ export default function FoodAnalyzerLabelsDoc() {
         ▼
    ① 食品评估 → ② 成长益处 → ③ 家长须知 → NOVA 加工程度`}</CompactFlow>
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          页面标签有三类：计算标签（总分、文字等级、%DV）、判断标签（NOT SAFE、已检出、富含）和来源标签（NOVA、AI 估算、数据源按钮）。三者不要混成同一种“评分”。
+          页面标签有三类：计算标签（总分、文字等级、%DV）、判断标签（NO SCORE、已检出、富含）和来源标签（NOVA、AI 估算、数据源按钮）。三者不要混成同一种“评分”。
         </p>
       </Section>
 
@@ -113,22 +108,21 @@ export default function FoodAnalyzerLabelsDoc() {
       <Section eyebrow="1 · OVERALL ASSESSMENT" title="① 综合评估：总分、文字等级与安全否决">
         <div className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3"><OrderBadge>A</OrderBadge><h3 className="font-bold">先算总分</h3></div>
+            <div className="flex items-center gap-3"><OrderBadge>A</OrderBadge><h3 className="font-bold">先做安全检查</h3></div>
             <div className="mt-4 space-y-3">
+              <Formula>命中过敏原或 EFSA high 添加剂 → 不计算总分</Formula>
               <Formula>NutriNorm = clip((55 − Nutri-Score原始分) ÷ 72, 0, 1)</Formula>
               <Formula>A / B：总分 = 100 × (0.5 × NutriNorm + 0.5 × DevScore)</Formula>
               <Formula>C / D / E：总分 = max(0, 100 × (0.5 × NutriNorm − 0.5 × AdditiveScore))</Formula>
             </div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center gap-3"><OrderBadge>B</OrderBadge><h3 className="font-bold">再做安全优先判断</h3></div>
+            <div className="flex items-center gap-3"><OrderBadge>B</OrderBadge><h3 className="font-bold">无安全风险才进入评分</h3></div>
             <CompactFlow>{`儿童过敏原与产品过敏原有交集？ ── 是 ─┐
-本地添加剂字典 risk = high？ ───── 是 ─┴→ displayScore = 0
-                                           displayLevel = 0
-                                           标签 = NOT SAFE
-两个条件都否 ───────────────────────────→ 保留原总分和文字等级`}</CompactFlow>
-            <p className="mt-3 text-xs leading-5 text-slate-500">安全否决只改变页面显示，不会回写或重算数据库中的原始 overallScore。</p>
-            <p className="mt-2 text-xs leading-5 text-slate-500">这里的 <code>risk = high</code> 来自前端添加剂说明字典；它与 C/D/E 总分分支使用的 ANSES/EFSA harmful reference 集合是两套用途不同的数据。</p>
+OFF taxonomy 的 EFSA overexposure = high？ 是 ─┴→ overallScore = null
+                                               页面显示 0 / NO SCORE
+两个条件都否 ───────────────────────────────→ 计算并展示正常总分`}</CompactFlow>
+            <p className="mt-3 text-xs leading-5 text-slate-500">安全命中由后端统一判断，数据库不保存伪造的 0 分；页面上的 0 仅表示“未评分”。</p>
           </div>
         </div>
 
@@ -155,11 +149,11 @@ export default function FoodAnalyzerLabelsDoc() {
         <DataTable
           headers={['页面位置 / 标签', '显示条件', '计算或取值', '缺失 / 被覆盖时']}
           rows={[
-            ['评分圆圈', '成功获得分析结果', '正常显示四舍五入后的 overallScore 与文字等级；安全否决时固定 0 / NOT SAFE', '缺 Nutri-Score 原始分或 A–E 等级时整张结果卡不生成'],
+            ['评分圆圈', '成功获得分析结果', '正常显示四舍五入后的 overallScore 与文字等级；安全否决时显示 0 / NO SCORE', '后端 overallScore 为 null，不会把 0 当作真实评分保存'],
             ['Strong / Good / Moderate / Limited / Minimal', '没有安全否决', '按前台五档 Food Score 阈值选择标题、颜色和摘要', '安全否决时改成过敏原 / 有害添加剂标题'],
             ['AI 估算营养信息', 'verified = false 且 isAiGenerated = true', '未验证、无条码的 AI 创建产品', '官方 / 条码产品不显示'],
             ['检测到过敏原', '产品已标记存在的过敏原，与当前儿童档案过敏原 ID 相同', '列出所有 matchedAllergens', '无交集则不显示'],
-            ['检测到有害添加剂', '产品 E 编号在前端添加剂字典中且 risk = high', '列出命中的添加剂名称', '无高风险项则不显示'],
+            ['检测到有害添加剂', '产品 E 编号命中后端 38 项 OFF/EFSA high 参考表', '列出命中的 E 编号与具体名称', '无高风险项则不显示'],
             ['富含…', 'Food Score ≥ 3，且至少有一个正向营养素达到 High', '取正向营养素列表中 %DV ≥ 20 的前 2 项', '安全否决优先；无 High 营养素时不显示'],
             ['注意：…', 'Food Score < 3、没有安全否决、且存在 watch.present 项', '最多显示前三个已判定存在的关注项', 'Food Score ≥ 3 时不显示此摘要'],
             ['支持 N 项目标 · 核心 / 重要 / 辅助', '儿童已选择目标', '只统计 selected、supportDV > 0 且具有年龄/性别 tier 的目标', '总数为 0 时显示“没有足够营养证据”'],
@@ -254,7 +248,7 @@ supportDV = round(GoalScore × 证据覆盖率 × 100)
             ['添加糖字段缺失', '显示“数据不可用”，不当作 0g', '总糖不能替代添加糖'],
             ['某正向营养素缺 %DV', '不进入前 6 项营养素列表', '成长展示要求 %DV > 0'],
             ['同品类没有可用 p10 / p90', '该营养素跳过，不按 0 惩罚', '无法做可靠归一化'],
-            ['过敏原与高风险添加剂同时命中', '标题显示二者都检测到；分数显示 0、等级显示 NOT SAFE', '安全优先级高于营养得分'],
+            ['过敏原与高风险添加剂同时命中', '标题显示二者都检测到；分数显示 0、状态显示 NO SCORE', '安全优先级高于营养得分'],
             ['安全否决后仍有益处 / 家长须知数据', '下方区域置灰且不可交互', '保留数据上下文，但阻止正向信息压过安全警示'],
           ]}
         />

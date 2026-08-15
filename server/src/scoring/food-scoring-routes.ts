@@ -18,6 +18,7 @@ import {
   searchProducts,
   getProductByBarcode,
 } from "./openFoodFactsClient.js";
+import { getHarmfulAdditives } from "./harmfulAdditives.js";
 
 // ESM 里没有 __dirname，用 import.meta.url 换算出等价的目录路径
 const __filename = fileURLToPath(import.meta.url);
@@ -35,7 +36,7 @@ export function loadReferenceData(): ReferenceData {
     categoryNutritionStats: readJson("category_nutrition_stats.json"),
     nutrientGoalMapping: readJson("nutrient_goal_mapping.json"),
     ageGenderWeightSummary: readJson("age_gender_weight_summary.json"),
-    harmfulAdditiveTags: readJson("harmful_additives_reference.json"),
+    harmfulAdditiveTags: getHarmfulAdditives().map((additive) => additive.tag),
     categoriesParents: readJson("categories_parents.json"),
   };
 }

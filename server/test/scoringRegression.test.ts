@@ -6,6 +6,8 @@ process.env.OPENAI_API_KEY ||= 'test-only-key';
 const productFinder = await import('../src/productFinder.js');
 const additiveCategories = await import('../src/scoring/additiveCategories.js');
 const watchMetrics = await import('../src/scoring/watchMetrics.js');
+const harmfulAdditives = await import('../src/scoring/harmfulAdditives.js');
+const { NutriKidsScorer } = await import('../src/scoring/nutriKidsScorer.js');
 
 
 test('OFF mapping keeps total sugar and added sugar as separate nutrients', () => {
@@ -145,9 +147,9 @@ test('canonical OFF NOVA field wins when the nutriment copy disagrees', () => {
 });
 
 
-test('Houpu sample final-score formula remains 32.96 before UI rounding', () => {
+test('C/D/E formula stays unchanged when no safety blocker is present', () => {
   const nutriNorm = (55 - 7) / 72;
-  const additiveScore = 1 / 135;
+  const additiveScore = 0;
 
   const finalScore =
     100 *
@@ -158,7 +160,7 @@ test('Houpu sample final-score formula remains 32.96 before UI rounding', () => 
 
   assert.equal(
     Math.round(finalScore * 100) / 100,
-    32.96,
+    33.33,
   );
 
   assert.equal(
@@ -279,4 +281,62 @@ test('known additive-category regressions match their declared functions', () =>
   assert.equal(additiveCategories.getAdditiveCategory('en:e472e'), 'Emulsifier');
   assert.equal(additiveCategories.getAdditiveCategory('en:e420'), 'Sweetener');
   assert.equal(additiveCategories.getAdditiveCategory('en:e553aii'), 'Anticaking Agent');
+});
+
+test('OFF EFSA high-risk additive reference contains the expected 38 entries', () => {
+  assert.equal(harmfulAdditives.getHarmfulAdditives().length, 38);
+
+  const matches = harmfulAdditives.findHarmfulAdditives([
+    'en:e250',
+    'EN:E211',
+    'en:e250',
+    'en:e129',
+  ]);
+
+  assert.deepEqual(
+    matches.map((additive) => additive.code),
+    ['E250', 'E211'],
+  );
+  assert.equal(matches[0]?.nameZh, '亚硝酸钠');
+});
+
+test('allergen and harmful-additive safety blockers both skip final scoring', () => {
+  const scorer = new NutriKidsScorer({
+    categoryNutritionStats: {},
+    nutrientGoalMapping: [],
+    ageGenderWeightSummary: {},
+    harmfulAdditiveTags: harmfulAdditives
+      .getHarmfulAdditives()
+      .map((additive) => additive.tag),
+    categoriesParents: {},
+  });
+  const baseProduct = {
+    barcode: 'test',
+    productName: 'Test product',
+    categoriesTags: [],
+    nutriscoreGrade: 'a',
+    nutriscoreScore: 0,
+    nutrients: [],
+    ingredientsTags: [],
+  };
+
+  const additiveBlocked = scorer.computeFinalScore(
+    { ...baseProduct, additivesTags: ['en:e250'] },
+    '4-8 years',
+    'Female',
+  );
+  assert.equal(additiveBlocked.mode, 'safety_blocked');
+  assert.equal(additiveBlocked.finalScore, null);
+  assert.deepEqual(additiveBlocked.harmfulAdditives.map((item) => item.code), ['E250']);
+
+  const allergenBlocked = scorer.computeFinalScore(
+    { ...baseProduct, additivesTags: [], allergenTags: ['en:peanuts'] },
+    '4-8 years',
+    'Female',
+    0.5,
+    ['peanut'],
+  );
+  assert.equal(allergenBlocked.mode, 'safety_blocked');
+  assert.equal(allergenBlocked.finalScore, null);
+  assert.equal(allergenBlocked.isAllergenSafe, false);
 });

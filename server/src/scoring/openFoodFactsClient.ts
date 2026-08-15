@@ -57,6 +57,7 @@ export async function getProductByBarcode(barcode: string): Promise<Product | nu
     "nutriscore_grade",
     "nutriscore_score",
     "ingredients_tags",
+    "additives_tags",
     "ingredients_text",
     "allergens",
     "allergens_tags",
@@ -101,6 +102,7 @@ export function mapOffProductToProduct(offProduct: any): Product {
     nutrients,
   
     ingredientsTags: offProduct.ingredients_tags ?? [],
+    additivesTags: offProduct.additives_tags ?? [],
     ingredientsText: offProduct.ingredients_text ?? null,
   
     allergens: offProduct.allergens ?? null,

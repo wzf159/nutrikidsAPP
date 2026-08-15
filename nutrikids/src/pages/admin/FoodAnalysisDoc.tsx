@@ -112,7 +112,7 @@ export default function FoodAnalysisDoc() {
       <DataTable headers={['子分', '范围', '计算口径', '何时进入总分']} rows={[
         [<code>DevScore</code>, '0–1', '各成长目标得分按儿童年龄与性别权重加权平均；具体见“成长益处”。', '仅 A / B 产品，以 50% 权重加分'],
         [<code>NutriNorm</code>, '0–1', '直接使用 Open Food Facts 提供的官方 Nutri-Score 原始分做线性换算。', '所有可评分产品，以 50% 权重进入'],
-        [<code>AdditiveScore</code>, '0–1', '产品命中的有害添加剂去重数 ÷ 参考集合总数（当前 135 个标签）。', '仅 C / D / E 产品，以 50% 权重扣分'],
+        [<code>Safety Gate</code>, 'true / false', '产品 additives_tags 是否命中 OFF taxonomy 中 38 项 EFSA high 添加剂。', '任一命中即不计算总分；无命中才进入正常评分'],
       ]} />
     </Section>
 

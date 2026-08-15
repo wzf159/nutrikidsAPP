@@ -12,6 +12,7 @@
  */
 
 import { CategoryTaxonomy } from "./categoryTaxonomy.js";
+import { findHarmfulAdditives, type HarmfulAdditive } from "./harmfulAdditives.js";
 
 // 跟 Python 版 gen_category_nutrition_stats.py 里的 MIN_N 保持一致即可,
 // 这里只是双重保险,不是主要过滤点(category_nutrition_stats.json 生成阶段
@@ -31,6 +32,7 @@ export interface Product {
   nutriscoreScore?: number | null;
   nutrients: NutrientEntry[];
   ingredientsTags: string[];
+  additivesTags?: string[];
   ingredientsText?: string | null;
 
   allergens?: string | null;
@@ -76,13 +78,14 @@ export interface ScoreResult {
   ageGroup: string;
   gender: string;
   alpha: number;
-  mode: "dev_score" | "additive_score" | "unknown_grade" | "no_nutriscore";
+  mode: "dev_score" | "additive_score" | "unknown_grade" | "no_nutriscore" | "safety_blocked";
   devScore: number | null;
   additiveScore: number | null;
   finalScore: number | null;
   // 新增：过敏安全结果
   isAllergenSafe: boolean;
   matchedAllergens: string[];
+  harmfulAdditives: HarmfulAdditive[];
   recommendation: "recommended" | "not_recommended";
   debug: string[];
 }
@@ -248,11 +251,11 @@ export class NutriKidsScorer {
   private computeAdditiveScore(product: Product, debug: string[]): number {
     const log = (msg: string) => debug.push(msg);
 
-    const ingredientsTags = new Set(product.ingredientsTags ?? []);
-    const hits = [...ingredientsTags].filter((t) => this.harmfulAdditiveTags.has(t));
+    const additiveTags = new Set(product.additivesTags ?? []);
+    const hits = [...additiveTags].filter((t) => this.harmfulAdditiveTags.has(t));
 
     log("\n--- additive_score (Nutri-Score C/D/E) ---");
-    log(`该产品 ingredients_tags 共 ${ingredientsTags.size} 个`);
+    log(`该产品 additives_tags 共 ${additiveTags.size} 个`);
     log(`参考表里有害添加剂总数 = ${this.harmfulAdditiveTags.size}`);
     log(hits.length > 0 ? `命中的有害添加剂 (${hits.length}个): ${JSON.stringify(hits)}` : "命中的有害添加剂: 无");
 
@@ -279,6 +282,31 @@ export class NutriKidsScorer {
 
     const grade = (product.nutriscoreGrade ?? "").toLowerCase();
     const nutriscoreScore = product.nutriscoreScore ?? null;
+    const harmfulAdditives = findHarmfulAdditives(product.additivesTags ?? []);
+
+    if (!allergenResult.isSafe || harmfulAdditives.length > 0) {
+      log('检测到过敏原或 EFSA high 风险添加剂，不计算最终分数');
+      return {
+        barcode: product.barcode,
+        productName: product.productName,
+        nutriscoreGrade: grade || null,
+        nutriscoreScore,
+        nutrinorm: null,
+        ageGroup,
+        gender,
+        alpha,
+        mode: 'safety_blocked',
+        devScore: null,
+        additiveScore: null,
+        finalScore: null,
+        isAllergenSafe: allergenResult.isSafe,
+        matchedAllergens: allergenResult.matchedAllergens,
+        harmfulAdditives,
+        recommendation: 'not_recommended',
+        debug,
+      };
+    }
+
     const nutrinorm = NutriKidsScorer.computeNutrinorm(nutriscoreScore);
 
     log("=".repeat(70));
@@ -303,6 +331,7 @@ export class NutriKidsScorer {
         finalScore: null,
         isAllergenSafe: allergenResult.isSafe,
         matchedAllergens: allergenResult.matchedAllergens,
+        harmfulAdditives,
         recommendation: allergenResult.isSafe
           ? "recommended"
           : "not_recommended",
@@ -350,6 +379,7 @@ export class NutriKidsScorer {
         finalScore: null,
         isAllergenSafe: allergenResult.isSafe,
         matchedAllergens: allergenResult.matchedAllergens,
+        harmfulAdditives,
         recommendation: allergenResult.isSafe
           ? "recommended"
           : "not_recommended",
@@ -375,6 +405,7 @@ export class NutriKidsScorer {
       finalScore: Math.round(finalScore * 100) / 100,
       isAllergenSafe: allergenResult.isSafe,
       matchedAllergens: allergenResult.matchedAllergens,
+      harmfulAdditives,
       recommendation: allergenResult.isSafe
         ? "recommended"
         : "not_recommended",
