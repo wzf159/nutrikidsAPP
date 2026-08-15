@@ -153,50 +153,46 @@ function PanelTeam() {
     </div>
   );
 }
-
 function PanelSources() {
   const { t } = useTranslation();
 
-  const groups = t(
+  const rawGroups = t(
     'about.panelSources.groups',
     { returnObjects: true }
-  ) as {
-    emoji: string;
-    name: string;
-    abbr: string;
-    references: string[];
-  }[];
+  );
 
-  const scoreDims = t(
+  const groups = Array.isArray(rawGroups)
+    ? rawGroups as {
+        emoji: string;
+        name: string;
+        abbr: string;
+        references: string[];
+      }[]
+    : [];
+
+  const rawScoreDims = t(
     'about.panelSources.scoreCalc.dims',
     { returnObjects: true }
-  ) as {
-    label: string;
-    weight: string;
-    desc: string;
-  }[];
+  );
+
+  const scoreDims = Array.isArray(rawScoreDims)
+    ? rawScoreDims as {
+        label: string;
+        weight: string;
+        desc: string;
+      }[]
+    : [];
 
   return (
     <div style={cardStyle}>
-      <h2
-        style={{
-          ...gradientText,
-          marginBottom: '16px',
-        }}
-      >
+      <h2 style={{ ...gradientText, marginBottom: '16px' }}>
         {t('about.panelSources.title')}
       </h2>
 
-      <p
-        style={{
-          ...bodyText,
-          marginBottom: '20px',
-        }}
-      >
+      <p style={{ ...bodyText, marginBottom: '20px' }}>
         {t('about.panelSources.desc')}
       </p>
 
-      {/* Sources by organization */}
       <div
         style={{
           display: 'flex',
@@ -293,7 +289,6 @@ function PanelSources() {
         ))}
       </div>
 
-      {/* 综合评分计算逻辑 */}
       <div
         style={{
           marginTop: '24px',
@@ -315,13 +310,7 @@ function PanelSources() {
           📐 {t('about.panelSources.scoreCalc.title')}
         </h3>
 
-        <p
-          style={{
-            ...bodyText,
-            fontSize: '13px',
-            marginBottom: '16px',
-          }}
-        >
+        <p style={{ ...bodyText, fontSize: '13px', marginBottom: '16px' }}>
           {t('about.panelSources.scoreCalc.desc')}
         </p>
 
