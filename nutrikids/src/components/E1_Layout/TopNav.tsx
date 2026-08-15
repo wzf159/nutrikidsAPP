@@ -100,6 +100,14 @@ export default function TopNav() {
       .filter((a): a is Allergen => !!a)
     : [];
   const avatar = child?.avatarEmoji ?? '👶';
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center gap-1.5 px-[18px] py-[7px] rounded-full
+     text-sm font-bold whitespace-nowrap flex-shrink-0 transition-all
+     ${
+       isActive
+         ? 'text-white bg-gradient-to-r from-[#893ce3] to-[#ec4899] shadow-[0_2px_12px_rgba(236,72,153,0.3)] scale-[1.02]'
+         : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)] hover:scale-[1.02]'
+     }`;
 
   return (
     <header className="relative sticky top-0 z-50 h-[62px] bg-white/70 [backdrop-filter:blur(32px)_saturate(200%)] [-webkit-backdrop-filter:blur(32px)_saturate(200%)] border-b border-white/80 px-3 sm:px-7 flex items-center gap-2 sm:gap-5">
@@ -121,16 +129,12 @@ export default function TopNav() {
 
       {/* 导航标签：文字始终显示，窄屏横向可滑动 */}
       <nav className="flex items-center gap-1 sm:gap-2 overflow-x-auto flex-1 min-w-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {NAV_ITEMS.map(({ icon, key, path }, i) => (
+
+        {NAV_ITEMS.map(({ icon, key, path }) => (
           <NavLink
             key={path}
             to={path}
-            className={({ isActive }) =>
-              i === 0
-                ? `flex items-center gap-1.5 px-[18px] py-[7px] rounded-full text-sm font-bold text-white whitespace-nowrap flex-shrink-0 bg-gradient-to-r from-[#893ce3] to-[#ec4899] shadow-[0_2px_12px_rgba(236,72,153,0.3)] transition-all ${isActive ? 'scale-[1.02]' : 'hover:scale-[1.02]'}`
-                : `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-                }`
-            }
+            className={navClass}
           >
             {icon} {t(key)}
           </NavLink>
@@ -138,22 +142,26 @@ export default function TopNav() {
 
         <NavLink
           to="/Support"
-          className={({ isActive }) =>
-            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-            }`
-          }
+          className={navClass}
         >
-          💛 {isZh ? '支持我们' : i18n.language === 'es' ? 'Apóyanos' : 'Support Us'}
+          💛 {isZh
+            ? '支持我们'
+            : i18n.language === 'es'
+              ? 'Apóyanos'
+              : 'Support Us'}
         </NavLink>
+
         <NavLink
           to="/about"
-          className={({ isActive }) =>
-            `px-[10px] py-[6px] rounded-lg text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all ${isActive ? 'bg-purple-600/10 text-purple-700' : 'text-[#2a2a4a] hover:bg-[rgba(124,58,237,0.07)]'
-            }`
-          }
+          className={navClass}
         >
-          ℹ️ {isZh ? '关于我们' : i18n.language === 'es' ? 'Acerca de' : 'About'}
+          ℹ️ {isZh
+            ? '关于我们'
+            : i18n.language === 'es'
+              ? 'Acerca de'
+              : 'About'}
         </NavLink>
+
       </nav>
 
       <div className="ml-auto flex items-center gap-3">
