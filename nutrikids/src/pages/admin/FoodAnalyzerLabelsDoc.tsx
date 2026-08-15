@@ -15,6 +15,11 @@ const levelRows = [
   ['Minimal', '1', '< 37', '最低支持', '红色', '潜在风险超过对发育目标的营养益处'],
 ];
 
+const panelVisibilityRows = [
+  ['Food Score 1–2', '完整显示；Benefits 区域显示低支持提示并引导关注风险', '保留面板，显示低支持提示，不展示正向收益数据', '完整显示全部关注信息'],
+  ['Food Score 3–5', 'Overall Assessment、Benefits、Things to Watch 全部显示', '完整显示', '完整显示'],
+];
+
 const ageThresholdRows = [
   ['0–6 个月', '0g / ≥ 1g', '200mg / > 50mg', '暂无 / > 1g'],
   ['7–12 个月', '0g / ≥ 1g', '370mg / > 100mg', '暂无 / > 1g'],
@@ -135,6 +140,14 @@ export default function FoodAnalyzerLabelsDoc() {
           <p className="mt-2 text-sm leading-6 text-amber-900">
             服务端保存的 Grade 为 Excellent 80–100、Good 60–79、Fair 40–59、Poor 0–39；food-analyzer 主结果卡实际展示的是 Strong、Good、Moderate、Limited、Minimal。两套阈值用途不同，不应拿 Grade 的 A/B/C/D 去解释页面文字等级。
           </p>
+        </div>
+
+        <h3 className="mt-7 text-lg font-bold">评分等级与数据面板显示规则（所有面板始终保留）</h3>
+        <div className="mt-3">
+          <DataTable
+            headers={['Food Score', '面板 1', '面板 2 · Growth Benefits', '面板 3 · Things Parents Should Know']}
+            rows={panelVisibilityRows}
+          />
         </div>
       </Section>
 

@@ -1752,7 +1752,7 @@ export default function FoodAnalyzer() {
 
                   </div>
 
-                  {/* 中栏 — BENEFITS */}
+                  {/* 中栏 — BENEFITS：所有等级保留面板，低分档显示风险引导 */}
                   <div className={`pb-4 mb-4 border-b lg:pb-0 lg:mb-0 lg:border-b-0 lg:border-r border-[rgba(160,120,210,0.35)] px-[18px] py-0 ${ hasSafetyRisk ? 'opacity-40 pointer-events-none' : ''}`}>
                     <div className="flex items-center justify-between mb-1">
                       <h4 className="font-bold text-[#5b21b6] tracking-wide text-sm">{isZh ? '益处' : 'BENEFITS'}</h4>
