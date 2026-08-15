@@ -176,15 +176,21 @@ export interface AISummary {
   considerations: AIConsideration[];
 }
 
-export async function getAISummary(productName: string, childId: string): Promise<AISummary> {
+export async function getAISummary(
+  productName: string,
+  childId?: string,
+): Promise<AISummary> {
   const res = await authedFetch('/analyses/ai-summary', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productName, childId }),
+    body: JSON.stringify({
+      productName,
+      ...(childId ? { childId } : {}),
+    }),
   });
+
   return asJson<AISummary>(res);
 }
-
 export async function recognizePhoto(file: File): Promise<{ recognition: Recognition; matches: ProductMatch[]; source?: 'local' | 'openfoodfacts' | 'ai' }> {
   const form = new FormData();
   form.append('file', file);

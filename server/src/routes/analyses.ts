@@ -17,7 +17,7 @@ const scoreSchema = z.object({
 
 const aiSummarySchema = z.object({
   productName: z.string().min(1),
-  childId: z.string().uuid(),
+  childId: z.string().uuid().optional(),
 });
 
 const aiSummaryResponseSchema = z.object({
@@ -99,21 +99,28 @@ export default async function analysisRoutes(app: FastifyInstance) {
   });
 
   // ================================================================
-  // AI fallback summary
-  // Only for products unavailable in the Growtrition database.
-  // It must NOT generate a Growtrition score or grade.
-  // ================================================================
-  app.post('/analyses/ai-summary', async (req, reply) => {
-    const parsed = aiSummarySchema.safeParse(req.body);
+// AI fallback summary
+// Only for products unavailable in the Growtrition database.
+// It must NOT generate a Growtrition score or grade.
+// ================================================================
+app.post('/analyses/ai-summary', async (req, reply) => {
+  const parsed = aiSummarySchema.safeParse(req.body);
 
-    if (!parsed.success) {
-      return reply.code(400).send({
-        error: parsed.error.flatten(),
-      });
-    }
+  if (!parsed.success) {
+    return reply.code(400).send({
+      error: parsed.error.flatten(),
+    });
+  }
 
-    const { productName, childId } = parsed.data;
+  const { productName, childId } = parsed.data;
 
+  let childContext =
+    'a general child audience with no specific age or gender profile available';
+
+  // childId 是可选的：
+  // 有 child profile -> 个性化 AI guidance
+  // 没有 child profile -> general child nutrition guidance
+  if (childId) {
     const child = await prisma.child.findUnique({
       where: { id: childId },
     });
@@ -138,13 +145,17 @@ export default async function analysisRoutes(app: FastifyInstance) {
           ? 'boy'
           : 'child';
 
-    try {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `
+    childContext = `${ageLabel} ${gender}`;
+  }
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+
+      messages: [
+        {
+          role: 'system',
+          content: `
 You generate general nutrition guidance for Growtrition,
 a child-focused food analysis application.
 
@@ -161,27 +172,36 @@ Therefore:
 - Use cautious, parent-friendly language.
 - Always return valid JSON only.
 - Do not include markdown or code fences.
-            `.trim(),
-          },
-          {
-            role: 'user',
-            content: `
+
+If no specific child profile is available:
+- provide only general child nutrition guidance;
+- do NOT assume a specific age or gender;
+- do NOT claim the guidance is personalized.
+          `.trim(),
+        },
+
+        {
+          role: 'user',
+          content: `
 Provide general nutrition guidance for:
 
 Product: "${productName}"
-Child: ${ageLabel} ${gender}
+Child context: ${childContext}
 
 Follow these rules:
 
 1. Write ONE concise recommendation sentence.
+
 The sentence should:
-- state whether this food is generally suitable for a child in this age group;
+- state whether this food is generally suitable for the available child context;
 - include a practical consumption-frequency suggestion;
 - use wording such as "regularly", "occasionally", "in moderation", or "best limited" unless a more specific frequency is clearly justified;
-- avoid inventing precise serving-frequency recommendations.
+- avoid inventing precise serving-frequency recommendations;
+- if no specific child profile is available, keep the recommendation general rather than age-specific.
 
 2. Provide EXACTLY THREE key considerations.
-Choose the three most important nutritional factors for this child and product.
+
+Choose the three most important nutritional factors.
 
 Positive considerations may include:
 - nutrients the food is commonly a good source of;
@@ -202,9 +222,14 @@ Caution considerations may include:
 - type = "positive" or "caution".
 
 4. If there is not enough reliable information about this specific branded product,
-use cautious wording such as "may", "can", "is commonly", or "depending on the formulation".
+use cautious wording such as:
+- "may"
+- "can"
+- "is commonly"
+- "depending on the formulation"
 
 5. Return JSON exactly in this structure:
+
 {
   "recommendation": "one concise recommendation sentence",
   "recommendationLevel": "recommended" | "moderate" | "limit",
@@ -226,53 +251,64 @@ use cautious wording such as "may", "can", "is commonly", or "depending on the f
     }
   ]
 }
-            `.trim(),
-          },
-        ],
-        max_tokens: 450,
-        temperature: 0.2,
-        response_format: {
-          type: 'json_object',
+          `.trim(),
         },
-      });
+      ],
 
-      const text = completion.choices[0]?.message?.content ?? '{}';
+      max_tokens: 450,
+      temperature: 0.2,
 
-      let raw: unknown;
+      response_format: {
+        type: 'json_object',
+      },
+    });
 
-      try {
-        raw = JSON.parse(text);
-      } catch (parseError) {
-        console.error('AI summary JSON parse failed:', parseError, text);
+    const text =
+      completion.choices[0]?.message?.content ?? '{}';
 
-        return reply.code(500).send({
-          error: 'AI response parsing failed',
-        });
-      }
+    let raw: unknown;
 
-      const validated = aiSummaryResponseSchema.safeParse(raw);
-
-      if (!validated.success) {
-        console.error(
-          'Invalid AI summary response:',
-          validated.error.flatten(),
-          raw,
-        );
-
-        return reply.code(500).send({
-          error: 'AI response format invalid',
-        });
-      }
-
-      return reply.send(validated.data);
-    } catch (e) {
-      console.error('AI summary generation failed:', e);
+    try {
+      raw = JSON.parse(text);
+    } catch (parseError) {
+      console.error(
+        'AI summary JSON parse failed:',
+        parseError,
+        text,
+      );
 
       return reply.code(500).send({
-        error: 'AI summary generation failed',
+        error: 'AI response parsing failed',
       });
     }
-  });
+
+    const validated =
+      aiSummaryResponseSchema.safeParse(raw);
+
+    if (!validated.success) {
+      console.error(
+        'Invalid AI summary response:',
+        validated.error.flatten(),
+        raw,
+      );
+
+      return reply.code(500).send({
+        error: 'AI response format invalid',
+      });
+    }
+
+    return reply.send(validated.data);
+  } catch (e) {
+    console.error(
+      'AI summary generation failed:',
+      e,
+    );
+
+    return reply.code(500).send({
+      error: 'AI summary generation failed',
+    });
+  }
+});
 
   // ================================================================
   // History list

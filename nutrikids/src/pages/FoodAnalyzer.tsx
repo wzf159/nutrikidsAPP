@@ -480,28 +480,15 @@ export default function FoodAnalyzer() {
 
 
   async function runAiSummary(productName: string) {
-    const activeChildId = childIdRef.current;
-
-    console.log('runAiSummary clicked');
-    console.log('productName:', productName);
-    console.log('activeChildId:', activeChildId);
-
-    if (!activeChildId) {
-      setPhase({
-        name: 'error',
-        msg: isZh
-          ? '没有找到当前孩子档案，请刷新页面后重试'
-          : 'No active child profile was found. Please refresh and try again.',
-      });
-      return;
-    }
-
+    const activeChildId =
+      childIdRef.current ?? undefined;
+  
     setResult(null);
     setSelectedGoal(null);
     setSelectedNutrient(null);
     setSelectedWatch(null);
     setTopWatchPopup(null);
-
+  
     setPhase({
       name: 'busy',
       msg: isZh
@@ -510,25 +497,19 @@ export default function FoodAnalyzer() {
           ? 'La IA está generando orientación nutricional general…'
           : 'AI is generating general nutrition guidance…',
     });
-
+  
     try {
-      console.log('calling getAISummary...');
-
       const summary = await getAISummary(
         productName,
         activeChildId,
       );
-
-      console.log('AI summary returned:', summary);
-
+  
       setPhase({
         name: 'ai-result',
         productName,
         summary,
       });
     } catch (e) {
-      console.error('getAISummary failed:', e);
-
       setPhase({
         name: 'error',
         msg: (e as Error).message,
