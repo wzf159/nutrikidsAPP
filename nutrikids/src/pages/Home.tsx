@@ -1,17 +1,10 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getChildren } from '../services/api';
 
 export default function Home() {
   const { t, i18n } = useTranslation();
   const isZh = i18n.language === 'zh';
   const navigate = useNavigate();
-  const [hasChild, setHasChild] = useState(false);
-
-  useEffect(() => {
-    getChildren().then(cs => setHasChild(cs.length > 0)).catch(() => setHasChild(false));
-  }, []);
 
   return (
     <div className="relative flex-1 flex flex-col items-center justify-center overflow-hidden px-6 pt-10 pb-20 bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
@@ -52,7 +45,7 @@ export default function Home() {
           </div>
         </div>
         <button
-          onClick={() => navigate(hasChild ? '/label-profiler' : '/onboarding')}
+          onClick={() => navigate('/onboarding')}
           className="flex items-center gap-2.5 px-10 py-4 rounded-full bg-gradient-to-r from-[#893ce3] to-[#ec4899] text-white text-lg font-bold shadow-[0_8px_28px_rgba(137,60,227,0.30)] hover:-translate-y-0.5 hover:shadow-[0_12px_36px_rgba(137,60,227,0.38)] transition-all mb-4"
           style={{ fontFamily: 'Poppins, sans-serif' }}
         >
