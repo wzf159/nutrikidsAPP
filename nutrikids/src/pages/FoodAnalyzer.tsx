@@ -74,6 +74,23 @@ const foodScoreLabels: Record<number, string> = {
   1: 'Minimal',
 };
 
+function HistoryLevelLabel({ score }: { score: number | null }) {
+  if (score == null) return null;
+  const level = scoreToLevel(score);
+
+  return (
+    <>
+      <span className="text-gray-300 text-xs flex-shrink-0">·</span>
+      <span
+        className="text-xs font-extrabold flex-shrink-0"
+        style={{ color: levelColors[level - 1] }}
+      >
+        {foodScoreLabels[level]}
+      </span>
+    </>
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /* Sankey 布局（由接口数据驱动）                                       */
 /* ------------------------------------------------------------------ */
@@ -1040,7 +1057,8 @@ export default function FoodAnalyzer() {
                           >
                             <span>🕐</span>
                             <span className="font-medium truncate">{isZh ? h.product.nameZh ?? h.product.name : h.product.name}</span>
-                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}{h.grade ? ` · ${h.grade}` : ''}</span>
+                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}</span>
+                            <HistoryLevelLabel score={h.overallScore} />
                           </button>
                         ))}
                       </div>
@@ -1098,7 +1116,8 @@ export default function FoodAnalyzer() {
                           >
                             <span>🕐</span>
                             <span className="font-medium truncate">{isZh ? h.product.nameZh ?? h.product.name : h.product.name}</span>
-                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}{h.grade ? ` · ${h.grade}` : ''}</span>
+                            <span className="text-gray-400 text-xs flex-shrink-0">{h.child.name}</span>
+                            <HistoryLevelLabel score={h.overallScore} />
                           </button>
                         ))}
                       </div>
