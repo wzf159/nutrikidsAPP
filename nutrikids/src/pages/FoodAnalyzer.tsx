@@ -482,13 +482,13 @@ export default function FoodAnalyzer() {
   async function runAiSummary(productName: string) {
     const activeChildId =
       childIdRef.current ?? undefined;
-  
+
     setResult(null);
     setSelectedGoal(null);
     setSelectedNutrient(null);
     setSelectedWatch(null);
     setTopWatchPopup(null);
-  
+
     setPhase({
       name: 'busy',
       msg: isZh
@@ -497,13 +497,21 @@ export default function FoodAnalyzer() {
           ? 'La IA está generando orientación nutricional general…'
           : 'AI is generating general nutrition guidance…',
     });
-  
+
     try {
+      const language: 'en' | 'zh' | 'es' =
+        isZh
+          ? 'zh'
+          : isEs
+            ? 'es'
+            : 'en';
+
       const summary = await getAISummary(
         productName,
         activeChildId,
+        language,
       );
-  
+
       setPhase({
         name: 'ai-result',
         productName,
@@ -1345,20 +1353,20 @@ export default function FoodAnalyzer() {
             {/* Reference UI: large outlined recommendation card */}
             <div
               className={`rounded-[26px] border-2 p-4 sm:p-5 ${phase.summary.recommendationLevel === 'recommended'
-                  ? 'border-emerald-200'
-                  : phase.summary.recommendationLevel === 'moderate'
-                    ? 'border-amber-200'
-                    : 'border-rose-200'
+                ? 'border-emerald-200'
+                : phase.summary.recommendationLevel === 'moderate'
+                  ? 'border-amber-200'
+                  : 'border-rose-200'
                 }`}
             >
               {/* Header like "Good choices of the day" */}
               <div className="flex items-center gap-3 mb-4">
                 <div
                   className={`w-9 h-9 rounded-full flex items-center justify-center text-white text-[14px] font-extrabold flex-shrink-0 ${phase.summary.recommendationLevel === 'recommended'
-                      ? 'bg-emerald-500'
-                      : phase.summary.recommendationLevel === 'moderate'
-                        ? 'bg-amber-500'
-                        : 'bg-rose-500'
+                    ? 'bg-emerald-500'
+                    : phase.summary.recommendationLevel === 'moderate'
+                      ? 'bg-amber-500'
+                      : 'bg-rose-500'
                     }`}
                 >
                   {phase.summary.recommendationLevel === 'recommended'
@@ -1371,10 +1379,10 @@ export default function FoodAnalyzer() {
                 <div className="min-w-0">
                   <p
                     className={`text-[18px] sm:text-[20px] font-extrabold leading-tight ${phase.summary.recommendationLevel === 'recommended'
-                        ? 'text-emerald-800'
-                        : phase.summary.recommendationLevel === 'moderate'
-                          ? 'text-amber-800'
-                          : 'text-rose-800'
+                      ? 'text-emerald-800'
+                      : phase.summary.recommendationLevel === 'moderate'
+                        ? 'text-amber-800'
+                        : 'text-rose-800'
                       }`}
                     style={{ fontFamily: 'Poppins, sans-serif' }}
                   >
@@ -1390,10 +1398,10 @@ export default function FoodAnalyzer() {
               {/* Recommendation sentence */}
               <div
                 className={`rounded-[18px] px-4 py-3 mb-4 ${phase.summary.recommendationLevel === 'recommended'
-                    ? 'bg-emerald-50'
-                    : phase.summary.recommendationLevel === 'moderate'
-                      ? 'bg-amber-50'
-                      : 'bg-rose-50'
+                  ? 'bg-emerald-50'
+                  : phase.summary.recommendationLevel === 'moderate'
+                    ? 'bg-amber-50'
+                    : 'bg-rose-50'
                   }`}
               >
                 <p
@@ -1418,8 +1426,8 @@ export default function FoodAnalyzer() {
                       <div className="flex items-start gap-3">
                         <div
                           className={`w-9 h-9 rounded-full flex items-center justify-center font-extrabold text-[14px] flex-shrink-0 ${positive
-                              ? 'bg-[#bdf4da] text-emerald-700'
-                              : 'bg-[#ffe1b8] text-amber-700'
+                            ? 'bg-[#bdf4da] text-emerald-700'
+                            : 'bg-[#ffe1b8] text-amber-700'
                             }`}
                         >
                           {index + 1}

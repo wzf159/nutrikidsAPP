@@ -175,10 +175,10 @@ export interface AISummary {
   recommendationLevel: 'recommended' | 'moderate' | 'limit';
   considerations: AIConsideration[];
 }
-
 export async function getAISummary(
   productName: string,
   childId?: string,
+  language: 'en' | 'zh' | 'es' = 'en',
 ): Promise<AISummary> {
   const res = await authedFetch('/analyses/ai-summary', {
     method: 'POST',
@@ -186,6 +186,7 @@ export async function getAISummary(
     body: JSON.stringify({
       productName,
       ...(childId ? { childId } : {}),
+      language,
     }),
   });
 

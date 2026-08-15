@@ -18,6 +18,7 @@ const scoreSchema = z.object({
 const aiSummarySchema = z.object({
   productName: z.string().min(1),
   childId: z.string().uuid().optional(),
+  language: z.enum(['en', 'zh', 'es']).optional().default('en'),
 });
 
 const aiSummaryResponseSchema = z.object({
@@ -112,8 +113,13 @@ app.post('/analyses/ai-summary', async (req, reply) => {
     });
   }
 
-  const { productName, childId } = parsed.data;
-
+  const { productName, childId, language } = parsed.data;
+  const outputLanguage =
+    language === 'zh'
+      ? 'Simplified Chinese'
+      : language === 'es'
+        ? 'Spanish'
+        : 'English';
   let childContext =
     'a general child audience with no specific age or gender profile available';
 
@@ -172,6 +178,10 @@ Therefore:
 - Use cautious, parent-friendly language.
 - Always return valid JSON only.
 - Do not include markdown or code fences.
+
+- Write ALL user-facing content in ${outputLanguage}.
+- This includes the recommendation, consideration titles, and consideration explanations.
+- Do not mix languages unless the product name itself is in another language.
 
 If no specific child profile is available:
 - provide only general child nutrition guidance;
