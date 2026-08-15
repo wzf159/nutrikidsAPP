@@ -402,10 +402,14 @@ const WEIGHTS = {
 // stage index: 0=0–6m, 1=7–12m, 2=1–3y, 3=4–8y, 4=9–13y, 5=14–18y
 //
 // 说明：
-// - Omega-3 / DHA/EPA 统一映射到当前数据库已有 DHA nutrientId=24。
-// - Probiotics / Prebiotics / HMO / Zeaxanthin 当前没有对应 nutrientId，不能凭空映射，因此不进入 nutrient evidence。
-// - Fluoride 在当前 Development Matrix 的 Dental Key Nutrients 中明确列出，因此按 nutrientId=27 保留。
-// - Creatine 虽标为 Unverified / no official DRI，但表中列于 Key Nutrients，且数据库已有 nutrientId=26，因此保留。
+// - 本表严格按 Children's Nutrition Development Matrix 的 Priority + Key Nutrients 两列。
+// - Omega-3 / DHA/EPA 在当前数据库统一落到 DHA nutrientId=24。
+// - Probiotics / Prebiotics / HMO / Zeaxanthin 当前数据库没有 nutrientId，
+//   因此这里只能保留“数据库中可表达”的部分，不能伪造 numeric nutrientId。
+// - Lutein 已有 nutrientId=30，因此保留在 Vision 映射中。
+// - Fluoride 已有 nutrientId=27，因此保留在 Dental 映射中。
+// - Creatine 没有官方 DRI，但数据库已有 nutrientId=26；Development Matrix 中出现时仍可作为发育目标证据，
+//   只是 childDailyReference() 会返回 null，不会生成伪造的每日参考摄入量。
 // ================================================================
 
 type StageGenderNutrients = {
@@ -414,7 +418,15 @@ type StageGenderNutrients = {
 };
 
 export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
+  // ----------------------------------------------------------------
   // 1 🧠 Brain Development
+  // 0–6m: DHA, Choline, Iron, B12, Folate
+  // 7–12m: DHA, Choline, Iron, B6, B12, Folate
+  // 1–3y: Iron, Choline, DHA, B12, Folate, Zinc
+  // 4–8y: Iron, Omega-3, Choline, Zinc, Iodine
+  // 9–13y: Iron, Omega-3, Choline, B12, Zinc
+  // 14–18y: sex-specific order only; same nutrient set
+  // ----------------------------------------------------------------
   1: [
     { male: [24, 25, 1, 12, 28], female: [24, 25, 1, 12, 28] },
     { male: [24, 25, 1, 31, 12, 28], female: [24, 25, 1, 31, 12, 28] },
@@ -424,7 +436,9 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
     { male: [24, 25, 1, 12, 28], female: [1, 24, 28, 25, 12] },
   ],
 
+  // ----------------------------------------------------------------
   // 2 🦴 Bone Development
+  // ----------------------------------------------------------------
   2: [
     { male: [5, 6, 7], female: [5, 6, 7] },
     { male: [5, 6, 7, 23], female: [5, 6, 7, 23] },
@@ -434,7 +448,9 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
     { male: [5, 6, 23, 13, 2], female: [5, 6, 23, 13, 2, 33] },
   ],
 
-  // 3 ❤️ Heart Growth
+  // ----------------------------------------------------------------
+  // 3 ❤️ Heart Development
+  // ----------------------------------------------------------------
   3: [
     { male: [], female: [] },
     { male: [], female: [] },
@@ -444,7 +460,9 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
     { male: [22, 24, 14, 23], female: [22, 24, 14, 23, 1] },
   ],
 
+  // ----------------------------------------------------------------
   // 4 💪 Muscle Development
+  // ----------------------------------------------------------------
   4: [
     { male: [], female: [] },
     { male: [13, 1, 2, 6], female: [13, 1, 2, 6] },
@@ -454,7 +472,10 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
     { male: [13, 2, 1, 23, 6, 26, 14], female: [13, 1, 2, 23, 5, 6] },
   ],
 
+  // ----------------------------------------------------------------
   // 5 🛡️ Immune Development
+  // Probiotics appears in the 1–3y source matrix but currently has no nutrientId.
+  // ----------------------------------------------------------------
   5: [
     { male: [11, 6, 2, 1, 13], female: [11, 6, 2, 1, 13] },
     { male: [11, 9, 6, 2, 1, 13], female: [11, 9, 6, 2, 1, 13] },
@@ -464,29 +485,36 @@ export const GOAL_NUTRIENT_MAP: Record<number, StageGenderNutrients[]> = {
     { male: [11, 9, 6, 2, 1, 13, 10, 24], female: [11, 9, 6, 2, 1, 13, 10, 24] },
   ],
 
+  // ----------------------------------------------------------------
   // 6 🦠 Gut Development
+  // HMO / Probiotics / Prebiotics are intentionally absent until DB nutrientIds exist.
+  // ----------------------------------------------------------------
   6: [
-    { male: [6], female: [6] },
-    { male: [22, 23, 14, 21], female: [22, 23, 14, 21] },
-    { male: [22, 23, 14], female: [22, 23, 14] },
-    { male: [22, 23, 14, 2], female: [22, 23, 14, 2] },
-    { male: [22, 23, 14], female: [22, 23, 14] },
-    { male: [22, 23, 14], female: [22, 23, 14, 1] },
+    { male: [6], female: [6] }, // + HMO + Probiotics (no DB nutrientId)
+    { male: [22, 23, 14, 21], female: [22, 23, 14, 21] }, // + Probiotics
+    { male: [22, 23, 14], female: [22, 23, 14] }, // + Probiotics + Prebiotics
+    { male: [22, 23, 14, 2], female: [22, 23, 14, 2] }, // + Probiotics
+    { male: [22, 23, 14], female: [22, 23, 14] }, // + Probiotics
+    { male: [22, 23, 14], female: [22, 23, 14, 1] }, // + Probiotics
   ],
 
+  // ----------------------------------------------------------------
   // 7 👀 Vision Development
+  // Lutein = nutrientId 30.
+  // Zeaxanthin is omitted only because the DB currently has no nutrientId for it.
+  // ----------------------------------------------------------------
   7: [
-    { male: [24, 11, 30], female: [24, 11, 30] },
+    { male: [24, 11, 30], female: [24, 11, 30] }, // + Zeaxanthin
     { male: [24, 11, 30, 2, 32], female: [24, 11, 30, 2, 32] },
     { male: [11, 24, 32, 2, 30], female: [11, 24, 32, 2, 30] },
-    { male: [11, 2, 32, 30], female: [11, 2, 32, 30] },
+    { male: [11, 2, 32, 30], female: [11, 2, 32, 30] }, // + Zeaxanthin
     { male: [11, 2], female: [11, 2] },
     { male: [11, 2, 30], female: [11, 2, 30] },
   ],
 
+  // ----------------------------------------------------------------
   // 8 🦷 Dental Development
-  // Matrix Key Nutrients includes Fluoride at every age.
-  // Fluoride = nutrientId 27.
+  // ----------------------------------------------------------------
   8: [
     { male: [27, 6], female: [27, 6] },
     { male: [27, 5, 6, 7], female: [27, 5, 6, 7] },
@@ -949,8 +977,15 @@ export async function scoreFood(input: ScoreInput) {
       (n): n is typeof n & { dailyValue: number; dailyReferencePercent: number } =>
         n.dailyValue != null && n.dailyValue > 0
     )
-    .sort((a, b) => b.dailyValue - a.dailyValue)
-    .slice(0, 6);
+    .sort((a, b) => b.dailyValue - a.dailyValue);
+
+  // IMPORTANT:
+  // Do NOT slice to top 6 here.
+  // flows are built from viewNutrIds below. If we truncate here, a perfectly
+  // valid nutrient can disappear from every development-goal connection just
+  // because its DNC ranks 7th or lower.
+  // If the UI wants to visually show only 6 nutrients, do that in the frontend,
+  // not in the scoring data contract.
   const viewNutrIds = new Set(viewNutrients.map((n: { id: number }) => n.id));
 
   // 目标分类与营养支持：
@@ -1003,14 +1038,16 @@ export async function scoreFood(input: ScoreInput) {
 
         if (!nutrient) return null;
 
-        const dailyValue = childDailyPercent(nutrient, child) ?? 0;
+        const dailyPercent = childDailyPercent(nutrient, child);
+        const dailyValue = dailyPercent ?? 0;
         const value100g = Number((nutrient as any).value100g ?? NaN);
 
-        // %DV >= 5 视为有实际每份贡献；
-        // 对没有 %DV 但有有效每100g原始值的数据，也保留为弱证据。
+        // 有官方 daily reference 时，用 DNC >= 5% 作为明确贡献。
+        // 没有官方 DRI 的营养素（例如 Lutein / Creatine）不能伪造 DNC，
+        // 但如果产品确实有有效的 per-100g 数值，仍允许作为“弱发育证据”。
         const hasContribution =
-          dailyValue >= 5 ||
-          (Number.isFinite(value100g) && value100g > 0);
+          (dailyPercent != null && dailyPercent >= 5) ||
+          (dailyPercent == null && Number.isFinite(value100g) && value100g > 0);
 
         if (!hasContribution) return null;
 
