@@ -44,14 +44,13 @@ export default function Login() {
   if (isWebView) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
-        <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-xl">
-          <div className="flex items-center gap-4 mb-2">
-            <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
-            <div className="flex flex-col gap-1">
+        <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-10 flex flex-col items-center gap-6 w-full max-w-xl mx-4">
+          <div className="flex items-center gap-3 sm:gap-4 mb-2 min-w-0">
+            <img src="/images/logo-half-highresolution.png" alt="" className="h-14 sm:h-24 w-auto shrink-0" />
+            <div className="flex flex-col gap-1 min-w-0">
               <span
                 style={{
                   fontFamily: "'Fredoka One', cursive",
-                  fontSize: '42px',
                   fontWeight: 800,
                   background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
                   WebkitBackgroundClip: 'text',
@@ -59,16 +58,17 @@ export default function Login() {
                   backgroundClip: 'text',
                   lineHeight: 1.1,
                 }}
+                className="text-2xl sm:text-[40px] leading-tight whitespace-nowrap"
               >
                 Growtrition
               </span>
               <span
                 style={{
                   fontFamily: 'Nunito, sans-serif',
-                  fontSize: '14px',
                   fontWeight: 600,
                   color: '#6b7280',
                 }}
+                className="text-[11px] sm:text-sm leading-snug break-words"
               >
                 Smart nutrition for growing minds.
               </span>
@@ -99,14 +99,13 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#d8ccf5] via-[#e8ccec] to-[#f5cce0]">
-      <div className="bg-white rounded-3xl shadow-xl p-10 flex flex-col items-center gap-6 w-full max-w-md">
-        <div className="flex items-center gap-4 mb-2">
-          <img src="/images/logo-half-highresolution.png" alt="" className="h-32 w-auto" />
-          <div className="flex flex-col gap-1">
+      <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-10 flex flex-col items-center gap-6 w-full max-w-md mx-4">
+        <div className="flex items-center gap-3 sm:gap-4 mb-2 min-w-0">
+          <img src="/images/logo-half-highresolution.png" alt="" className="h-14 sm:h-24 w-auto shrink-0" />
+          <div className="flex flex-col gap-1 min-w-0">
             <span
               style={{
                 fontFamily: "'Fredoka One', cursive",
-                fontSize: '42px',
                 fontWeight: 800,
                 background: 'linear-gradient(135deg, #893ce3 0%, #ec4899 100%)',
                 WebkitBackgroundClip: 'text',
@@ -114,16 +113,17 @@ export default function Login() {
                 backgroundClip: 'text',
                 lineHeight: 1.1,
               }}
+              className="text-2xl sm:text-[40px] leading-tight whitespace-nowrap"
             >
               Growtrition
             </span>
             <span
               style={{
                 fontFamily: 'Nunito, sans-serif',
-                fontSize: '14px',
                 fontWeight: 600,
                 color: '#6b7280',
               }}
+              className="text-[11px] sm:text-sm leading-snug break-words"
             >
               Smart nutrition for growing minds.
             </span>
