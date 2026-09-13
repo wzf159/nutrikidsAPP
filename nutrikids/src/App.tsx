@@ -82,8 +82,10 @@ function AppLayout() {
   }, []);
 
   const isOnboarding = pathname.startsWith('/onboarding');
-  // 注册（填写档案）页面始终不显示导航栏；首屏（/）在没有孩子档案时也不显示
-  const hideTopNav = isOnboarding || (pathname === '/' && !hasProfile);
+  // 首屏：/ 以及直接访问 /index.html 都算首屏
+  const isHome = pathname === '/' || pathname === '/index.html';
+  // 注册（填写档案）页面始终不显示导航栏；首屏在没有孩子档案时也不显示
+  const hideTopNav = isOnboarding || (isHome && !hasProfile);
 
   return (
       <div className="relative flex flex-col min-h-screen">
