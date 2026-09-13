@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from 'react-router-dom';
 import { authClient, useSession } from './lib/auth';
+import { getChildren, type Child } from './services/api';
 import TopNav from './components/E1_Layout/TopNav';
+import LanguageSwitcher from './components/E1_Layout/LanguageSwitcher';
 import Home from './pages/Home';
 import Onboarding from './pages/Onboarding';
 import FoodAnalyzer from './pages/FoodAnalyzer';
@@ -60,13 +62,38 @@ function ConsumerApp() {
 
 function AppLayout() {
   const { pathname } = useLocation();
-  // 注册（填写档案）页面不显示顶部导航栏：
-  // 用户会点到暂不可用的功能入口，容易困惑
-  const hideTopNav = pathname.startsWith('/onboarding');
+  const [hasProfile, setHasProfile] = useState<boolean | null>(null);
+
+  // 有没有孩子档案：决定首屏要不要显示导航栏
+  // （没有档案时用户点了导航里的功能也用不了，容易困惑）
+  useEffect(() => {
+    let alive = true;
+    const load = () => {
+      getChildren()
+        .then((list: Child[]) => { if (alive) setHasProfile(list.length > 0); })
+        .catch(() => { if (alive) setHasProfile(false); });
+    };
+    load();
+    window.addEventListener('nutrikids:child-updated', load);
+    return () => {
+      alive = false;
+      window.removeEventListener('nutrikids:child-updated', load);
+    };
+  }, []);
+
+  const isOnboarding = pathname.startsWith('/onboarding');
+  // 注册（填写档案）页面始终不显示导航栏；首屏（/）在没有孩子档案时也不显示
+  const hideTopNav = isOnboarding || (pathname === '/' && !hasProfile);
 
   return (
-      <div className="flex flex-col min-h-screen">
+      <div className="relative flex flex-col min-h-screen">
         {!hideTopNav && <TopNav />}
+        {/* 导航栏被隐藏时（无档案的首屏）保留语言切换入口 */}
+        {hideTopNav && !isOnboarding && (
+          <div className="absolute right-4 top-4 z-40 sm:right-7">
+            <LanguageSwitcher />
+          </div>
+        )}
         <main className="flex-1 flex flex-col bg-gray-50 overflow-hidden">
           <Routes>
             <Route path="/" element={<Home />} />
